@@ -209,7 +209,7 @@
        */
       selectedByDefault() {
         this.form.getFieldDecorator('nameSpace', {
-          initialValue: 'Admin.NET.Application'
+          initialValue: 'QMS.Application.XXX'
         })
         // this.form.getFieldDecorator('tablePrefix', { valuePropName: 'checked', initialValue: 'N' })
         this.form.getFieldDecorator('generateType', {

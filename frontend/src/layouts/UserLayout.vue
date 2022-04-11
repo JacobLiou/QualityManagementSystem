@@ -22,7 +22,7 @@
           <a href="_self">条款</a>
         </div>
         <div class="copyright">
-          Copyright © 2021 <a target="_blank" href="https://gitee.com/zuohuaijun/Admin.NET">首航质量管理平台</a> All rights reserved. v1.5.2
+          Copyright © 2022 <a target="_blank" href="_self">首航质量管理平台</a> All rights reserved. v1.0.0
         </div>
       </div>
     </div>

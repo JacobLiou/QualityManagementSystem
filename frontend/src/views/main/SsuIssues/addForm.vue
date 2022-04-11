@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="新增问题管理"
+    title="新增问题"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"

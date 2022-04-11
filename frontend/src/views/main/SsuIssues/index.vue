@@ -43,7 +43,7 @@
         :rowKey="(record) => record.id"
         :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssues:add')" >
-          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题管理</a-button>
+          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题</a-button>
         </template>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuIssues:edit')" @click="$refs.editForm.edit(record)">编辑</a>

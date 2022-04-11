@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="编辑问题管理"
+    title="编辑问题"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"
