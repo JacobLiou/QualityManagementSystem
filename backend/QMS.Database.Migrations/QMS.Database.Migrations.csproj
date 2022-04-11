@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20220331110402_v1.0.0.cs" />
+    <Compile Remove="Migrations\20220331110402_v1.0.0.Designer.cs" />
+    <Compile Remove="Migrations\20220402171202_v1.1.0.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QMS.EntityFramework.Core\QMS.EntityFramework.Core.csproj" />
+  </ItemGroup>
+
+</Project>

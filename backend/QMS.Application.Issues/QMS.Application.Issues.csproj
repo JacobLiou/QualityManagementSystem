@@ -3,13 +3,22 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
+    <DocumentationFile></DocumentationFile>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Service\**" />
+    <Compile Remove="System\**" />
+    <EmbeddedResource Remove="Service\**" />
+    <EmbeddedResource Remove="System\**" />
+    <None Remove="Service\**" />
+    <None Remove="System\**" />
+  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="applicationsettings.System.json">
+    <Content Include="applicationsettings.Issues.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

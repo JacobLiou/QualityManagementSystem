@@ -1,5 +1,4 @@
-﻿using Admin.NET.Core.Entity;
-using Furion.DependencyInjection;
+﻿using Furion.DependencyInjection;
 
 namespace QMS.Application.System
 {
