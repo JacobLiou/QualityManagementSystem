@@ -1,0 +1,24 @@
+﻿using Furion.DatabaseAccessor;
+using Microsoft.EntityFrameworkCore;
+
+namespace Furion.Extras.Admin.NET.SeedData
+{
+    public class SysUserRoleSeedData : IEntitySeedData<SysUserRole>
+    {
+        /// <summary>
+        /// 种子数据
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="dbContextLocator"></param>
+        /// <returns></returns>
+        public IEnumerable<SysUserRole> HasData(DbContext dbContext, Type dbContextLocator)
+        {
+            return new[]
+            {
+                // 租户管理员默认管理员角色
+                new SysUserRole {SysUserId = 142307070910552, SysRoleId = 142307070910554},
+                new SysUserRole {SysUserId = 142307070910554, SysRoleId = 142307070910556}
+            };
+        }
+    }
+}

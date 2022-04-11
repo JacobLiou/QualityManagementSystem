@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Version>2.0.2</Version>
+    <Authors>左怀军/zuohuaijun</Authors>
+    <Company>Dilon Co.,Ltd.</Company>
+    <Product>Furion.Extras.Admin.NET</Product>
+    <Description>基于Furion框架实现的通用权限管理平台应用层框架。前后端分离，开箱即用。
+仓库地址：https://gitee.com/zuohuaijun/Admin.NET，包括前后端完整源码。</Description>
+    <Copyright>© 2021 Admin.NET, Dilon Co.,Ltd.</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://gitee.com/zuohuaijun/Admin.NET</PackageProjectUrl>
+    <RepositoryType>Gitee</RepositoryType>
+    <RepositoryUrl>https://gitee.com/zuohuaijun/Admin.NET</RepositoryUrl>
+    <PackageIcon>logo.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="applicationconfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Caching.CSRedis" Version="3.6.90" />
+    <PackageReference Include="CSRedisCore" Version="3.6.9" />
+    <PackageReference Include="Furion" Version="3.0.6" />
+    <PackageReference Include="Furion.Extras.Authentication.JwtBearer" Version="3.0.6" />
+    <PackageReference Include="Furion.Extras.Logging.Serilog" Version="3.0.6" />
+    <PackageReference Include="Furion.Extras.ObjectMapper.Mapster" Version="3.0.6" />
+    <PackageReference Include="Magicodes.IE.Excel" Version="2.6.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.3" />
+    <PackageReference Include="MiniExcel" Version="1.23.2" />
+    <PackageReference Include="OnceMi.AspNetCore.OSS" Version="1.1.4" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.18" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
+    <PackageReference Include="Yitter.IdGenerator" Version="1.0.12" />
+    <PackageReference Include="Zack.EFCore.Batch.Sqlite_NET6" Version="6.0.11" />
+  </ItemGroup>
+
+</Project>

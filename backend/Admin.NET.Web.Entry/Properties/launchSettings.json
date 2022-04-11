@@ -1,0 +1,38 @@
+﻿{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5566",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Development-Admin.NET": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5566",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development" //这里对应配置文件 比如：appsettings.Development.json
+      }
+    },
+    //生产环境-自定义
+    "Production-Admin.NET": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5566",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production" //对应 appsettings.json  dbsettings.json
+      }
+    }
+  }
+}
