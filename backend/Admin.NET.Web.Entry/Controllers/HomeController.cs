@@ -1,6 +1,7 @@
 ﻿using Admin.NET.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QMS.Application.System;
 
 namespace Admin.NET.Web.Entry.Controllers
 {

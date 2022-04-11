@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Admin.NET.Database.Migrations.Migrations.MultiTenantDb
+namespace QMS.Database.Migrations.Migrations.MultiTenantDb
 {
     [DbContext(typeof(MultiTenantDbContext))]
     partial class MultiTenantDbContextModelSnapshot : ModelSnapshot
@@ -15,112 +15,84 @@ namespace Admin.NET.Database.Migrations.Migrations.MultiTenantDb
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.1")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
-
-            modelBuilder.Entity("Admin.NET.Core.Entity.SsuIssues", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("longtext")
-                        .HasComment("问题描述");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasComment("状态");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasComment("问题简述");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ssu_issues");
-
-                    b.HasComment("问题记录");
-                });
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
 
             modelBuilder.Entity("Furion.Extras.Admin.NET.SysTenant", b =>
                 {
                     b.Property<long>("Id")
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasComment("Id主键");
 
                     b.Property<string>("AdminName")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("TEXT")
                         .HasComment("管理员名称");
 
                     b.Property<string>("Connection")
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("TEXT")
                         .HasComment("数据库连接");
 
                     b.Property<DateTimeOffset?>("CreatedTime")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("TEXT")
                         .HasComment("创建时间");
 
                     b.Property<long?>("CreatedUserId")
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasComment("创建者Id");
 
                     b.Property<string>("CreatedUserName")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("TEXT")
                         .HasComment("创建者名称");
 
                     b.Property<string>("Email")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("TEXT")
                         .HasComment("电子邮箱");
 
                     b.Property<string>("Host")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("TEXT")
                         .HasComment("主机");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("INTEGER")
                         .HasComment("软删除标记");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)")
+                        .HasColumnType("TEXT")
                         .HasComment("公司名称");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("TEXT")
                         .HasComment("电话");
 
                     b.Property<string>("Remark")
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("TEXT")
                         .HasComment("备注");
 
                     b.Property<string>("Schema")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("TEXT")
                         .HasComment("架构");
 
                     b.Property<DateTimeOffset?>("UpdatedTime")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("TEXT")
                         .HasComment("更新时间");
 
                     b.Property<long?>("UpdatedUserId")
-                        .HasColumnType("bigint")
+                        .HasColumnType("INTEGER")
                         .HasComment("修改者Id");
 
                     b.Property<string>("UpdatedUserName")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("TEXT")
                         .HasComment("修改者名称");
 
                     b.HasKey("Id");

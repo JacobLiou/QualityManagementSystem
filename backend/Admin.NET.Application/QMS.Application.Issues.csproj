@@ -9,8 +9,11 @@
 
   <ItemGroup>
     <Compile Remove="Service\**" />
+    <Compile Remove="System\**" />
     <EmbeddedResource Remove="Service\**" />
+    <EmbeddedResource Remove="System\**" />
     <None Remove="Service\**" />
+    <None Remove="System\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Admin.NET.Core\Admin.NET.Core.csproj" />
+    <ProjectReference Include="..\Admin.NET.Core\QMS.Core.csproj" />
   </ItemGroup>
 
 </Project>

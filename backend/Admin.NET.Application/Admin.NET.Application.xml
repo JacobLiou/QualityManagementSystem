@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>Admin.NET.Application</name>
+        <name>QMS.Application.Issues</name>
     </assembly>
     <members>
         <member name="P:Admin.NET.Application.Issues.IssuesInput.Id">
@@ -62,17 +62,6 @@
             </summary>
             <param name="timer">参数</param>
             <param name="count">次数</param>
-        </member>
-        <member name="T:Admin.NET.Application.SystemAppService">
-            <summary>
-            系统服务接口
-            </summary>
-        </member>
-        <member name="M:Admin.NET.Application.SystemAppService.GetDescription">
-            <summary>
-            获取系统描述
-            </summary>
-            <returns></returns>
         </member>
     </members>
 </doc>

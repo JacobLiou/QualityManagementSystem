@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Admin.NET.Core\Admin.NET.Core.csproj" />
+    <ProjectReference Include="..\Admin.NET.Core\QMS.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@ using Admin.NET.Core.Entity;
 using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Mapster;
+using QMS.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,9 @@ namespace Admin.NET.Application.Issues
 {
     public class SsuesService:ITransient
     {
-        private readonly IRepository<SsuIssues, MultiTenantDbContextLocator> _ssuIssues;  // 菜单表仓储
+        private readonly IRepository<SsuIssues, IssuesDbContextLocator> _ssuIssues;  // 问题表仓储
 
-        public SsuesService(IRepository<SsuIssues, MultiTenantDbContextLocator> ssuIssues)
+        public SsuesService(IRepository<SsuIssues, IssuesDbContextLocator> ssuIssues)
         {
             _ssuIssues = ssuIssues;
         }

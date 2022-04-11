@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Pomelo.EntityFrameworkCore.MySql;
+using QMS.Core;
 
 namespace Admin.NET.EntityFramework.Core
 {
@@ -22,11 +23,13 @@ namespace Admin.NET.EntityFramework.Core
                 {
                     opt.UseMySql(ServerVersion.Parse("5.7.34")); // EF批量组件
                 });
-                options.AddDbPool<MultiTenantDbContext, MultiTenantDbContextLocator>(providerName: default, optionBuilder: opt =>
+                options.AddDbPool<MultiTenantDbContext, MultiTenantDbContextLocator>();
+                options.AddDbPool<IssuesDbContext, IssuesDbContextLocator>(providerName: default, optionBuilder: opt =>
                 {
                     opt.UseMySql(ServerVersion.Parse("5.7.34")); // EF批量组件
-                });
-            }, "Admin.NET.Database.Migrations");
+                }); ;
+
+            }, "QMS.Database.Migrations");
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -40,11 +43,19 @@ namespace Admin.NET.EntityFramework.Core
                     context.Database.Migrate();
                     //context.Database.EnsureCreated();
                 });
-
                 Scoped.Create((_, scope) =>
                 {
                     var context = scope.ServiceProvider.GetRequiredService<MultiTenantDbContext>();
                     
+                    //context.Database.EnsureCreated();
+                    context.Database.Migrate();
+                });
+
+
+                Scoped.Create((_, scope) =>
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<IssuesDbContext>();
+
                     //context.Database.EnsureCreated();
                     context.Database.Migrate();
                 });

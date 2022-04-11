@@ -1,6 +1,7 @@
 ﻿using Furion.DatabaseAccessor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using QMS.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -17,7 +18,7 @@ namespace Admin.NET.Core.Entity
     /// </summary>
     [Table("ssu_issues")]
     [Comment("问题记录")]
-    public class SsuIssues : IEntity<MultiTenantDbContextLocator>, IEntityTypeBuilder<SsuIssues, MultiTenantDbContextLocator>
+    public class SsuIssues : IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<SsuIssues, IssuesDbContextLocator>
     {
 
         [Key]
