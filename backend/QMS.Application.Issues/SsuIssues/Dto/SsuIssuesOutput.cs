@@ -1,31 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QMS.Application.Issues
 {
-    public class IssuesInput
+    /// <summary>
+    /// 问题管理输出参数
+    /// </summary>
+    public class SsuIssuesOutput
     {
         /// <summary>
-        /// ID
+        /// 
         /// </summary>
-        public long Id { get; set; }
-
+        public int Id { get; set; }
         
-
         /// <summary>
-        /// 问题标题
+        /// 问题简述
         /// </summary>
         public string Title { get; set; }
-
+        
         /// <summary>
         /// 问题描述
         /// </summary>
         public string Description { get; set; }
-
-
+        
+        /// <summary>
+        /// 状态
+        /// </summary>
+        public int Status { get; set; }
+        
     }
 }
-

@@ -9,11 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Service\**" />
     <Compile Remove="System\**" />
-    <EmbeddedResource Remove="Service\**" />
     <EmbeddedResource Remove="System\**" />
-    <None Remove="Service\**" />
     <None Remove="System\**" />
   </ItemGroup>
 
@@ -25,6 +22,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QMS.Core\QMS.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Service\" />
   </ItemGroup>
 
 </Project>
