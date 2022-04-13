@@ -32,7 +32,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 分页查询问题管理
+        /// 分页查询问题
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -51,7 +51,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 增加问题管理
+        /// 增加问题
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -63,7 +63,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 删除问题管理
+        /// 删除问题
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -75,7 +75,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 更新问题管理
+        /// 更新问题
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -90,7 +90,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 获取问题管理
+        /// 获取问题
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -101,7 +101,7 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 获取问题管理列表
+        /// 获取问题列表
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>

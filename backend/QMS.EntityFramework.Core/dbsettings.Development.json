@@ -11,7 +11,7 @@
     //Mysql连接字符串
     "DefaultConnection": "Data Source=172.16.16.33;Database=Qms;User ID=root;Password=123456;pooling=true;port=3306;sslmode=none;CharSet=utf8;",
     "IssuesConnection": "Data Source=172.16.16.33;Database=Qms_Issues;User ID=root;Password=123456;pooling=true;port=3306;sslmode=none;CharSet=utf8;",
-    "MultiTenantConnection": "Data Source=./Qms_SaaS.db"
+    "MultiTenantConnection": "Data Source=./LocalDb/Qms_SaaS.db"
 
     //MSSQL连接字符串
     //"DefaultConnection": "Server=localhost;Database=Admin.NET;User=sa;Password=123456;MultipleActiveResultSets=True;",
