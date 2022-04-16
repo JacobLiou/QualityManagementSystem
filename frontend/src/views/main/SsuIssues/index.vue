@@ -16,7 +16,9 @@
               </a-form-item>
             </a-col><template v-if="advanced"><a-col :md="8" :sm="24">
                 <a-form-item label="状态">
-                  <a-input-number v-model="queryParam.status" style="width: 100%" allow-clear placeholder="请输入状态"/>
+                  <a-select :allowClear="true" style="width: 100%" v-model="queryParam.status" placeholder="请选择状态">
+                    <a-select-option v-for="(item,index) in statusData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+                  </a-select>
                 </a-form-item>
               </a-col>            </template>
 
@@ -43,8 +45,11 @@
         :rowKey="(record) => record.id"
         :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssues:add')" >
-          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题</a-button>
+          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题管理</a-button>
         </template>
+        <span slot="statusscopedSlots" slot-scope="text">
+          {{ 'common_status' | dictType(text) }}
+        </span>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuIssues:edit')" @click="$refs.editForm.edit(record)">编辑</a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssues:edit') & hasPerm('SsuIssues:delete')"/>
@@ -90,7 +95,8 @@ sorter: true,
             title: '状态',
             align: 'center',
 sorter: true,
-            dataIndex: 'status'
+            dataIndex: 'status',
+            scopedSlots: { customRender: 'statusscopedSlots' }
           }
         ],
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
@@ -100,6 +106,7 @@ sorter: true,
             return res.data
           })
         },
+        statusData: [],
         selectedRowKeys: [],
         selectedRows: []
       }
@@ -113,6 +120,8 @@ sorter: true,
           scopedSlots: { customRender: 'action' }
         })
       }
+      const statusOption = this.$options
+      this.statusData = statusOption.filters['dictData']('common_status')
     },
     methods: {
       /**

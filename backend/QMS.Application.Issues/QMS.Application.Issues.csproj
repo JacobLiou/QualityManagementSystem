@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Service\SsuIssues\**" />
     <Compile Remove="System\**" />
+    <EmbeddedResource Remove="Service\SsuIssues\**" />
     <EmbeddedResource Remove="System\**" />
+    <None Remove="Service\SsuIssues\**" />
     <None Remove="System\**" />
   </ItemGroup>
 

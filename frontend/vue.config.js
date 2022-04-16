@@ -91,8 +91,8 @@ const vueConfig = {
     loaderOptions: {
       less: {
         modifyVars: {
-          'primary-color': '#FA541C',
-          'layout-color': '#FA541C',
+          'primary-color': '#1890FF',
+          'layout-color': '#1890FF',
           'border-radius-base': '2px'
         },
         // DO NOT REMOVE THIS LINE

@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QMS.Application.Issues\QMS.Application.Issues.csproj" />
-    <ProjectReference Include="..\QMS.Database.Migrations\QMS.Database.Migrations.csproj" />
     <ProjectReference Include="..\QMS.Application.System\QMS.Application.System.csproj" />
+    <ProjectReference Include="..\QMS.Database.Migrations\QMS.Database.Migrations.csproj" />
   </ItemGroup>
 
 </Project>
