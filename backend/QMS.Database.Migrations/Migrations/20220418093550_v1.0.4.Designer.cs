@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.DefaultDb
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220418093550_v1.0.4")]
+    partial class v104
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -7460,49 +7462,6 @@ namespace QMS.Database.Migrations.Migrations
                     b.ToTable("ssu_project_users");
 
                     b.HasComment("项目人员关联表");
-                });
-
-            modelBuilder.Entity("QMS.Core.Entity.common.SysTest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasComment("项目编号");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("创建时间");
-
-                    b.Property<long>("CreatorId")
-                        .HasColumnType("bigint")
-                        .HasComment("创建人");
-
-                    b.Property<long>("DirectorId")
-                        .HasColumnType("bigint")
-                        .HasComment("负责人");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)")
-                        .HasComment("软删除");
-
-                    b.Property<string>("ProjectName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
-                        .HasComment("项目名称");
-
-                    b.Property<int>("Sort")
-                        .HasColumnType("int")
-                        .HasComment("排序");
-
-                    b.Property<DateTime>("UpdateTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("修改时间");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("sys_test");
-
-                    b.HasComment("项目表");
                 });
 
             modelBuilder.Entity("Furion.Extras.Admin.NET.SysDictData", b =>
