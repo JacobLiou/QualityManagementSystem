@@ -1,7 +1,8 @@
 <template>
   <div class="logo">
     <router-link :to="{name:'Console'}">
-      <LogoSvg alt="logo" />
+      <!-- <LogoSvg alt="logo" /> -->
+      <img alt="Vue logo" style="width:34px; height: 34px" src="@/assets/logo.png">
       <h1 v-if="showTitle">{{ this.titles }}</h1>
     </router-link>
   </div>

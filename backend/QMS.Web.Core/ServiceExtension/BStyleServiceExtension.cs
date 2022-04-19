@@ -30,16 +30,9 @@ namespace QMS.Web.Core
         public void UseDefault()
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(@"  ___      _           _         _   _  _____ _____ 
- / _ \    | |         (_)       | \ | ||  ___|_   _|
-/ /_\ \ __| |_ __ ___  _ _ __   |  \| || |__   | |  
-|  _  |/ _` | '_ ` _ \| | '_ \  | . ` ||  __|  | |  
-| | | | (_| | | | | | | | | | |_| |\  || |___  | |  
-\_| |_/\__,_|_| |_| |_|_|_| |_(_)_| \_/\____/  \_/  ");
+            Console.WriteLine(@"SofarSolar.Com");
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(@"
-
-gitee: https://gitee.com/zuohuaijun/Admin.NET");
+            Console.WriteLine(@"");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(@"期待您的PR，让.net更好！
 

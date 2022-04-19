@@ -1,5 +1,5 @@
 # 定义服务器地址
-$remoteIp = "81.70.44.26"
+$remoteIp = "172.16.16.33"
 
 # supervisor 服务名称
 $supervisorServername = "DotnetSmartPrison"
@@ -18,13 +18,13 @@ New-Item -Path $outputFolder -ItemType Directory
 
 ### 还原&打包
 Set-Location $vueFolder
-yarn
-yarn build
+npm
+npm run build
 
 ### 推送到服务器
 Set-Location $outputFolder
 ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_vue; exit"
-scp -r (Join-Path $outputFolder "smart_prison_vue") root@$remoteIp:/wwwroot
+scp -r (Join-Path $outputFolder "smart_prison_vue") root@${remoteIp}:/wwwroot
 
 ## 发布后端
 
@@ -36,7 +36,7 @@ dotnet publish --no-restore --output (Join-Path $outputFolder "smart_prison_core
 ### 推送到服务器
 Set-Location $outputFolder
 ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_core; exit"
-scp -r (Join-Path $outputFolder "smart_prison_core") root@$remoteIp:/wwwroot
+scp -r (Join-Path $outputFolder "smart_prison_core") root@${remoteIp}:/wwwroot
 
 ### dotnet 命令运行
 # ssh root@$remoteIp "cd /wwwroot/smart_prison_core; dotnet Dilon.Web.Entry.dll --urls http://*:5000; exit"

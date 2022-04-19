@@ -1,5 +1,5 @@
 # 定义服务器地址
-$remoteIp = "81.70.44.26"
+$remoteIp = "172.16.16.33"
 
 # 定义路径
 $buildFolder = (Get-Item -Path "./" -Verbose).FullName
@@ -14,10 +14,10 @@ New-Item -Path $outputFolder -ItemType Directory
 
 ### 还原&打包
 Set-Location $vueFolder
-yarn
-yarn build
+npm run build
 
 ### 推送到服务器
 Set-Location $outputFolder
+
 ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_vue; exit"
-scp -r (Join-Path $outputFolder "smart_prison_vue") root@$remoteIp:/wwwroot
+scp -r (Join-Path $outputFolder "smart_prison_vue") root@${remoteIp}:/wwwroot

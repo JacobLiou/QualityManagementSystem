@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMS.Web.Entry", "QMS.Web.En
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furion.Extras.Admin.NET", "Furion.Extras.Admin.NET\Furion.Extras.Admin.NET.csproj", "{4E814196-A4C8-461A-BE4D-4E667DCA5DD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QMS.Application.System", "QMS.Application.System\QMS.Application.System.csproj", "{A97E5995-5AE4-4798-967E-13E9A8AEEA79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QMS.Application.System", "QMS.Application.System\QMS.Application.System.csproj", "{A97E5995-5AE4-4798-967E-13E9A8AEEA79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
