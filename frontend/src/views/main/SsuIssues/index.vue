@@ -45,13 +45,14 @@
         :rowKey="(record) => record.id"
         :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssues:add')" >
-          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题管理</a-button>
+          <a-button type="primary" v-if="hasPerm('SsuIssues:add')" icon="plus" @click="$refs.addForm.add()">新增问题</a-button>
         </template>
         <span slot="statusscopedSlots" slot-scope="text">
           {{ 'common_status' | dictType(text) }}
         </span>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuIssues:edit')" @click="$refs.editForm.edit(record)">编辑</a>
+          <a v-if="hasPerm('SsuIssues:execute')" @click="$refs.executeForm.edit(record)">解决</a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssues:edit') & hasPerm('SsuIssues:delete')"/>
           <a-popconfirm v-if="hasPerm('SsuIssues:delete')" placement="topRight" title="确认删除？" @confirm="() => SsuIssuesDelete(record)">
             <a>删除</a>
@@ -66,8 +67,10 @@
 <script>
   import { STable } from '@/components'
   import { SsuIssuesPage, SsuIssuesDelete } from '@/api/modular/main/SsuIssuesManage'
+  import executeForm from './executeForm.vue'
   import addForm from './addForm.vue'
   import editForm from './editForm.vue'
+
   export default {
     components: {
       STable,

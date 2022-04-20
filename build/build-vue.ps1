@@ -15,6 +15,7 @@ New-Item -Path $outputFolder -ItemType Directory
 ### 还原&打包
 Set-Location $vueFolder
 npm run build
+Copy-Item (Join-Path $vueFolder "dist") (Join-Path $outputFolder "smart_prison_vue/") -Recurse
 
 ### 推送到服务器
 Set-Location $outputFolder

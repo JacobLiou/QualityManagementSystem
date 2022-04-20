@@ -1,5 +1,5 @@
 # 定义服务器地址
-$remoteIp = "81.70.44.26"
+$remoteIp = "172.16.16.33"
 
 # supervisor 服务名称
 $supervisorServername = "DotnetSmartPrison"
@@ -23,10 +23,10 @@ dotnet publish --no-restore --output (Join-Path $outputFolder "smart_prison_core
 ### 推送到服务器
 Set-Location $outputFolder
 ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_core; exit"
-scp -r (Join-Path $outputFolder "smart_prison_core") root@$remoteIp:/wwwroot
+scp -r (Join-Path $outputFolder "smart_prison_core") root@${remoteIp}:/wwwroot
 
 ### dotnet 命令运行
-# ssh root@$remoteIp "cd /wwwroot/smart_prison_core; dotnet Dilon.Web.Entry.dll --urls http://*:5000; exit"
+# ssh root@$remoteIp "cd /wwwroot/smart_prison_core; dotnet QMS.Web.Entry.dll --urls http://*:5566; exit"
 
 ### 如果是用 supervisor 守护进程的需要使用
 ssh root@$remoteIp "sudo supervisorctl restart $supervisorServername; exit"
