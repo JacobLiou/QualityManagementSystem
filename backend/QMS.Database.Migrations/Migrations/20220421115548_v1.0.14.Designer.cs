@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220421115548_v1.0.14")]
+    partial class v1014
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -303,9 +305,27 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IssueId");
+
                     b.ToTable("ssu_issue_operation");
 
                     b.HasComment("问题操作记录");
+                });
+
+            modelBuilder.Entity("QMS.Core.Entity.SsuIssueOperation", b =>
+                {
+                    b.HasOne("QMS.Core.Entity.SsuIssue", "Issue")
+                        .WithMany("SsuIssueOperations")
+                        .HasForeignKey("IssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Issue");
+                });
+
+            modelBuilder.Entity("QMS.Core.Entity.SsuIssue", b =>
+                {
+                    b.Navigation("SsuIssueOperations");
                 });
 #pragma warning restore 612, 618
         }

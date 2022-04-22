@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Furion.Extras.Admin.NET.Entity.Common.Enum;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -65,5 +66,12 @@ namespace Furion.Extras.Admin.NET
         [Comment("存储路径")]
         [MaxLength(100)]
         public string FilePath { get; set; }
+
+
+        [Comment("附件来源")]
+        public EnumAttachmentType AttachmentType { get; set; }
+
+        [Comment("问题编号")]
+        public long IssueId { get; set; }
     }
 }

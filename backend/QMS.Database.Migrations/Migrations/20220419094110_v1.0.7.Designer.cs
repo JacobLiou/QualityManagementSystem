@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220419094110_v1.0.7")]
+    partial class v107
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,11 +28,7 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("bigint")
                         .HasComment("问题编号");
 
-                    b.Property<long?>("CC")
-                        .HasColumnType("bigint")
-                        .HasComment("被抄送人");
-
-                    b.Property<DateTime?>("CloseTime")
+                    b.Property<DateTime>("CloseTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("关闭日期");
 
@@ -46,27 +44,27 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("bigint")
                         .HasComment("提出人");
 
-                    b.Property<long?>("Discover")
-                        .HasColumnType("bigint")
-                        .HasComment("发现人");
-
-                    b.Property<DateTime?>("DiscoverTime")
+                    b.Property<DateTime>("DisconverTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("发现日期");
 
-                    b.Property<DateTime?>("DispatchTime")
+                    b.Property<long>("Discover")
+                        .HasColumnType("bigint")
+                        .HasComment("发现人");
+
+                    b.Property<DateTime>("DispatchTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("分发日期");
 
-                    b.Property<long?>("Dispatcher")
+                    b.Property<long>("Dispatcher")
                         .HasColumnType("bigint")
                         .HasComment("分发人");
 
-                    b.Property<long?>("Executor")
+                    b.Property<long>("Executor")
                         .HasColumnType("bigint")
                         .HasComment("解决人");
 
-                    b.Property<DateTime?>("ForecastSolveTime")
+                    b.Property<DateTime>("ForecastSolveTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("预计完成日期");
 
@@ -90,7 +88,7 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("bigint")
                         .HasComment("项目编号");
 
-                    b.Property<DateTime?>("SolveTime")
+                    b.Property<DateTime>("SolveTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("解决日期");
 
@@ -103,16 +101,15 @@ namespace QMS.Database.Migrations.Migrations
                         .HasComment("问题状态");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)")
                         .HasComment("问题简述");
 
-                    b.Property<DateTime?>("ValidateTime")
+                    b.Property<DateTime>("ValidateTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("验证日期");
 
-                    b.Property<long?>("Verifier")
+                    b.Property<long>("Verifier")
                         .HasColumnType("bigint")
                         .HasComment("验证人");
 
@@ -145,7 +142,7 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("varchar(300)")
                         .HasComment("备注");
 
-                    b.Property<int?>("Count")
+                    b.Property<int>("Count")
                         .HasColumnType("int")
                         .HasComment("验证数量");
 
@@ -158,11 +155,6 @@ namespace QMS.Database.Migrations.Migrations
                         .HasMaxLength(1500)
                         .HasColumnType("varchar(1500)")
                         .HasComment("扩展属性");
-
-                    b.Property<string>("HangupReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
-                        .HasComment("挂起情况");
 
                     b.Property<string>("Measures")
                         .HasMaxLength(1000)
@@ -188,7 +180,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.ToTable("ssu_issue_detail");
 
-                    b.HasComment("详细问题记录");
+                    b.HasComment("问题记录");
                 });
 
             modelBuilder.Entity("QMS.Core.Entity.SsuIssueExtendAttribute", b =>
@@ -199,15 +191,14 @@ namespace QMS.Database.Migrations.Migrations
                         .HasComment("字段编号");
 
                     b.Property<string>("AttibuteName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
                         .HasComment("字段名");
 
-                    b.Property<string>("AttributeCode")
+                    b.Property<string>("AttributeText")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
-                        .HasComment("字段代码");
+                        .HasComment("字段中文名");
 
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime(6)")
@@ -238,7 +229,6 @@ namespace QMS.Database.Migrations.Migrations
                         .HasComment("提出日期");
 
                     b.Property<string>("ValueType")
-                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)")
                         .HasComment("字段值类型");
@@ -253,15 +243,15 @@ namespace QMS.Database.Migrations.Migrations
             modelBuilder.Entity("QMS.Core.Entity.SsuIssueExtendAttributeValue", b =>
                 {
                     b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasComment("字段编号");
 
                     b.Property<long>("IssueId")
                         .HasColumnType("bigint")
-                        .HasComment("问题编号");
+                        .HasComment("模块编号");
 
-                    b.Property<string>("AttibuteValue")
-                        .IsRequired()
+                    b.Property<string>("AttibuteName")
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)")
                         .HasComment("字段值");
@@ -303,9 +293,27 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IssueId");
+
                     b.ToTable("ssu_issue_operation");
 
                     b.HasComment("问题操作记录");
+                });
+
+            modelBuilder.Entity("QMS.Core.Entity.SsuIssueOperation", b =>
+                {
+                    b.HasOne("QMS.Core.Entity.SsuIssue", "Issue")
+                        .WithMany("SsuIssueOperations")
+                        .HasForeignKey("IssueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Issue");
+                });
+
+            modelBuilder.Entity("QMS.Core.Entity.SsuIssue", b =>
+                {
+                    b.Navigation("SsuIssueOperations");
                 });
 #pragma warning restore 612, 618
         }

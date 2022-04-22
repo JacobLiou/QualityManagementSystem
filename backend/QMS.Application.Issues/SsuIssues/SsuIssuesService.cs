@@ -1,5 +1,4 @@
 ﻿using Furion.DatabaseAccessor;
-using Furion.DatabaseAccessor.Extensions;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
@@ -9,10 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core;
 using QMS.Core.Entity;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace QMS.Application.Issues
 {
@@ -20,12 +16,12 @@ namespace QMS.Application.Issues
     /// 问题管理服务
     /// </summary>
     [ApiDescriptionSettings("问题管理", Name = "SsuIssues", Order = 100)]
-    public class SsuIssuesService : ISsuIssuesService, IDynamicApiController, ITransient
+    public class MySsuIssuesService : ISsuIssuesService, IDynamicApiController, ITransient
     {
-        private readonly IRepository<SsuIssues, IssuesDbContextLocator> _ssuIssuesRep;
+        private readonly IRepository<SsuIssue, IssuesDbContextLocator> _ssuIssuesRep;
 
-        public SsuIssuesService(
-            IRepository<SsuIssues, IssuesDbContextLocator> ssuIssuesRep
+        public MySsuIssuesService(
+            IRepository<SsuIssue, IssuesDbContextLocator> ssuIssuesRep
         )
         {
             _ssuIssuesRep = ssuIssuesRep;
@@ -41,8 +37,8 @@ namespace QMS.Application.Issues
         {
             var ssuIssuess = await _ssuIssuesRep.DetachedEntities
                                      .Where(!string.IsNullOrEmpty(input.Title), u => u.Title == input.Title)
-                                     .Where(!string.IsNullOrEmpty(input.Description), u => u.Description == input.Description)
-                                     .Where(input.Status != 0, u => u.Status == input.Status)
+                                     //.Where(!string.IsNullOrEmpty(input.Description), u => u.Description == input.Description)
+                                     .Where(input.Status != 0, u => (int)u.Status == input.Status)
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuIssuesInput>(input))
                                      .ProjectToType<SsuIssuesOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
@@ -58,7 +54,7 @@ namespace QMS.Application.Issues
         [HttpPost("/SsuIssues/add")]
         public async Task Add(AddSsuIssuesInput input)
         {
-            var ssuIssues = input.Adapt<SsuIssues>();
+            var ssuIssues = input.Adapt<SsuIssue>();
             await _ssuIssuesRep.InsertAsync(ssuIssues);
         }
 
@@ -85,7 +81,7 @@ namespace QMS.Application.Issues
             var isExist = await _ssuIssuesRep.AnyAsync(u => u.Id == input.Id, false);
             if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
-            var ssuIssues = input.Adapt<SsuIssues>();
+            var ssuIssues = input.Adapt<SsuIssue>();
             await _ssuIssuesRep.UpdateAsync(ssuIssues, ignoreNullValues: true);
         }
 

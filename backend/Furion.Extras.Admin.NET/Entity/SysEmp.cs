@@ -1,4 +1,5 @@
 ﻿using Furion.DatabaseAccessor;
+using Furion.Extras.Admin.NET.Entity.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.ComponentModel.DataAnnotations;
@@ -65,6 +66,50 @@ namespace Furion.Extras.Admin.NET
                 {
                     u.HasKey(c => new { c.SysEmpId, c.SysPosId });
                 });
+
+            // 项目、人员
+            entityBuilder.HasMany(p => p.SsuProjects).WithMany(p => p.SysEmps).UsingEntity<SsuProjectUser>(
+                u => u.HasOne(c => c.Project).WithMany(c => c.SsuProjectUsers).HasForeignKey(c => c.ProjectId),
+                u => u.HasOne(c => c.Employee).WithMany(c => c.SsuProjectUsers).HasForeignKey(c => c.EmployeeId),
+                u =>
+                {
+                    u.HasKey(c => new { c.ProjectId, c.EmployeeId });
+                });
+
+            // 产品、人员
+            entityBuilder.HasMany(p => p.SsuProducts).WithMany(p => p.SysEmps).UsingEntity<SsuProductUser>(
+                u => u.HasOne(c => c.Product).WithMany(c => c.SsuProductUsers).HasForeignKey(c => c.ProductId),
+                u => u.HasOne(c => c.Employee).WithMany(c => c.SsuProductUsers).HasForeignKey(c => c.EmployeeId),
+                u =>
+                {
+                    u.HasKey(c => new { c.ProductId, c.EmployeeId });
+                });
+
+            // 人员组、成员
+            entityBuilder.HasMany(p => p.SsuGroups).WithMany(p => p.SysEmps).UsingEntity<SsuGroupUser>(
+                u => u.HasOne(c => c.Group).WithMany(c => c.SsuGroupUsers).HasForeignKey(c => c.GroupId),
+                u => u.HasOne(c => c.Employee).WithMany(c => c.SsuGroupUsers).HasForeignKey(c => c.EmployeeId),
+                u =>
+                {
+                    u.HasKey(c => new { c.GroupId, c.EmployeeId });
+                });
         }
+
+
+        // ****************************************************************************************
+        #region 产品、项目、分组与人员关联
+        public ICollection<SsuProduct> SsuProducts { get; set; }
+
+        public List<SsuProductUser> SsuProductUsers { get; set; }
+
+
+        public ICollection<SsuProject> SsuProjects { get; set; }
+
+        public List<SsuProjectUser> SsuProjectUsers { get; set; }
+
+        public ICollection<SsuGroup> SsuGroups { get; set; }
+
+        public List<SsuGroupUser> SsuGroupUsers { get; set; }
+        #endregion
     }
 }
