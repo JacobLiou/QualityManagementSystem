@@ -9,10 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Service\SsuIssueExtendAttributeValue\**" />
     <Compile Remove="Service\SsuIssues\**" />
     <Compile Remove="System\**" />
+    <EmbeddedResource Remove="Service\SsuIssueExtendAttributeValue\**" />
     <EmbeddedResource Remove="Service\SsuIssues\**" />
     <EmbeddedResource Remove="System\**" />
+    <None Remove="Service\SsuIssueExtendAttributeValue\**" />
     <None Remove="Service\SsuIssues\**" />
     <None Remove="System\**" />
   </ItemGroup>
@@ -25,10 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QMS.Core\QMS.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Service\" />
   </ItemGroup>
 
 </Project>

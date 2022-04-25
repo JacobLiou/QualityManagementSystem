@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace QMS.Application.Issues.Helper
@@ -22,6 +21,11 @@ namespace QMS.Application.Issues.Helper
             return name;
         }
         #endregion
+
+        public static long GetCurrentUser()
+        {
+            return 10000;
+        }
 
         public static void Assert(bool result, string errorMsg="参数错误")
         {

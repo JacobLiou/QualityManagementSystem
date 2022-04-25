@@ -13,6 +13,9 @@ namespace QMS.Core.Enum
         [Description("处理")]
         Solve,
 
+        [Description("验证不通过")]
+        NoPass,
+
         [Description("关闭")]
         Close,
 

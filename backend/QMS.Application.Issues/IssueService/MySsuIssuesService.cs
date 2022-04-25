@@ -1,17 +1,9 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
-using Furion.Extras.Admin.NET;
-using Furion.Extras.Admin.NET.Service;
-using Mapster;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QMS.Application.Issues;
 using QMS.Application.Issues.Helper;
-using QMS.Application.Issues.IssueService.Dto.Detail;
 using QMS.Application.Issues.IssueService.Dto.Field;
-using QMS.Application.Issues.IssueService.Dto.New;
-using QMS.Application.Issues.IssueService.Dto.QueryList;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -23,7 +15,7 @@ namespace QMS.Application.IssueService
     /// 问题管理服务
     /// </summary>
     [ApiDescriptionSettings("问题管理", Name = nameof(MyIssue), Order = 100)]
-    public class MyIssue : IMyIssuesService, IDynamicApiController, ITransient
+    public class MyIssue : IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssue, IssuesDbContextLocator> _commonIssuesRep;
         private readonly IRepository<SsuIssueDetail, IssuesDbContextLocator> _detailIssuesRep;
@@ -45,41 +37,6 @@ namespace QMS.Application.IssueService
             this._fieldValueIssuesRep = fieldValueIssuesRep;
             this._operationTypeRep = operationTypeRep;
 
-        }
-
-        [HttpPost($"/{nameof(MyIssue)}/add-common")]
-        public async Task AddCommon(InCommonNewWithOutId input)
-        {
-            var ssuIssues = input.Adapt<SsuIssue>();
-            await this._commonIssuesRep.InsertAsync(ssuIssues);
-        }
-
-        [HttpPost($"/{nameof(MyIssue)}/add-detail")]
-        public async Task AddDetail(OutputDetailIssue input)
-        {
-            var ssuIssues = input.Adapt<SsuIssueDetail>();
-            await this._detailIssuesRep.InsertAsync(ssuIssues);
-        }
-
-        [HttpPost($"/{nameof(MyIssue)}/delete")]
-        public async Task Delete(BaseId input)
-        {
-            var ssuIssues = await this._commonIssuesRep.FirstOrDefaultAsync(u => u.Id == input.Id);
-
-            ssuIssues.IsDeleted = true;
-
-            await this._commonIssuesRep.UpdateAsync(ssuIssues);
-        }
-
-        [HttpPost($"/{nameof(MyIssue)}/update-common")]
-        public async Task Update(InCommonNew input)
-        {
-            var isExist = await this._commonIssuesRep.DetachedEntities.AnyAsync(u => u.Id == input.Id);
-
-            Helper.Assert(isExist, $"问题编号{input.Id}不存在");
-
-            var ssuIssues = input.Adapt<SsuIssue>();
-            await this._commonIssuesRep.UpdateAsync(ssuIssues, ignoreNullValues: true);
         }
 
         [HttpPost($"/{nameof(MyIssue)}/update-field-struct")]
@@ -148,7 +105,7 @@ namespace QMS.Application.IssueService
                  new SsuIssueExtendAttributeValue()
                  {
                      Id = attribute.Id,
-                     IssueId = IssueId,
+                     IssueNum = IssueId,
                      AttibuteValue = fieldValues.FirstOrDefault(value => value.AttributeCode == attribute.AttributeCode).Value
                  })
              );
@@ -182,7 +139,7 @@ namespace QMS.Application.IssueService
             var values = this._fieldValueIssuesRep.Entities
                 .Where<SsuIssueExtendAttributeValue>(
                 value =>
-                value.IssueId == IssueId
+                value.IssueNum == IssueId
                 && array.Any<SsuIssueExtendAttribute>(attribute => attribute.Id == value.Id)
                 );
 
@@ -196,112 +153,5 @@ namespace QMS.Application.IssueService
             await this._fieldValueIssuesRep.Context.SaveChangesAsync();
         }
 
-        [HttpGet($"/{nameof(MyIssue)}/get")]
-        public async Task<OutputDetailIssue> Get([FromQuery] BaseId input)
-        {
-            return (await this._detailIssuesRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/page")]
-        public async Task<PageResult<OutputGeneralIssue>> PageWithGeneralCondition([FromQuery] BaseQueryModel input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                     .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                     .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                     .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                     .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                     .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                     //.OrderBy(PageInputOrder.OrderBuilder<SsuIssuesInput>(input))
-                                     .ProjectToType<OutputGeneralIssue>()
-                                     .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/page-creator")]
-        public async Task<PageResult<OutputGeneralIssue>> PageByCreator([FromQuery] QueryListByCreator input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                     .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                     .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                     .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                     .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                     .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                     .Where(input.CreatorId>0, u=>u.CreatorId==input.CreatorId)
-                                     //.OrderBy(PageInputOrder.OrderBuilder<SsuIssuesInput>(input))
-                                     .ProjectToType<OutputGeneralIssue>()
-                                     .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/page-dispatcher")]
-        public async Task<PageResult<OutputGeneralIssue>> PageByDispatcher([FromQuery] QueryListByDispatcher input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                    .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                    .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                    .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                    .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                    .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                    .Where(input.Dispatcher > 0, u => u.Dispatcher == input.Dispatcher)
-                                    //.OrderBy(PageInputOrder.OrderBuilder<SsuIssuesInput>(input))
-                                    .ProjectToType<OutputGeneralIssue>()
-                                    .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/page-executor")]
-        public async Task<PageResult<OutputGeneralIssue>> PageByExector([FromQuery] QueryListByExecutor input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                    .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                    .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                    .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                    .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                    .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                    .Where(input.Executor > 0, u => u.Dispatcher == input.Executor)
-                                    .ProjectToType<OutputGeneralIssue>()
-                                    .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-            [HttpGet($"/{nameof(MyIssue)}/page-solved")]
-        public async Task<PageResult<OutputGeneralIssue>> PageBySolved([FromQuery] QueryListInSolved input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                   .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                   .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                   .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                   .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                   .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                   .ProjectToType<OutputGeneralIssue>()
-                                   .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/page-unsolve")]
-        public async Task<PageResult<OutputGeneralIssue>> PageByUnSolvd([FromQuery] QueryListInUnSolve input)
-        {
-            var ssuIssuess = await this._commonIssuesRep.DetachedEntities
-                                   .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
-                                   .Where(input.Module >= 0, u => (int)u.Module == input.Module)
-                                   .Where(input.Consequence >= 0, u => (int)u.Consequence == input.Consequence)
-                                   .Where(input.Status >= 0, u => (int)u.Status == input.Status)
-                                   .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord))
-                                   .ProjectToType<OutputGeneralIssue>()
-                                   .ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            return ssuIssuess;
-        }
-
-        [HttpGet($"/{nameof(MyIssue)}/list")]
-        public async Task<List<OutputGeneralIssue>> List([FromQuery] BaseQueryModel input)
-        {
-            return await this._commonIssuesRep.DetachedEntities.ProjectToType<OutputGeneralIssue>().ToListAsync();
-        }
     }
 }
