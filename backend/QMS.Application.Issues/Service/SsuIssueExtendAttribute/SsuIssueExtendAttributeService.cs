@@ -6,8 +6,10 @@ using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QMS.Application.Issues.Field;
 using QMS.Core;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 using System.Linq.Dynamic.Core;
 
 namespace QMS.Application.Issues
@@ -89,6 +91,57 @@ namespace QMS.Application.Issues
 
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
             await _ssuIssueExtendAttributeRep.UpdateAsync(ssuIssueExtendAttribute, ignoreNullValues: true);
+        }
+
+        [HttpPost($"/SsuIssueExtendAttribute/update-field-struct")]
+        public void UpdateFieldStruct(long updateId, EnumModule module, List<FieldStruct> fieldStructs)
+        {
+            DateTime now = DateTime.Now;
+
+            var collection = this._ssuIssueExtendAttributeRep.DetachedEntities
+                .Where(attribute => attribute.Module == module)
+                .Where(attribute => fieldStructs.Any(fieldStruct => fieldStruct.FieldCode == attribute.AttributeCode))
+                .ToArray();
+
+            Helper.Helper.Assert(collection != null && collection.Length > 0, "");
+
+            foreach (var item in collection)
+            {
+                foreach (var field in fieldStructs)
+                {
+                    if (field.FieldCode == item.AttributeCode)
+                    {
+                        item.AttibuteName = field.FieldName;
+                    }
+                }
+            }
+
+            this._ssuIssueExtendAttributeRep.Entities.UpdateRange(collection);
+            this._ssuIssueExtendAttributeRep.Context.SaveChangesAsync();
+        }
+
+        [HttpPost($"/SsuIssueExtendAttribute/add-field-struct")]
+        public async Task AddFieldStruct(long creatorId, EnumModule module, List<FieldStruct> fields)
+        {
+            DateTime now = DateTime.Now;
+            IEnumerable<SsuIssueExtendAttribute> attributes =
+                fields.Select<FieldStruct, SsuIssueExtendAttribute>(
+                    fieldStruct =>
+                        new SsuIssueExtendAttribute()
+                        {
+                            AttibuteName = fieldStruct.FieldName,
+                            Module = module,
+                            AttributeCode = fieldStruct.FieldCode,
+                            ValueType = fieldStruct.FiledDataType,
+                            CreateTime = now,
+                            CreatorId = creatorId,
+                            UpdateId = creatorId,
+                            UpdateTime = now
+                        }
+            );
+
+            await this._ssuIssueExtendAttributeRep.Entities.AddRangeAsync(attributes.ToArray());
+            await this._ssuIssueExtendAttributeRep.Context.SaveChangesAsync();
         }
 
         /// <summary>

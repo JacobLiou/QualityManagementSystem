@@ -6,7 +6,7 @@ using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QMS.Application.Issues.IssueService.Dto.QueryList;
+using QMS.Application.Issues.Field;
 using QMS.Core;
 using QMS.Core.Entity;
 using System.Linq.Dynamic.Core;
@@ -20,12 +20,18 @@ namespace QMS.Application.Issues
     public class SsuIssueDetailService : ISsuIssueDetailService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssueDetail,IssuesDbContextLocator> _ssuIssueDetailRep;
+        private readonly IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> _ssuIssueExtendAttrRep;
+        private readonly IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> _ssuIssueExtendValueRep;
 
         public SsuIssueDetailService(
-            IRepository<SsuIssueDetail,IssuesDbContextLocator> ssuIssueDetailRep
+            IRepository<SsuIssueDetail,IssuesDbContextLocator> ssuIssueDetailRep,
+            IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> ssuIssueExtendAttrRep,
+            IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> ssuIssueExtendValueRep
         )
         {
-            _ssuIssueDetailRep = ssuIssueDetailRep;
+            this._ssuIssueDetailRep = ssuIssueDetailRep;
+            this._ssuIssueExtendAttrRep = ssuIssueExtendAttrRep;
+            this._ssuIssueExtendValueRep = ssuIssueExtendValueRep;
         }
 
         /// <summary>
@@ -115,7 +121,69 @@ namespace QMS.Application.Issues
         public async Task<List<SsuIssueDetailOutput>> List([FromQuery] SsuIssueDetailInput input)
         {
             return await _ssuIssueDetailRep.DetachedEntities.ProjectToType<SsuIssueDetailOutput>().ToListAsync();
-        }    
+        }
 
+        [HttpPost($"/SsuIssueDetail/add-field-value")]
+        public async Task AddFieldValue(long IssueId, List<FieldValue> fieldValues)
+        {
+            DateTime now = DateTime.Now;
+
+            // 找到对应的字段编号
+            var array = this._ssuIssueExtendAttrRep.DetachedEntities.Where<SsuIssueExtendAttribute>(field =>
+               fieldValues.Any<FieldValue>(value => value.AttributeCode == field.AttributeCode)
+           ).ToArray();
+
+            // 根据字段编号和问题Id插入数据
+            await this._ssuIssueExtendValueRep.Entities.AddRangeAsync(array.Select<SsuIssueExtendAttribute, SsuIssueExtendAttributeValue>(attribute =>
+                 new SsuIssueExtendAttributeValue()
+                 {
+                     Id = attribute.Id,
+                     IssueNum = IssueId,
+                     AttibuteValue = fieldValues.FirstOrDefault(value => value.AttributeCode == attribute.AttributeCode).Value
+                 })
+             );
+        }
+
+        [HttpPost($"/SsuIssueDetail/update-field-value")]
+        public async Task UpdateFieldValue(long IssueId, List<FieldValue> fieldValues)
+        {
+            DateTime now = DateTime.Now;
+
+            // 找到对应的字段编号
+            var array = this._ssuIssueExtendAttrRep.DetachedEntities.Where<SsuIssueExtendAttribute>(field =>
+               fieldValues.Any<FieldValue>(value => value.AttributeCode == field.AttributeCode)
+           ).ToArray();
+
+            Helper.Helper.Assert(array != null && array.Length > 0, "字段都不存在");
+
+            // 收集字段Id和字段值的关系
+            Dictionary<long, string> dic = new Dictionary<long, string>();
+            foreach (var item in array)
+            {
+                foreach (var field in fieldValues)
+                {
+                    if (field.AttributeCode == item.AttributeCode)
+                    {
+                        dic.Add(item.Id, field.Value);
+                    }
+                }
+            }
+
+            var values = this._ssuIssueExtendValueRep.Entities
+                .Where<SsuIssueExtendAttributeValue>(
+                value =>
+                value.IssueNum == IssueId
+                && array.Any<SsuIssueExtendAttribute>(attribute => attribute.Id == value.Id)
+                );
+
+
+            foreach (var item in values)
+            {
+                item.AttibuteValue = dic[item.Id];
+            }
+
+            this._ssuIssueExtendValueRep.Entities.UpdateRange(values);
+            await this._ssuIssueExtendValueRep.Context.SaveChangesAsync();
+        }
     }
 }
