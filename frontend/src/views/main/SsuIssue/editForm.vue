@@ -13,77 +13,77 @@
           <a-input placeholder="请输入问题简述" v-decorator="['title', {rules: [{required: true, message: '请输入问题简述！'}]}]" />
         </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入项目编号" style="width: 100%" v-decorator="['projectId', {rules: [{required: true, message: '请输入项目编号！'}]}]" />
+          <a-input-number placeholder="请输入项目编号" style="width: 100%" v-decorator="['projectId', {rules: [{enable:false,required: true, message: '请输入项目编号！'}]}]" />
         </a-form-item>
         <a-form-item label="产品编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入产品编号" style="width: 100%" v-decorator="['productId', {rules: [{required: true, message: '请输入产品编号！'}]}]" />
+          <a-input-number placeholder="请输入产品编号" style="width: 100%" v-decorator="['productId', {rules: [{readonly:true,required: true, message: '请输入产品编号！'}]}]" />
         </a-form-item>
         <a-form-item label="问题模块" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题模块" v-decorator="['module', {rules: [{ required: true, message: '请选择问题模块！' }]}]">
-            <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+          <a-select style="width: 100%" placeholder="请选择问题模块" default-value="1" v-decorator="['module', {rules: [{readonly:true, required: true, message: '请选择问题模块！' }]}]">
+            <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code" >{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="问题性质" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题性质" v-decorator="['consequence', {rules: [{ required: true, message: '请选择问题性质！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择问题性质" v-decorator="['consequence', {rules: [{readonly:true, required: true, message: '请选择问题性质！' }]}]">
             <a-select-option v-for="(item,index) in consequenceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="问题分类" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题分类" v-decorator="['issueClassification', {rules: [{ required: true, message: '请选择问题分类！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择问题分类" v-decorator="['issueClassification', {rules: [{readonly:true, required: true, message: '请选择问题分类！' }]}]">
             <a-select-option v-for="(item,index) in issueClassificationData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="问题来源" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题来源" v-decorator="['source', {rules: [{ required: true, message: '请选择问题来源！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择问题来源" v-decorator="['source', {rules: [{readonly:true, required: true, message: '请选择问题来源！' }]}]">
             <a-select-option v-for="(item,index) in sourceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="问题状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题状态" v-decorator="['status', {rules: [{ required: true, message: '请选择问题状态！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择问题状态" v-decorator="['status', {rules: [{readonly:true, required: true, message: '请选择问题状态！' }]}]">
             <a-select-option v-for="(item,index) in statusData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="提出人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input-number placeholder="请输入提出人" style="width: 100%" v-decorator="['creatorId']" />
         </a-form-item>
-        <a-form-item label="提出日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择提出日期" v-decorator="['createTime']" @change="onChangecreateTime"/>
-        </a-form-item>
-        <a-form-item label="关闭日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择关闭日期" v-decorator="['closeTime']" @change="onChangecloseTime"/>
-        </a-form-item>
+<!--        <a-form-item label="提出日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
+<!--          <a-date-picker style="width: 100%" placeholder="请选择提出日期" v-decorator="['createTime']" @change="onChangecreateTime"/>-->
+<!--        </a-form-item>-->
+<!--        <a-form-item label="关闭日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
+<!--          <a-date-picker style="width: 100%" placeholder="请选择关闭日期" v-decorator="['closeTime']" @change="onChangecloseTime"/>-->
+<!--        </a-form-item>-->
         <a-form-item label="发现人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入发现人" style="width: 100%" v-decorator="['discover']" />
+          <a-input-number placeholder="请输入发现人" style="width: 100%" v-decorator="['discover',{rules: [{readonly:true}]}]" />
         </a-form-item>
         <a-form-item label="发现日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择发现日期" v-decorator="['discoverTime']" @change="onChangediscoverTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择发现日期" v-decorator="['discoverTime',{rules: [{readonly:true}]}]" @change="onChangediscoverTime"/>
         </a-form-item>
-        <a-form-item label="分发人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher']" />
+        <a-form-item label="责任人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher',{rules: [{readonly:true}]}]" />
         </a-form-item>
-        <a-form-item label="分发日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择分发日期" v-decorator="['dispatchTime']" @change="onChangedispatchTime"/>
-        </a-form-item>
+<!--        <a-form-item label="分发日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
+<!--          <a-date-picker style="width: 100%" placeholder="请选择分发日期" v-decorator="['dispatchTime']" @change="onChangedispatchTime"/>-->
+<!--        </a-form-item>-->
         <a-form-item label="预计完成日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择预计完成日期" v-decorator="['forecastSolveTime']" @change="onChangeforecastSolveTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择预计完成日期" v-decorator="['forecastSolveTime',{rules: [{readonly:true}]}]" @change="onChangeforecastSolveTime"/>
         </a-form-item>
         <a-form-item label="被抄送人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入被抄送人" style="width: 100%" v-decorator="['cC']" />
+          <a-input-number placeholder="请输入被抄送人" style="width: 100%" v-decorator="['cC',{rules: [{readonly:true}]}]" />
         </a-form-item>
         <a-form-item label="解决人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入解决人" style="width: 100%" v-decorator="['executor']" />
+          <a-input-number placeholder="请输入解决人" style="width: 100%" v-decorator="['executor',{rules: [{readonly:true}]}]" />
         </a-form-item>
         <a-form-item label="解决日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime']" @change="onChangesolveTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime',{rules: [{readonly:true}]}]" @change="onChangesolveTime"/>
         </a-form-item>
         <a-form-item label="验证人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入验证人" style="width: 100%" v-decorator="['verifier']" />
+          <a-input-number placeholder="请输入验证人" style="width: 100%" v-decorator="['verifier',{rules: [{readonly:true}]}]" />
         </a-form-item>
         <a-form-item label="验证地点" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace']" />
+          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace',{rules: [{readonly:true}]}]" />
         </a-form-item>
         <a-form-item label="验证日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择验证日期" v-decorator="['validateTime']" @change="onChangevalidateTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择验证日期" v-decorator="['validateTime',{rules: [{readonly:true}]}]" @change="onChangevalidateTime"/>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -93,7 +93,8 @@
 <script>
   import moment from 'moment'
   import {
-    SsuIssueEdit
+    SsuIssueEdit,
+    SsuIssueDetail
   } from '@/api/modular/main/SsuIssueManage'
   export default {
     data () {
@@ -140,6 +141,21 @@
         this.sourceData = sourceOption.filters['dictData']('issue_source')
         const statusOption = this.$options
         this.statusData = statusOption.filters['dictData']('isssue_status')
+
+        SsuIssueDetail(this.record).then((res) => {
+          if (res.success) {
+            this.$message.success('获取详情成功')
+            this.confirmLoading = false
+            this.$emit('ok', this.record)
+
+            // this.handleCancel()
+          } else {
+            this.$message.error('获取问题' + this.record.title + '详情失败：' + JSON.stringify(res.message))
+          }
+        }).finally((res) => {
+          this.confirmLoading = false
+        })
+
         setTimeout(() => {
           this.form.setFieldsValue(
             {
@@ -162,6 +178,7 @@
             }
           )
         }, 100)
+
         this.form.getFieldDecorator('createTime', { initialValue: moment(record.createTime, 'YYYY-MM-DD') })
         this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')
         this.form.getFieldDecorator('closeTime', { initialValue: moment(record.closeTime, 'YYYY-MM-DD') })

@@ -42,31 +42,31 @@
         /// <summary>
         /// 发现人
         /// </summary>
-        public virtual long Discover { get; set; }
+        public virtual long? Discover { get; set; }
 
         /// <summary>
         /// 发现日期
         /// </summary>
-        public virtual DateTime DiscoverTime { get; set; }
+        public virtual DateTime? DiscoverTime { get; set; }
 
         /// <summary>
         /// 问题状态
         /// </summary>
-        public virtual QMS.Core.Enum.EnumIssueStatus Status { get; set; }
+        public virtual QMS.Core.Enum.EnumIssueStatus? Status { get; set; }
 
         /// <summary>
         /// 提出人
         /// </summary>
-        public virtual long CreatorId { get; set; }
+        public virtual long? CreatorId { get; set; }
 
         /// <summary>
         /// 提出日期
         /// </summary>
-        public virtual DateTime CreateTime { get; set; }
+        public virtual DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 被抄送人
         /// </summary>
-        public virtual long CC { get; set; }
+        public virtual long? CC { get; set; }
     }
 }

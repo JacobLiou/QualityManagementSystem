@@ -1,4 +1,6 @@
-﻿namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
+﻿using Furion.Extras.Admin.NET;
+
+namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
 {
     public class ValidateCommon
     {
@@ -25,6 +27,8 @@
         /// <summary>
         /// 验证日期
         /// </summary>
-        public DateTime ValidateTime { get; set; }
+        public DateTime? ValidateTime { get; set; }
+
+        public YesOrNot PassResult { get; set; }
     }
 }

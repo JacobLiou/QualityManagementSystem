@@ -4,18 +4,6 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
 {
     public class OutputDetailIssue : BaseId
     {
-        //public OutputDetailIssue(SsuIssueDetail model)
-        //{
-        //    base.Id = model.Id;
-        //    this.SolveVersion = model.SolveVersion;
-        //    this.Result = model.Result;
-        //    this.Batch = model.Batch;
-        //    this.Count = model.Count;
-        //    this.Comment = model.Comment;
-        //    this.Description = model.Description;
-        //    this.ExtendAttribute = model.ExtendAttribute;
-        //}
-
         public string SolveVersion { get; set; }
         public string Result { get; set; }
         public string Batch { get; set; }
@@ -32,5 +20,9 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         /// ]
         /// </summary>
         public string ExtendAttribute { get; set; }
+
+        public string Measures { get; set; }
+        public string HangupReason { get; set; }
+        public string Reason { get; set; }
     }
 }

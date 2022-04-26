@@ -28,17 +28,8 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        Task<PageResult<OutputGeneralIssue>> PageWithGeneralCondition([FromQuery] BaseQueryModel input);
-        /// <summary>
-        /// 基础条件 + 创建者
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        Task<PageResult<OutputGeneralIssue>> PageByCreator([FromQuery] QueryListByCreator input);
-        Task<PageResult<OutputGeneralIssue>> PageByDispatcher([FromQuery] QueryListByDispatcher input);
-        Task<PageResult<OutputGeneralIssue>> PageByExector([FromQuery] QueryListByExecutor input);
-        Task<PageResult<OutputGeneralIssue>> PageBySolved([FromQuery] QueryListInSolved input);
-        Task<PageResult<OutputGeneralIssue>> PageByUnSolved([FromQuery] QueryListInUnSolve input);
+        Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input);
 
+        Task Export([FromQuery] BaseQueryModel input);
     }
 }

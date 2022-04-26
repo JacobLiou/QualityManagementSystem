@@ -1,6 +1,19 @@
 ﻿import { axios } from '@/utils/request'
 
 /**
+ * 查询问题详情
+ *
+ * @author licong
+ */
+export function SsuIssueDetail (parameter) {
+  return axios({
+    url: '/SsuIssue/detail',
+    method: 'get',
+    params: parameter
+  })
+}
+
+/**
  * 查询问题记录
  *
  * @author licong
@@ -47,6 +60,71 @@ export function SsuIssueAdd (parameter) {
 export function SsuIssueEdit (parameter) {
   return axios({
     url: '/SsuIssue/edit',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 执行问题记录
+ *
+ * @author licong
+ */
+export function SsuIssueExecute (parameter) {
+  return axios({
+    url: '/SsuIssue/execute',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 验证问题
+ *
+ * @author licong
+ */
+export function SsuIssueValidate (parameter) {
+  return axios({
+    url: '/SsuIssue/validate',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 挂起问题
+ *
+ * @author licong
+ */
+export function SsuIssueHangup (parameter) {
+  return axios({
+    url: '/SsuIssue/hangup',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 重分派问题
+ *
+ * @author licong
+ */
+export function SsuIssueRedispatch (parameter) {
+  return axios({
+    url: '/SsuIssue/redispatch',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 数据导出
+ *
+ * @author licong
+ */
+export function SsuIssueExport (parameter) {
+  return axios({
+    url: '/SsuIssue/export',
     method: 'post',
     data: parameter
   })

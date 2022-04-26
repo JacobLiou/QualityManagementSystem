@@ -35,8 +35,7 @@
           :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
         >
           <div slot="operator" v-if="hasPerm('codeGenerate:add')">
-            <a-button type="primary" v-if="hasPerm('codeGenerate:add')" icon="plus" @click="$refs.addForm.add()"
-              >新增</a-button
+            <a-button type="primary" v-if="hasPerm('codeGenerate:add')" icon="plus" @click="$refs.addForm.add()">新增</a-button
             >
           </div>
           <span slot="databaseName" slot-scope="text">

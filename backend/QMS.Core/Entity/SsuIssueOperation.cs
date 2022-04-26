@@ -26,6 +26,10 @@ namespace QMS.Core.Entity
         [MaxLength(200)]
         public EnumIssueOperationType OperationTypeId { get; set; }
 
+        [Comment("操作人")]
+        [MaxLength(50)]
+        public string OperatorName { get; set; }
+
         [Comment("内容")]
         public string Content { get; set; }
 

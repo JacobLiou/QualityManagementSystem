@@ -21,5 +21,8 @@ namespace QMS.Core.Enum
 
         [Description("挂起")]
         HangUp,
+
+        [Description("编辑")]
+        Edit,
     }
 }

@@ -8,10 +8,19 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         public long ProjectId { get; set; }
         public EnumModule? Module { get; set; }
         public EnumConsequence? Consequence { get; set; }
-        public EnumIssueStatus? Status { get; set; }
+        public virtual EnumIssueStatus? Status { get; set; }
         public string KeyWord { get; set; }
 
-        public int PageNo { get; set; } = 1;
-        public int PageSize { get; set; } = 20;
+        public EnumQueryCondition QueryCondition { get; set; }
+    }
+
+    public enum EnumQueryCondition
+    {
+        General,
+        Creator,
+        Dispatcher,
+        Executor,
+        Solved,
+        Unsolve
     }
 }

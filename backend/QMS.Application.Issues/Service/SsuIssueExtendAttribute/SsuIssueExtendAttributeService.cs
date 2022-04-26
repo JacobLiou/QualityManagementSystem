@@ -7,6 +7,7 @@ using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Application.Issues.Field;
+using QMS.Application.Issues.Helper;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -22,11 +23,15 @@ namespace QMS.Application.Issues
     {
         private readonly IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> _ssuIssueExtendAttributeRep;
 
+        private readonly IRepository<SsuIssueOperation, IssuesDbContextLocator> _ssuIssueOperateRep;
+
         public SsuIssueExtendAttributeService(
-            IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> ssuIssueExtendAttributeRep
+            IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> ssuIssueExtendAttributeRep,
+            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperateRep
         )
         {
             _ssuIssueExtendAttributeRep = ssuIssueExtendAttributeRep;
+            _ssuIssueOperateRep = ssuIssueOperateRep;
         }
 
         /// <summary>
@@ -64,6 +69,15 @@ namespace QMS.Application.Issues
         {
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
             await _ssuIssueExtendAttributeRep.InsertAsync(ssuIssueExtendAttribute, true);
+
+            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            {
+                //IssueId = input.Id,
+                OperationTypeId = Core.Enum.EnumIssueOperationType.New,
+                OperationTime = DateTime.Now,
+                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
+                Content = $"新增详细问题字段【{input.AttributeCode}】"
+            }, true);
         }
 
         /// <summary>
@@ -76,6 +90,15 @@ namespace QMS.Application.Issues
         {
             var ssuIssueExtendAttribute = await _ssuIssueExtendAttributeRep.FirstOrDefaultAsync(u => u.Id == input.Id);
             await _ssuIssueExtendAttributeRep.DeleteAsync(ssuIssueExtendAttribute);
+
+            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            {
+                //IssueId = input.Id,
+                OperationTypeId = Core.Enum.EnumIssueOperationType.Edit,
+                OperationTime = DateTime.Now,
+                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
+                Content = $"删除详细问题字段【{ssuIssueExtendAttribute.AttributeCode}】"
+            }, true);
         }
 
         /// <summary>
@@ -91,6 +114,15 @@ namespace QMS.Application.Issues
 
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
             await _ssuIssueExtendAttributeRep.UpdateAsync(ssuIssueExtendAttribute, ignoreNullValues: true);
+
+            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            {
+                //IssueId = input.Id,
+                OperationTypeId = Core.Enum.EnumIssueOperationType.Edit,
+                OperationTime = DateTime.Now,
+                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
+                Content = $"更新详细问题字段【{ssuIssueExtendAttribute.AttributeCode}】"
+            }, true);
         }
 
         [HttpPost($"/SsuIssueExtendAttribute/update-field-struct")]

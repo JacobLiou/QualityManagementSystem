@@ -20,6 +20,6 @@
         /// <summary>
         /// 解决日期
         /// </summary>
-        public DateTime SolveTime { get; set; }
+        public DateTime? SolveTime { get; set; }
     }
 }

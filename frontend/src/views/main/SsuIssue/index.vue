@@ -5,33 +5,39 @@
       <div class="table-page-search-wrapper" v-if="hasPerm('SsuIssue:page')">
         <a-form layout="inline">
           <a-row :gutter="48">
-            <a-col :md="8" :sm="24">
-              <a-form-item label="问题简述">
-                <a-input v-model="queryParam.title" allow-clear placeholder="请输入问题简述"/>
-              </a-form-item>
-            </a-col><a-col :md="8" :sm="24">
+            <a-col :md="8" :sm="12">
               <a-form-item label="项目编号">
                 <a-input-number v-model="queryParam.projectId" style="width: 100%" allow-clear placeholder="请输入项目编号"/>
               </a-form-item>
-            </a-col><template v-if="advanced"><a-col :md="8" :sm="24">
+            </a-col>
+            <template v-if="advanced">
+              <a-col :md="8" :sm="12">
                 <a-form-item label="问题模块">
                   <a-select :allowClear="true" style="width: 100%" v-model="queryParam.module" placeholder="请选择问题模块">
                     <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
                   </a-select>
                 </a-form-item>
-              </a-col><a-col :md="8" :sm="24">
+              </a-col>
+              <a-col :md="8" :sm="24">
                 <a-form-item label="问题性质">
                   <a-select :allowClear="true" style="width: 100%" v-model="queryParam.consequence" placeholder="请选择问题性质">
                     <a-select-option v-for="(item,index) in consequenceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
                   </a-select>
                 </a-form-item>
-              </a-col><a-col :md="8" :sm="24">
+              </a-col>
+              <a-col :md="8" :sm="24">
                 <a-form-item label="问题状态">
                   <a-select :allowClear="true" style="width: 100%" v-model="queryParam.status" placeholder="请选择问题状态">
                     <a-select-option v-for="(item,index) in statusData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
                   </a-select>
                 </a-form-item>
-              </a-col>            </template>
+              </a-col>
+            </template>
+            <a-col :md="8" :sm="24">
+              <a-form-item label="关键词">
+                <a-input v-model="queryParam.title" allow-clear placeholder="请输入问题关键词"/>
+              </a-form-item>
+            </a-col>
 
             <a-col :md="8" :sm="24" >
               <span class="table-page-search-submitButtons">
@@ -57,6 +63,19 @@
         :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssue:add')" >
           <a-button type="primary" v-if="hasPerm('SsuIssue:add')" icon="plus" @click="$refs.addForm.add()">新增问题记录</a-button>
+          <a :class='{"active": queryBy == 0}' @click="query(0)">所有</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 1}' @click="query(1)">由我创建</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 2}' @click="query(2)">指派给我</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 3}' @click="query(3)">由我解决</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 4}' @click="query(4)">待验证</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 5}' @click="query(5)">未解决</a>
+
+          <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">导出</a-button>
         </template>
         <span slot="modulescopedSlots" slot-scope="text">
           {{ 'issue_module' | dictType(text) }}
@@ -74,6 +93,18 @@
           {{ 'isssue_status' | dictType(text) }}
         </span>
         <span slot="action" slot-scope="text, record">
+          <a v-if="hasPerm('SsuIssue:copy')" @click="$refs.addForm.copy(record)">复制</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:copy')"/>
+          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.dispatchForm.edit(record)">分发</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:execute')" @click="$refs.executeForm.edit(record)">解决</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:validate')" @click="$refs.validateForm.edit(record)">验证</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.redispatchForm.edit(record)">转交</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:hangup')" @click="$refs.hangupForm.edit(record)">挂起</a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
           <a v-if="hasPerm('SsuIssue:edit')" @click="$refs.editForm.edit(record)">编辑</a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
           <a-popconfirm v-if="hasPerm('SsuIssue:delete')" placement="topRight" title="确认删除？" @confirm="() => SsuIssueDelete(record)">
@@ -88,20 +119,59 @@
 </template>
 <script>
   import { STable } from '@/components'
-  import { SsuIssuePage, SsuIssueDelete } from '@/api/modular/main/SsuIssueManage'
+  import {
+    SsuIssuePage,
+    SsuIssueDelete, SsuIssueExport
+  } from '@/api/modular/main/SsuIssueManage'
+  import executeForm from './executeForm.vue'
+  import validateForm from './validateForm.vue'
+  import hangupForm from './hangupForm.vue'
+  import dispatchForm from './dispatchForm.vue'
+  import redispatchForm from './redispatchForm.vue'
+
   import addForm from './addForm.vue'
   import editForm from './editForm.vue'
   export default {
     components: {
       STable,
       addForm,
-      editForm
+      editForm,
+      executeForm,
+      dispatchForm,
+      validateForm,
+      hangupForm,
+      redispatchForm
     },
     data () {
       return {
+        queryBy: '',
         advanced: false, // 高级搜索 展开/关闭
         queryParam: {},
         columns: [
+          {
+            title: '序号',
+            align: 'center',
+            sorter: true,
+            dataIndex: 'id'
+          },
+          {
+            title: '标题',
+            align: 'center',
+            sorter: true,
+            dataIndex: 'title'
+          },
+          {
+            title: '项目名',
+            align: 'center',
+            sorter: true,
+            dataIndex: 'projectName'
+          },
+          {
+            title: '产品名',
+            align: 'center',
+            sorter: true,
+            dataIndex: 'productName'
+          },
           {
             title: '问题模块',
             align: 'center',
@@ -141,7 +211,7 @@ sorter: true,
             title: '提出人',
             align: 'center',
 sorter: true,
-            dataIndex: 'creatorId'
+            dataIndex: 'creator'
           },
           {
             title: '提出日期',
@@ -189,7 +259,7 @@ sorter: true,
             title: '被抄送人',
             align: 'center',
 sorter: true,
-            dataIndex: 'cC'
+            dataIndex: 'copyTo'
           },
           {
             title: '解决人',
@@ -225,6 +295,9 @@ sorter: true,
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
         // 加载数据方法 必须为 Promise 对象
         loadData: parameter => {
+          // 为queryParam添加queryCondition字段
+          // this.queryParam.queryCondition = index
+
           return SsuIssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
             return res.data
           })
@@ -253,6 +326,13 @@ sorter: true,
       this.statusData = statusOption.filters['dictData']('isssue_status')
     },
     methods: {
+      query(index) {
+        this.queryParam.QueryCondition = index
+        this.queryBy = index
+        this.$refs.table.refresh(true)
+      },
+      exportData() {
+      },
       /**
        * 查询参数组装
        */
@@ -290,4 +370,14 @@ sorter: true,
   button {
     margin-right: 8px;
   }
+
+  .table-operator a {
+    margin: 0px 5px;
+  }
+
+  .table-operator a.active {
+    background: #dddddd;
+    padding: 5px;
+  }
+
 </style>

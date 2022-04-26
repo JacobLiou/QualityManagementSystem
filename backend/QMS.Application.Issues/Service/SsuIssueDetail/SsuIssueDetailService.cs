@@ -123,6 +123,7 @@ namespace QMS.Application.Issues
             return await _ssuIssueDetailRep.DetachedEntities.ProjectToType<SsuIssueDetailOutput>().ToListAsync();
         }
 
+
         [HttpPost($"/SsuIssueDetail/add-field-value")]
         public async Task AddFieldValue(long IssueId, List<FieldValue> fieldValues)
         {
