@@ -20,7 +20,7 @@ namespace QMS.Core.Enum
         SMT_目检,
 
         [Description("DIP-前加工")]
-        DIP_前加工 = 0,
+        DIP_前加工,
 
         [Description("DIP-插件")]
         DIP_插件,

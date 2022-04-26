@@ -18,9 +18,9 @@ namespace QMS.Core.Entity
         public SsuIssueExtendAttribute IssueExtendAttribute { get; set; }
 
         [Comment("问题编号")]
-        public long IssueId { get; set; }
+        public long IssueNum { get; set; }
 
-        [ForeignKey(nameof(IssueId))]
+        [ForeignKey(nameof(IssueNum))]
         [NotMapped]
         public SsuIssue Issue { get; set; }
 
@@ -31,7 +31,7 @@ namespace QMS.Core.Entity
 
         public void Configure(EntityTypeBuilder<SsuIssueExtendAttributeValue> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
-            entityBuilder.HasKey(entity => new { entity.Id, entity.IssueId });
+            entityBuilder.HasKey(entity => new { entity.Id, entity.IssueNum });
         }
     }
 }

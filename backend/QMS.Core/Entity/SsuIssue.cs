@@ -105,9 +105,9 @@ namespace QMS.Core.Entity
             //    .WithOne(i => i.Issue)
             //    .HasForeignKey(i => i.IssueId);
 
-            //entityBuilder.HasOne(i=>i.SsuIssueDetail)
-            //    .WithOne(i => i.Issue)
-            //    .HasForeignKey<SsuIssueDetail>(i=>i.Id);
+            entityBuilder.HasOne(i => i.SsuIssueDetail)
+                .WithOne(i => i.Issue)
+                .HasForeignKey<SsuIssueDetail>(i => i.Id);
         }
 
         [NotMapped]
