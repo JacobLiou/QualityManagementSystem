@@ -24,10 +24,10 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         [Required]
         public string ProjectName { get; set; }
 
-        [Comment("项目编号")]
-        [MaxLength(200)]
-        [Required]
-        public string ProjectCode { get; set; }
+        //[Comment("项目编号")]
+        //[MaxLength(200)]
+        //[Required]
+        //public string ProjectCode { get; set; }
 
         [Comment("负责人")]
         public long DirectorId { get; set; }

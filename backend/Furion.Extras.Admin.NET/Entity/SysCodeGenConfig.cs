@@ -35,7 +35,7 @@ namespace Furion.Extras.Admin.NET
         /// .NET数据类型
         /// </summary>
         [Comment(".NET数据类型")]
-        [MaxLength(50)]
+        [MaxLength(100)]
         public string NetType { get; set; }
 
         /// <summary>
