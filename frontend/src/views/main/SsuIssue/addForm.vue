@@ -15,10 +15,14 @@
           <a-input placeholder="请输入问题详情" v-decorator="['description', {rules: [{required: true, message: '请输入问题详情！'}]}]" />
         </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入项目编号" style="width: 100%" v-decorator="['projectId', {rules: [{required: true, message: '请输入项目编号！'}]}]" />
+            <a-select :allowClear="true" placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
+              <a-select-option v-for="(item,index) in projectData" :key="index" :value="item.id">{{ item.projectName }}</a-select-option>
+            </a-select>
         </a-form-item>
         <a-form-item label="产品编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入产品编号" style="width: 100%" v-decorator="['productId', {rules: [{required: true, message: '请输入产品编号！'}]}]" />
+          <a-select :allowClear="true" placeholder="请选择产品" style="width: 100%" v-decorator="['productId', {rules: [{ required: true, message: '请选择产品！' }]}]">
+            <a-select-option v-for="(item,index) in productData" :key="index" :value="item.id">{{ item.productName }}</a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="问题模块" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-select style="width: 100%" placeholder="请选择问题模块" v-decorator="['module', {rules: [{ required: true, message: '请选择问题模块！' }]}]">
@@ -36,7 +40,18 @@
           </a-select>
         </a-form-item>
         <a-form-item label="分发人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher', {rules: [{required: true, message: '请输入指定的分发人！'}]}]" />
+<!--          <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher', {rules: [{required: true, message: '请输入指定的分发人！'}]}]" />-->
+
+          <a-tree-select
+            v-decorator="['dispatcher', {rules: [{ required: true, message: '请选择指定的分发人' }]}]"
+            style="width: 100%"
+            :dropdownStyle="{ maxHeight: '300px', overflow: 'auto' }"
+            :treeData="orgTree"
+            placeholder="请选择人员"
+            treeDefaultExpandAll
+          >
+            <span slot="title" slot-scope="{ id }">{{ id }}</span>
+          </a-tree-select>
         </a-form-item>
 
 <!--        <a-form-item label="问题状态" :labelCol="labelCol" :wrapperCol="wrapperCol">-->
@@ -100,6 +115,15 @@
   } from '@/api/modular/main/SsuIssueManage'
   import moment from 'moment'
 
+  import {
+    SsuProjectList
+  } from '@/api/modular/main/SsuProjectManage'
+
+  import {
+    SsuProductList
+  } from '@/api/modular/main/SsuProductManage'
+  import { sysUserOrgTree } from '@/api/modular/system/userManage'
+
   export default {
     data () {
       return {
@@ -126,12 +150,42 @@
         visible: false,
         confirmLoading: false,
         form: this.$form.createForm(this),
-        description: ''
+        projectData: [],
+        productData: [],
+        orgTree: []
       }
     },
+    created () {
+      SsuProjectList().then((res) => {
+        if (res.success) {
+          this.projectData = res.data
+        } else {
+          this.$message.error('项目列表读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+
+      SsuProductList().then((res) => {
+        if (res.success) {
+          this.productData = res.data
+        } else {
+          this.$message.error('产品列表读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+
+      this.getOrgData()
+    },
     methods: {
-      // 初始化方法
-      add (record) {
+      getOrgData () {
+        sysUserOrgTree().then((res) => {
+          this.orgTree = res.data
+          console.log(res.data)
+        })
+      },
+      init() {
         this.visible = true
         const moduleOption = this.$options
         this.moduleData = moduleOption.filters['dictData']('issue_module')
@@ -144,8 +198,16 @@
         const statusOption = this.$options
         this.statusData = statusOption.filters['dictData']('isssue_status')
       },
+      // 初始化方法
+      add (record) {
+        this.init()
+
+        this.form.resetFields()
+
+        this.discoverTime = this.discoverTimeDateString
+      },
       copy (record) {
-        this.add(record)
+        this.init()
 
         setTimeout(() => {
           this.form.setFieldsValue(
@@ -165,6 +227,7 @@
               // executor: record.executor,
               // verifier: record.verifier,
               // verifierPlace: record.verifierPlace
+              // description: this.description
             }
           )
         }, 100)
@@ -203,11 +266,6 @@
             values.forecastSolveTime = this.forecastSolveTimeDateString
             values.solveTime = this.solveTimeDateString
             values.validateTime = this.validateTimeDateString
-
-            values.description = this.description
-
-            console.log('详情：' + this.description)
-            console.log('描述：' + values.description)
 
             SsuIssueAdd(values).then((res) => {
               if (res.success) {

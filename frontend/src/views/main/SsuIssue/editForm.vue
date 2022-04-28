@@ -12,11 +12,18 @@
         <a-form-item label="问题简述" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input placeholder="请输入问题简述" v-decorator="['title', {rules: [{required: true, message: '请输入问题简述！'}]}]" />
         </a-form-item>
+        <a-form-item label="问题详情" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-input placeholder="请输入问题详情" v-decorator="['description', {rules: [{required: true, message: '请输入问题详情！'}]}]" />
+        </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入项目编号" style="width: 100%" v-decorator="['projectId', {rules: [{enable:false,required: true, message: '请输入项目编号！'}]}]" />
+          <a-select :allowClear="true" placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
+            <a-select-option v-for="(item,index) in projectData" :key="index" :value="item.id">{{ item.projectName }}</a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="产品编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input-number placeholder="请输入产品编号" style="width: 100%" v-decorator="['productId', {rules: [{readonly:true,required: true, message: '请输入产品编号！'}]}]" />
+          <a-select :allowClear="true" placeholder="请选择产品" style="width: 100%" v-decorator="['productId', {rules: [{ required: true, message: '请选择产品！' }]}]">
+            <a-select-option v-for="(item,index) in productData" :key="index" :value="item.id">{{ item.productName }}</a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="问题模块" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-select style="width: 100%" placeholder="请选择问题模块" default-value="1" v-decorator="['module', {rules: [{readonly:true, required: true, message: '请选择问题模块！' }]}]">
@@ -96,6 +103,9 @@
     SsuIssueEdit,
     SsuIssueDetail
   } from '@/api/modular/main/SsuIssueManage'
+  import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
+  import { SsuProductList } from '@/api/modular/main/SsuProductManage'
+
   export default {
     data () {
       return {
@@ -122,8 +132,31 @@
         validateTimeDateString: '',
         visible: false,
         confirmLoading: false,
-        form: this.$form.createForm(this)
+        form: this.$form.createForm(this),
+        projectData: [],
+        productData: []
       }
+    },
+    created () {
+      SsuProjectList().then((res) => {
+        if (res.success) {
+          this.projectData = res.data
+        } else {
+          this.$message.error('项目列表读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+
+      SsuProductList().then((res) => {
+        if (res.success) {
+          this.productData = res.data
+        } else {
+          this.$message.error('产品列表读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
     },
     methods: {
       moment,
@@ -146,7 +179,18 @@
           if (res.success) {
             this.$message.success('获取详情成功')
             this.confirmLoading = false
-            this.$emit('ok', this.record)
+
+            const data = res.data
+            this.record.solveVersion = data.solveVersion
+            this.record.result = data.record
+            this.record.batch = data.batch
+            this.record.count = data.count
+            this.record.comment = data.comment
+            this.record.description = data.description
+            this.record.extendAttribute = data.extendAttribute
+            this.record.measures = data.measures
+            this.record.hangupReason = data.hangupReason
+            this.record.reason = data.reason
 
             // this.handleCancel()
           } else {

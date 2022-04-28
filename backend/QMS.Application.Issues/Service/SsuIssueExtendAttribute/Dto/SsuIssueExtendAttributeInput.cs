@@ -13,7 +13,7 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 模块编号
         /// </summary>
-        public virtual QMS.Core.Enum.EnumModule Module { get; set; }
+        public virtual QMS.Core.Enum.EnumModule? Module { get; set; }
         
         /// <summary>
         /// 字段名
@@ -59,6 +59,30 @@ namespace QMS.Application.Issues
 
     public class AddSsuIssueExtendAttributeInput : SsuIssueExtendAttributeInput
     {
+        /// <summary>
+        /// 模块编号
+        /// </summary>
+        [Required(ErrorMessage = "模块编号不能为空")]
+        public override QMS.Core.Enum.EnumModule? Module { get; set; }
+        
+        /// <summary>
+        /// 字段名
+        /// </summary>
+        [Required(ErrorMessage = "字段名不能为空")]
+        public override string AttibuteName { get; set; }
+        
+        /// <summary>
+        /// 字段代码
+        /// </summary>
+        [Required(ErrorMessage = "字段代码不能为空")]
+        public override string AttributeCode { get; set; }
+        
+        /// <summary>
+        /// 字段值类型
+        /// </summary>
+        [Required(ErrorMessage = "字段值类型不能为空")]
+        public override string ValueType { get; set; }
+        
     }
 
     public class DeleteSsuIssueExtendAttributeInput : BaseId

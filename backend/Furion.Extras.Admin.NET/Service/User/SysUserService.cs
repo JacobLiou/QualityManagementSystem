@@ -330,8 +330,10 @@ namespace Furion.Extras.Admin.NET.Service
         {
             var users = _sysUserRep.DetachedEntities.AsQueryable();
 
+            var list = users.ToList();
+
             var memoryStream = new MemoryStream();
-            memoryStream.SaveAs(users);
+            memoryStream.SaveAs(list);
             memoryStream.Seek(0, SeekOrigin.Begin);
             return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             {
@@ -451,6 +453,57 @@ namespace Furion.Extras.Admin.NET.Service
                 if (dataScopes == null || (orgId != null && !dataScopes.Any(u => u == long.Parse(orgId))))
                     throw Oops.Oh(ErrorCode.D1013);
             }
+        }
+
+        [HttpGet("/sysUser/tree")]
+        public async Task<dynamic> GetOrgUserTree()
+        {
+            var dataScopeList = new List<long>();
+            if (!CurrentUserInfo.IsSuperAdmin)
+            {
+                var dataScopes = await this.GetUserDataScopeIdList();
+                if (dataScopes.Count < 1)
+                    return dataScopeList;
+                dataScopeList = GetDataScopeList(dataScopes);
+            }
+
+            IRepository<SysOrg> repository = App.GetService<IRepository<SysOrg>>();
+
+            var orgs = await repository.DetachedEntities.Where(dataScopeList.Count > 0, u => dataScopeList.Contains(u.Id))
+                                                        .Where(u => u.Status == CommonStatus.ENABLE)
+                                                        .OrderBy(u => u.Sort)
+                                                        .ProjectToType<OrgTreeNode>()
+                                                        .ToListAsync();
+
+            return new TreeBuildUtil<OrgTreeNode>().Build(orgs);
+        }
+
+        private List<long> GetDataScopeList(List<long> dataScopes)
+        {
+            var dataScopeList = new List<long>();
+            // 如果是超级管理员则获取所有组织机构，否则只获取其数据范围的机构数据
+            if (!CurrentUserInfo.IsSuperAdmin)
+            {
+                if (dataScopes.Count < 1)
+                    return dataScopeList;
+
+                IRepository<SysOrg> repository = App.GetService<IRepository<SysOrg>>();
+
+                // 此处获取所有的上级节点，用于构造完整树
+                dataScopes.ForEach(u =>
+                {
+                    var sysOrg = repository.DetachedEntities.FirstOrDefault(c => c.Id == u);
+                    if (sysOrg != null)
+                    {
+                        var parentAndChildIdListWithSelf = sysOrg.Pids.TrimEnd(',').Replace("[", "").Replace("]", "")
+                                                                    .Split(",").Select(u => long.Parse(u)).ToList();
+                        parentAndChildIdListWithSelf.Add(sysOrg.Id);
+                        dataScopeList.AddRange(parentAndChildIdListWithSelf);
+                    }
+                });
+            }
+
+            return dataScopeList;
         }
     }
 }

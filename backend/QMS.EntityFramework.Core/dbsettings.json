@@ -9,9 +9,9 @@
     //"MultiTenantConnection": "HOST=localhost;PORT=5432;DATABASE=Admin.NET_SaaS;PASSWORD=123456;USER ID=postgres;"
 
     //Mysql连接字符串
-    "DefaultConnection": "Data Source=172.16.16.33;Database=Qms;User ID=root;Password=123456;pooling=true;port=3306;sslMode=None;CharSet=utf8;",
-    "IssuesConnection": "Data Source=172.16.16.33;Database=Qms_Issues;User ID=root;Password=123456;pooling=true;port=3306;sslMode=None;CharSet=utf8;",
-    "MultiTenantConnection": "Data Source=./LocalDb/Qms_SaaS.db"
+    //"DefaultConnection": "Data Source=172.16.16.33;Database=Qms;User ID=root;Password=123456;pooling=true;port=3306;sslMode=None;CharSet=utf8;",
+    //"IssuesConnection": "Data Source=172.16.16.33;Database=Qms_Issues;User ID=root;Password=123456;pooling=true;port=3306;sslMode=None;CharSet=utf8;",
+    //"MultiTenantConnection": "Data Source=./LocalDb/Qms_SaaS.db"
 
     //MSSQL连接字符串
     //"DefaultConnection": "Server=localhost;Database=Admin.NET;User=sa;Password=123456;MultipleActiveResultSets=True;",

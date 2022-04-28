@@ -6,11 +6,11 @@ using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
 using QMS.Core;
 using QMS.Core.Entity;
-using QMS.Core.Enum;
 using System.Linq.Dynamic.Core;
 
 namespace QMS.Application.Issues
@@ -18,20 +18,22 @@ namespace QMS.Application.Issues
     /// <summary>
     /// 问题扩展属性服务
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuIssueExtendAttribute", Order = 100)]
+    [ApiDescriptionSettings("问题管理服务", Name = "SsuIssueExtendAttribute", Order = 100)]
     public class SsuIssueExtendAttributeService : ISsuIssueExtendAttributeService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> _ssuIssueExtendAttributeRep;
-
-        private readonly IRepository<SsuIssueOperation, IssuesDbContextLocator> _ssuIssueOperateRep;
+        private readonly IRepository<SsuIssueOperation, IssuesDbContextLocator> _ssuIssueOperationRep;
+        private readonly IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> _ssuIssueExtendAttributeValueRep;
 
         public SsuIssueExtendAttributeService(
             IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> ssuIssueExtendAttributeRep,
-            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperateRep
+            IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> ssuIssueExtendAttributeValueRep,
+            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperationRep
         )
         {
             _ssuIssueExtendAttributeRep = ssuIssueExtendAttributeRep;
-            _ssuIssueOperateRep = ssuIssueOperateRep;
+            _ssuIssueExtendAttributeValueRep = ssuIssueExtendAttributeValueRep;
+            _ssuIssueOperationRep = ssuIssueOperationRep;
         }
 
         /// <summary>
@@ -43,15 +45,10 @@ namespace QMS.Application.Issues
         public async Task<PageResult<SsuIssueExtendAttributeOutput>> Page([FromQuery] SsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttributes = await _ssuIssueExtendAttributeRep.DetachedEntities
-                                     .Where(u => u.Module == input.Module)
-                                     .Where(!string.IsNullOrEmpty(input.AttibuteName), u => u.AttibuteName == input.AttibuteName)
+                                     .Where(input.Module != null, u => u.Module == input.Module)
+                                     .Where(!string.IsNullOrEmpty(input.AttibuteName), u => EF.Functions.Like(u.AttibuteName, $"%{input.AttibuteName.Trim()}%"))
                                      .Where(!string.IsNullOrEmpty(input.AttributeCode), u => u.AttributeCode == input.AttributeCode)
                                      .Where(!string.IsNullOrEmpty(input.ValueType), u => u.ValueType == input.ValueType)
-                                     .Where(u => u.CreatorId == input.CreatorId)
-                                     .Where(u => u.CreateTime == input.CreateTime)
-                                     .Where(u => u.UpdateId == input.UpdateId)
-                                     .Where(u => u.UpdateTime == input.UpdateTime)
-                                     .Where(u => u.Sort == input.Sort)
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuIssueExtendAttributeInput>(input))
                                      .ProjectToType<SsuIssueExtendAttributeOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
@@ -68,16 +65,11 @@ namespace QMS.Application.Issues
         public async Task Add(AddSsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
-            await _ssuIssueExtendAttributeRep.InsertAsync(ssuIssueExtendAttribute, true);
+            ssuIssueExtendAttribute.SetCreate();
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                //IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.New,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = $"新增详细问题字段【{input.AttributeCode}】"
-            }, true);
+            await _ssuIssueExtendAttributeRep.InsertAsync(ssuIssueExtendAttribute);
+
+            await IssueLogger.Log(this._ssuIssueOperationRep, Helper.Helper.GetCurrentUser(), Core.Enum.EnumIssueOperationType.New, JsonConvert.SerializeObject(input));
         }
 
         /// <summary>
@@ -89,16 +81,15 @@ namespace QMS.Application.Issues
         public async Task Delete(DeleteSsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttribute = await _ssuIssueExtendAttributeRep.FirstOrDefaultAsync(u => u.Id == input.Id);
-            await _ssuIssueExtendAttributeRep.DeleteAsync(ssuIssueExtendAttribute);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            if (ssuIssueExtendAttribute != null && !ssuIssueExtendAttribute.IsDeleted)
             {
-                //IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Edit,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = $"删除详细问题字段【{ssuIssueExtendAttribute.AttributeCode}】"
-            }, true);
+                ssuIssueExtendAttribute.SetDelete();
+
+                await _ssuIssueExtendAttributeRep.UpdateAsync(ssuIssueExtendAttribute);
+
+                await IssueLogger.Log(this._ssuIssueOperationRep, Helper.Helper.GetCurrentUser(), Core.Enum.EnumIssueOperationType.Edit, JsonConvert.SerializeObject(input));
+            }
         }
 
         /// <summary>
@@ -113,67 +104,11 @@ namespace QMS.Application.Issues
             if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
+            ssuIssueExtendAttribute.SetUpdate();
+
             await _ssuIssueExtendAttributeRep.UpdateAsync(ssuIssueExtendAttribute, ignoreNullValues: true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                //IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Edit,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = $"更新详细问题字段【{ssuIssueExtendAttribute.AttributeCode}】"
-            }, true);
-        }
-
-        [HttpPost($"/SsuIssueExtendAttribute/update-field-struct")]
-        public void UpdateFieldStruct(long updateId, EnumModule module, List<FieldStruct> fieldStructs)
-        {
-            DateTime now = DateTime.Now;
-
-            var collection = this._ssuIssueExtendAttributeRep.DetachedEntities
-                .Where(attribute => attribute.Module == module)
-                .Where(attribute => fieldStructs.Any(fieldStruct => fieldStruct.FieldCode == attribute.AttributeCode))
-                .ToArray();
-
-            Helper.Helper.Assert(collection != null && collection.Length > 0, "");
-
-            foreach (var item in collection)
-            {
-                foreach (var field in fieldStructs)
-                {
-                    if (field.FieldCode == item.AttributeCode)
-                    {
-                        item.AttibuteName = field.FieldName;
-                    }
-                }
-            }
-
-            this._ssuIssueExtendAttributeRep.Entities.UpdateRange(collection);
-            this._ssuIssueExtendAttributeRep.Context.SaveChangesAsync();
-        }
-
-        [HttpPost($"/SsuIssueExtendAttribute/add-field-struct")]
-        public async Task AddFieldStruct(long creatorId, EnumModule module, List<FieldStruct> fields)
-        {
-            DateTime now = DateTime.Now;
-            IEnumerable<SsuIssueExtendAttribute> attributes =
-                fields.Select<FieldStruct, SsuIssueExtendAttribute>(
-                    fieldStruct =>
-                        new SsuIssueExtendAttribute()
-                        {
-                            AttibuteName = fieldStruct.FieldName,
-                            Module = module,
-                            AttributeCode = fieldStruct.FieldCode,
-                            ValueType = fieldStruct.FiledDataType,
-                            CreateTime = now,
-                            CreatorId = creatorId,
-                            UpdateId = creatorId,
-                            UpdateTime = now
-                        }
-            );
-
-            await this._ssuIssueExtendAttributeRep.Entities.AddRangeAsync(attributes.ToArray());
-            await this._ssuIssueExtendAttributeRep.Context.SaveChangesAsync();
+            await IssueLogger.Log(this._ssuIssueOperationRep, Helper.Helper.GetCurrentUser(), Core.Enum.EnumIssueOperationType.Edit, JsonConvert.SerializeObject(input));
         }
 
         /// <summary>
@@ -198,5 +133,102 @@ namespace QMS.Application.Issues
             return await _ssuIssueExtendAttributeRep.DetachedEntities.ProjectToType<SsuIssueExtendAttributeOutput>().ToListAsync();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public class BatchFieldStruct
+        {
+            public string Operation { get; set; } = "批量增加字段";
+            public List<FieldStruct> List { get; set; }
+        }
+
+        [HttpPost($"/SsuIssueExtendAttribute/batch-add-struct")]
+        public async Task BatchAddFieldStruct(BatchFieldStruct input)
+        {
+            long updateId = Helper.Helper.GetCurrentUser();
+            DateTime now = DateTime.Now;
+            IEnumerable<SsuIssueExtendAttribute> attributes =
+                input.List.Select<FieldStruct, SsuIssueExtendAttribute>(
+                    fieldStruct =>
+                        new SsuIssueExtendAttribute()
+                        {
+                            AttibuteName = fieldStruct.FieldName,
+                            Module = fieldStruct.Module,
+                            AttributeCode = fieldStruct.FieldCode,
+                            ValueType = fieldStruct.FiledDataType,
+                            CreateTime = now,
+                            CreatorId = updateId,
+                            UpdateId = updateId,
+                            UpdateTime = now
+                        }
+            );
+
+            await this._ssuIssueExtendAttributeRep.Entities.AddRangeAsync(attributes.ToArray());
+            await this._ssuIssueExtendAttributeRep.Context.SaveChangesAsync();
+
+            await IssueLogger.Log(this._ssuIssueOperationRep, updateId, Core.Enum.EnumIssueOperationType.New, JsonConvert.SerializeObject(input));
+        }
+
+        [HttpPost($"/SsuIssueExtendAttribute/add-field-value")]
+        public async Task AddFieldValue(long IssueId, List<FieldValue> fieldValues)
+        {
+            DateTime now = DateTime.Now;
+
+            // 找到对应的字段编号
+            var array = this._ssuIssueExtendAttributeRep.DetachedEntities.Where<SsuIssueExtendAttribute>(field =>
+               fieldValues.Any<FieldValue>(value => value.AttributeCode == field.AttributeCode)
+           ).ToArray();
+
+            // 根据字段编号和问题Id插入数据
+            await this._ssuIssueExtendAttributeValueRep.Entities.AddRangeAsync(array.Select<SsuIssueExtendAttribute, SsuIssueExtendAttributeValue>(attribute =>
+                 new SsuIssueExtendAttributeValue()
+                 {
+                     Id = attribute.Id,
+                     IssueNum = IssueId,
+                     AttibuteValue = fieldValues.FirstOrDefault(value => value.AttributeCode == attribute.AttributeCode).Value
+                 })
+             );
+        }
+
+        [HttpPost($"/SsuIssueExtendAttribute/update-field-value")]
+        public async Task UpdateFieldValue(long IssueId, List<FieldValue> fieldValues)
+        {
+            DateTime now = DateTime.Now;
+
+            // 找到对应的字段编号
+            var array = this._ssuIssueExtendAttributeRep.DetachedEntities.Where<SsuIssueExtendAttribute>(field =>
+               fieldValues.Any<FieldValue>(value => value.AttributeCode == field.AttributeCode)
+           ).ToArray();
+
+            Helper.Helper.Assert(array != null && array.Length > 0, "字段都不存在");
+
+            // 收集字段Id和字段值的关系
+            Dictionary<long, string> dic = new Dictionary<long, string>();
+            foreach (var item in array)
+            {
+                foreach (var field in fieldValues)
+                {
+                    if (field.AttributeCode == item.AttributeCode)
+                    {
+                        dic.Add(item.Id, field.Value);
+                    }
+                }
+            }
+
+            var values = this._ssuIssueExtendAttributeValueRep.Entities.Where<SsuIssueExtendAttributeValue>(
+                value =>
+                value.IssueNum == IssueId
+                && array.Any<SsuIssueExtendAttribute>(attribute => attribute.Id == value.Id)
+                );
+
+
+            foreach (var item in values)
+            {
+                item.AttibuteValue = dic[item.Id];
+            }
+
+            this._ssuIssueExtendAttributeValueRep.Entities.UpdateRange(values);
+            await this._ssuIssueExtendAttributeValueRep.Context.SaveChangesAsync();
+        }
     }
 }

@@ -3,11 +3,12 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
-using Furion.FriendlyException;
 using Mapster;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using MiniExcelLibs;
 using QMS.Application.Issues.Helper;
 using QMS.Application.Issues.IssueService.Dto.QueryList;
 using QMS.Application.Issues.Service.SsuIssue.Dto;
@@ -15,21 +16,21 @@ using QMS.Application.Issues.Service.SsuIssue.Dto.Add;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Update;
 using QMS.Core;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 using System.Linq.Dynamic.Core;
+using Yitter.IdGenerator;
 
 namespace QMS.Application.Issues
 {
     /// <summary>
-    /// 问题记录服务
+    /// 问题管理服务
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuIssue", Order = 100)]
+    [ApiDescriptionSettings("问题管理服务", Name = "SsuIssue", Order = 100)]
     public class SsuIssueService : ISsuIssueService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssue, IssuesDbContextLocator> _ssuIssueRep;
         private readonly IRepository<SsuIssueDetail, IssuesDbContextLocator> _ssuIssueDetailRep;
-
         private readonly IRepository<SsuIssueOperation, IssuesDbContextLocator> _ssuIssueOperateRep;
-
 
         public SsuIssueService(
             IRepository<SsuIssue, IssuesDbContextLocator> ssuIssueRep,
@@ -40,7 +41,6 @@ namespace QMS.Application.Issues
             this._ssuIssueRep = ssuIssueRep;
             this._ssuIssueDetailRep = ssuIssueDetailRep;
             this._ssuIssueOperateRep = ssuIssueOperateRep;
-
         }
 
         /// <summary>
@@ -52,25 +52,21 @@ namespace QMS.Application.Issues
         public async Task Add(InIssue input)
         {
             var ssuIssue = input.Adapt<SsuIssue>();
-            ssuIssue.CreateTime = DateTime.Now;
-            ssuIssue.CreatorId = Helper.Helper.GetCurrentUser();
-            ssuIssue.Status = Core.Enum.EnumIssueStatus.Created;
+            ssuIssue.SetCreate();
 
-            EntityEntry<SsuIssue> issue = await this._ssuIssueRep.InsertNowAsync(ssuIssue, ignoreNullValues: true).ConfigureAwait(false);
+            EntityEntry<SsuIssue> issue = await this._ssuIssueRep.InsertNowAsync(ssuIssue, ignoreNullValues: true);
 
             var detail = input.Adapt<SsuIssueDetail>();
             detail.Id = issue.Entity.Id;
 
             await this._ssuIssueDetailRep.InsertNowAsync(detail, ignoreNullValues: true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                IssueId = detail.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.New,
-                OperationTime = ssuIssue.CreateTime,
-                OperatorName = ssuIssue.CreatorId.GetNameByEmpId(),
-                Content = "新建问题"
-            }, true);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                detail.Id,
+                EnumIssueOperationType.New,
+                "新建问题"
+            );
         }
 
         /// <summary>
@@ -81,27 +77,25 @@ namespace QMS.Application.Issues
         [HttpPost("/SsuIssue/delete")]
         public async Task Delete(DeleteSsuIssueInput input)
         {
-            var ssuIssue = await _ssuIssueRep.FirstOrDefaultAsync(u => u.Id == input.Id);
+            SsuIssue ssuIssue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
 
             if (!ssuIssue.IsDeleted)
             {
                 ssuIssue.IsDeleted = true;
 
                 await this._ssuIssueRep.UpdateAsync(ssuIssue);
-            }
-            else
-            {
-                await this._ssuIssueRep.DeleteAsync(ssuIssue);
-            }
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Close,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = "删除问题"
-            }, true);
+                await IssueLogger.Log(
+                    this._ssuIssueOperateRep,
+                    input.Id,
+                    EnumIssueOperationType.Close,
+                    "删除问题"
+                );
+            }
+            //else
+            //{
+            //    await this._ssuIssueRep.DeleteAsync(ssuIssue);
+            //}
         }
 
         /// <summary>
@@ -110,22 +104,22 @@ namespace QMS.Application.Issues
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost("/SsuIssue/edit")]
-        public async Task Update(UpdateSsuIssueInput input)
+        public async Task Edit(UpdateSsuIssueInput input)
         {
-            var isExist = await _ssuIssueRep.AnyAsync(u => u.Id == input.Id, false);
-            if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+            SsuIssue ssuIssue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
 
-            var ssuIssue = input.Adapt<SsuIssue>();
+            //var isExist = await _ssuIssueRep.AnyAsync(u => u.Id == input.Id, false);
+            //if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+
+            ssuIssue = input.Adapt<SsuIssue>();
             await _ssuIssueRep.UpdateAsync(ssuIssue, ignoreNullValues: true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Edit,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = "更新问题"
-            }, true);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Edit,
+                "更新问题"
+            );
         }
 
         [HttpGet("/SsuIssue/detail")]
@@ -148,97 +142,96 @@ namespace QMS.Application.Issues
         }
 
         [HttpPost("/SsuIssue/execute")]
-        public async Task Update(InSolve input)
+        public async Task Execute(InSolve input)
         {
-            var common = input.Adapt<SsuIssue>();
-            common.Status = Core.Enum.EnumIssueStatus.Solved;
-            common.SolveTime = input.SolveTime ?? DateTime.Now;
-            common.Executor = Helper.Helper.GetCurrentUser();
+            SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
+            common = input.Adapt<SsuIssue>();
+            common.SetSolve();
 
             var detail = input.Adapt<SsuIssueDetail>();
 
             await this._ssuIssueRep.UpdateAsync(common, true);
             await this._ssuIssueDetailRep.UpdateAsync(detail, true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Solve,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = "处理问题"
-            }, true);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Solve,
+                "处理问题"
+            );
         }
 
         [HttpPost("/SsuIssue/validate")]
-        public async Task Update(InValidate input)
+        public async Task Validate(InValidate input)
         {
+            SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
             bool pass = input.PassResult == YesOrNot.Y;
-            var common = input.Adapt<SsuIssue>();
-            common.Status = pass ? Core.Enum.EnumIssueStatus.Closed : Core.Enum.EnumIssueStatus.UnSolve;
-            common.ValidateTime = input.ValidateTime ?? DateTime.Now;
-            common.Verifier = Helper.Helper.GetCurrentUser();
+            common = input.Adapt<SsuIssue>();
+
+            common.SetVerify(pass);
 
             var detail = input.Adapt<SsuIssueDetail>();
 
             await this._ssuIssueRep.UpdateAsync(common, true);
             await this._ssuIssueDetailRep.UpdateAsync(detail, true);
 
-            SsuIssueOperation ssuIssueOperation = new SsuIssueOperation()
-            {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.NoPass,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = $"验证【{common.Executor.GetNameByEmpId()}】处理的问题"
-            };
+            EnumIssueOperationType enumIssueOperationType = pass ? EnumIssueOperationType.NoPass : EnumIssueOperationType.Close;
 
-            if (pass)
-            {
-                ssuIssueOperation.OperationTypeId = Core.Enum.EnumIssueOperationType.Close;
-            }
-
-            await this._ssuIssueOperateRep.InsertAsync(ssuIssueOperation, true);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                enumIssueOperationType,
+                $"验证【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过" + "】")
+                );
         }
 
         [HttpPost("/SsuIssue/hangup")]
-        public async Task Update(InHangup input)
+        public async Task HangUp(InHangup input)
         {
-            var common = input.Adapt<SsuIssue>();
-            common.Status = Core.Enum.EnumIssueStatus.HasHangUp;
+            SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
+            common = input.Adapt<SsuIssue>();
+
+            common.SetHangup();
 
             var detail = input.Adapt<SsuIssueDetail>();
 
             await this._ssuIssueRep.UpdateAsync(common, true);
             await this._ssuIssueDetailRep.UpdateAsync(detail, true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
-            {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.HangUp,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = "挂起问题"
-            }, true);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                EnumIssueOperationType.HangUp,
+                "挂起问题"
+            );
         }
 
         [HttpPost("/SsuIssue/redispatch")]
-        public async Task Update(InReDispatch input)
+        public async Task ReDispatch(InReDispatch input)
         {
-            var common = input.Adapt<SsuIssue>();
-            var detail = input.Adapt<SsuIssueDetail>();
+            SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
+            common = input.Adapt<SsuIssue>();
+
+            common.SetDispatch();
 
             await this._ssuIssueRep.UpdateAsync(common, true);
-            await this._ssuIssueDetailRep.UpdateAsync(detail, true);
 
-            await this._ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            if (!string.IsNullOrEmpty(input.Comment))
             {
-                IssueId = input.Id,
-                OperationTypeId = Core.Enum.EnumIssueOperationType.Dispatch,
-                OperationTime = DateTime.Now,
-                OperatorName = Helper.Helper.GetCurrentUser().GetNameByEmpId(),
-                Content = "重分发问题"
-            }, true);
+                var detail = input.Adapt<SsuIssueDetail>();
+                await this._ssuIssueDetailRep.UpdateAsync(detail, true);
+            }
+
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Dispatch,
+                "重分发问题"
+            );
         }
 
         private IQueryable<SsuIssue> GetQueryable(BaseQueryModel input)
@@ -248,7 +241,7 @@ namespace QMS.Application.Issues
                                      .Where(input.Module != null, u => u.Module == input.Module)
                                      .Where(input.Consequence != null, u => u.Consequence == input.Consequence)
                                      .Where(input.Status != null, u => u.Status == input.Status)
-                                     .Where(!string.IsNullOrEmpty(input.KeyWord), u => u.Title.Contains(input.KeyWord));
+                                     .Where(!string.IsNullOrEmpty(input.Title), u => u.Title.Contains(input.Title));
 
             switch (input.QueryCondition)
             {
@@ -266,6 +259,12 @@ namespace QMS.Application.Issues
                     break;
                 case EnumQueryCondition.Unsolve:
                     querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.UnSolve);
+                    break;
+                case EnumQueryCondition.Closed:
+                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.Closed);
+                    break;
+                case EnumQueryCondition.Hangup:
+                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.HasHangUp);
                     break;
             }
 
@@ -318,19 +317,98 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Unsolve:
                     querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.UnSolve);
                     break;
+                case EnumQueryCondition.Closed:
+                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.Closed);
+                    break;
+                case EnumQueryCondition.Hangup:
+                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.HasHangUp);
+                    break;
             }
         }
 
-        [HttpGet("/SsuIssue/export")]
-        public async Task Export([FromQuery] BaseQueryModel input)
+        [HttpPost("/SsuIssue/export")]
+        public async Task<IActionResult> Export(BaseQueryModel input)
         {
             IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
 
             this.AddFilter(input, querable);
 
-            PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize); ;
+            PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize);
 
-            CsvFileHelper.SaveCsv<ExportIssueDto>(list.Rows, Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/Data/" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ".csv");
+            var memoryStream = new MemoryStream();
+            memoryStream.SaveAs(list.Rows);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            {
+                FileDownloadName = DateTime.Now.ToString("yyyyMMddHHmmss") + "partial-issues.xlsx"
+            });
+        }
+
+        /// <summary>
+        /// 附件上传
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/upload-file")]
+        public async Task AttachmentUpload(IFormFile file)
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}-{file.FileName}");
+            using (var stream = File.Create(path))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            //var rows = MiniExcel.Query(path); // 解析
+            //foreach (var row in rows)
+            //{
+            //    var a = row.A;
+            //    var b = row.B;
+            //    // 入库等操作
+
+            //}
+        }
+
+        /// <summary>
+        /// 批量导入属性数据
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/import-attribute")]
+        public async Task ImportAttributeData(IFormFile file)
+        {
+            var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}-{file.FileName}");
+            using (var stream = File.Create(path))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            //var rows = MiniExcel.Query(path); // 解析
+            //foreach (var row in rows)
+            //{
+            //    var a = row.A;
+            //    var b = row.B;
+            //    // 入库等操作
+
+            //}
+        }
+
+
+        public class InDispatch
+        {
+            public long Id { get; set; }
+            public string JsonModel { get; set; }
+        }
+
+        [HttpPost("/SsuIssue/dispatch")]
+        public async Task Dispatch(InDispatch input)
+        {
+            SsuIssue issue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+            issue.SetDispatch();
+
+            SsuIssueDetail detail = await this._ssuIssueDetailRep.FirstOrDefaultAsync(detail => detail.Id == input.Id);
+
+            this._ssuIssueRep.UpdateAsync(issue);
+            this._ssuIssueDetailRep.UpdateAsync(detail);
         }
     }
 }

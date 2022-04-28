@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.DefaultDb
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220428112705_V1.0.19")]
+    partial class V1019
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -144,6 +146,10 @@ namespace QMS.Database.Migrations.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("bigint")
                         .HasComment("所属项目");
+
+                    b.Property<int>("Sort")
+                        .HasColumnType("int")
+                        .HasComment("排序");
 
                     b.Property<int>("Status")
                         .HasMaxLength(100)

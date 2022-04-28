@@ -7,7 +7,9 @@
           <a-row :gutter="48">
             <a-col :md="8" :sm="12">
               <a-form-item label="项目编号">
-                <a-input-number v-model="queryParam.projectId" style="width: 100%" allow-clear placeholder="请输入项目编号"/>
+                <a-select :allowClear="true" style="width: 100%" v-model="queryParam.projectId" placeholder="请输入项目编号">
+                  <a-select-option v-for="(item,index) in projectData" :key="index" :value="item.id">{{ item.projectName }}</a-select-option>
+                </a-select>
               </a-form-item>
             </a-col>
             <template v-if="advanced">
@@ -59,8 +61,9 @@
         :columns="columns"
         :data="loadData"
         :alert="true"
-        :rowKey="(record) => record.id"
-        :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
+        :useFixedHeader="true"
+        :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }"
+        :rowKey="(record) => record.id">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssue:add')" >
           <a-button type="primary" v-if="hasPerm('SsuIssue:add')" icon="plus" @click="$refs.addForm.add()">新增问题记录</a-button>
           <a :class='{"active": queryBy == 0}' @click="query(0)">所有</a>
@@ -74,6 +77,10 @@
           <a :class='{"active": queryBy == 4}' @click="query(4)">待验证</a>
           <a-divider type="vertical"/>
           <a :class='{"active": queryBy == 5}' @click="query(5)">未解决</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 7}' @click="query(6)">已关闭</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 6}' @click="query(7)">已挂起</a>
 
           <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">导出</a-button>
         </template>
@@ -114,6 +121,12 @@
       </s-table>
       <add-form ref="addForm" @ok="handleOk" />
       <edit-form ref="editForm" @ok="handleOk" />
+
+      <dispatch-form ref="dispatchForm" @ok="handleOk" />
+      <execute-form ref="executeForm" @ok="handleOk" />
+      <validate-form ref="validateForm" @ok="handleOk" />
+      <redispatch-form ref="redispatchForm" @ok="handleOk" />
+      <hangup-form ref="hangupForm" @ok="handleOk" />
     </a-card>
   </div>
 </template>
@@ -121,7 +134,8 @@
   import { STable } from '@/components'
   import {
     SsuIssuePage,
-    SsuIssueDelete, SsuIssueExport
+    SsuIssueDelete,
+    SsuIssueExport
   } from '@/api/modular/main/SsuIssueManage'
   import executeForm from './executeForm.vue'
   import validateForm from './validateForm.vue'
@@ -131,6 +145,10 @@
 
   import addForm from './addForm.vue'
   import editForm from './editForm.vue'
+
+  import {
+    SsuProjectList
+  } from '@/api/modular/main/SsuProjectManage'
   export default {
     components: {
       STable,
@@ -153,6 +171,7 @@
             align: 'center',
             sorter: true,
             dataIndex: 'id'
+            // visible: false
           },
           {
             title: '标题',
@@ -295,9 +314,6 @@ sorter: true,
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
         // 加载数据方法 必须为 Promise 对象
         loadData: parameter => {
-          // 为queryParam添加queryCondition字段
-          // this.queryParam.queryCondition = index
-
           return SsuIssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
             return res.data
           })
@@ -306,18 +322,31 @@ sorter: true,
         consequenceData: [],
         statusData: [],
         selectedRowKeys: [],
-        selectedRows: []
+        selectedRows: [],
+        defaultColumns: [],
+        projectData: []
       }
     },
     created () {
       if (this.hasPerm('SsuIssue:edit') || this.hasPerm('SsuIssue:delete')) {
         this.columns.push({
           title: '操作',
-          width: '150px',
+          width: '360px',
           dataIndex: 'action',
           scopedSlots: { customRender: 'action' }
         })
       }
+
+      SsuProjectList().then((res) => {
+        if (res.success) {
+          this.projectData = res.data
+        } else {
+          this.$message.error('项目列表读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+
       const moduleOption = this.$options
       this.moduleData = moduleOption.filters['dictData']('issue_module')
       const consequenceOption = this.$options
@@ -332,6 +361,19 @@ sorter: true,
         this.$refs.table.refresh(true)
       },
       exportData() {
+        SsuIssueExport(this.queryParam).then((res) => {
+          if (res.success) {
+            this.$message.success('导出成功')
+            this.confirmLoading = false
+            // this.$emit('ok', this.record)
+
+            // this.handleCancel()
+          } else {
+            this.$message.error('下载错误：获取文件流错误')
+          }
+        }).finally((res) => {
+          this.confirmLoading = false
+        })
       },
       /**
        * 查询参数组装
@@ -371,13 +413,13 @@ sorter: true,
     margin-right: 8px;
   }
 
-  .table-operator a {
-    margin: 0px 5px;
+  .table-operator a.active {
+    background: #dddddd !important;
+    padding: 5px;
   }
 
-  .table-operator a.active {
-    background: #dddddd;
-    padding: 5px;
+  .ant-btn-primary {
+    margin: 0px 10px;
   }
 
 </style>

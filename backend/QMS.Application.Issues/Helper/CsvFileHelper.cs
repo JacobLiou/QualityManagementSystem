@@ -1,4 +1,5 @@
 using System.Data;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace QMS.Application.Issues.Helper
@@ -39,13 +40,16 @@ namespace QMS.Application.Issues.Helper
         /// <param name="dt">提供保存数据的DataTable</param>
         /// <param name="fullPath">全路径</param>
         /// <param name="encodeName">编码类型名称</param>
-        public static DataTable SaveCsv(DataTable dt, string fullPath, string encodeName = "utf-8")
+        public static byte[] SaveCsv(DataTable dt, string fullPath, string encodeName = "utf-8")
         {
+            byte[] files = new byte[0];
             FileInfo fi = new FileInfo(fullPath);
             if (fi.Directory != null && !fi.Directory.Exists)
             {
                 fi.Directory.Create();
             }
+
+            var builder = new StringBuilder();
 
             using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
             using (StreamWriter sw = new StreamWriter(fs, Encoding.GetEncoding(encodeName)))
@@ -81,7 +85,7 @@ namespace QMS.Application.Issues.Helper
                 }
             }
 
-            return dt;
+            return files;
         }
 
         // csv文件遇到英文单引号默认会添加双引号转义
@@ -200,9 +204,9 @@ namespace QMS.Application.Issues.Helper
         /// <returns>文件的编码类型</returns>
         private static Encoding GetType(Stream fs)
         {
-            byte[] unicode = new byte[] {0xFF, 0xFE, 0x41};
-            byte[] unicodeBig = new byte[] {0xFE, 0xFF, 0x00};
-            byte[] utf8 = new byte[] {0xEF, 0xBB, 0xBF}; //带BOM
+            byte[] unicode = new byte[] { 0xFF, 0xFE, 0x41 };
+            byte[] unicodeBig = new byte[] { 0xFE, 0xFF, 0x00 };
+            byte[] utf8 = new byte[] { 0xEF, 0xBB, 0xBF }; //带BOM
             Encoding reVal = Encoding.Default;
 
             BinaryReader r = new BinaryReader(fs, Encoding.Default);

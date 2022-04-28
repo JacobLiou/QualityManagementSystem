@@ -11,7 +11,7 @@ namespace QMS.Core.Entity
     public class SsuIssueOperation : IEntity<IssuesDbContextLocator>
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Comment("问题操作记录编号")]
         public long Id { get; set; }
 

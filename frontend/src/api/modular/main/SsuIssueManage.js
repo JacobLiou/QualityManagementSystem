@@ -118,6 +118,19 @@ export function SsuIssueRedispatch (parameter) {
 }
 
 /**
+ * 分派问题
+ *
+ * @author licong
+ */
+export function SsuIssueDispatch (parameter) {
+  return axios({
+    url: '/SsuIssue/dispatch',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 数据导出
  *
  * @author licong

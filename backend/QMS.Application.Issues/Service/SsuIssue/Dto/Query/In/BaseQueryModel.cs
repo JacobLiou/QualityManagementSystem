@@ -8,8 +8,8 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         public long ProjectId { get; set; }
         public EnumModule? Module { get; set; }
         public EnumConsequence? Consequence { get; set; }
-        public virtual EnumIssueStatus? Status { get; set; }
-        public string KeyWord { get; set; }
+        public EnumIssueStatus? Status { get; set; }
+        public string Title { get; set; }
 
         public EnumQueryCondition QueryCondition { get; set; }
     }
@@ -21,6 +21,8 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         Dispatcher,
         Executor,
         Solved,
-        Unsolve
+        Unsolve,
+        Closed,
+        Hangup
     }
 }

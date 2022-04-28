@@ -9,17 +9,21 @@
     <a-spin :spinning="confirmLoading">
       <a-form :form="form">
         <a-form-item v-show="false"><a-input v-decorator="['id']" /></a-form-item>
-        <a-form-item label="模块编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入模块编号" v-decorator="['module']" />
+        <a-form-item label="模块编号" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <a-select style="width: 100%" placeholder="请选择模块编号" v-decorator="['module', {rules: [{ required: true, message: '请选择模块编号！' }]}]">
+            <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="字段名" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入字段名" v-decorator="['attibuteName']" />
+          <a-input placeholder="请输入字段名" v-decorator="['attibuteName', {rules: [{required: true, message: '请输入字段名！'}]}]" />
         </a-form-item>
         <a-form-item label="字段代码" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入字段代码" v-decorator="['attributeCode']" />
+          <a-input placeholder="请输入字段代码" v-decorator="['attributeCode', {rules: [{required: true, message: '请输入字段代码！'}]}]" />
         </a-form-item>
-        <a-form-item label="字段值类型" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入字段值类型" v-decorator="['valueType']" />
+        <a-form-item label="字段值类型" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <a-select style="width: 100%" placeholder="请选择字段值类型" v-decorator="['valueType', {rules: [{ required: true, message: '请选择字段值类型！' }]}]">
+            <a-select-option v-for="(item,index) in valueTypeData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -42,6 +46,8 @@
           sm: { span: 15 }
         },
         record: {},
+        moduleData: [],
+        valueTypeData: [],
         visible: false,
         confirmLoading: false,
         form: this.$form.createForm(this)
@@ -52,6 +58,10 @@
       edit (record) {
         this.visible = true
         this.record = record
+        const moduleOption = this.$options
+        this.moduleData = moduleOption.filters['dictData']('issue_module')
+        const valueTypeOption = this.$options
+        this.valueTypeData = valueTypeOption.filters['dictData']('code_gen_net_type')
         setTimeout(() => {
           this.form.setFieldsValue(
             {

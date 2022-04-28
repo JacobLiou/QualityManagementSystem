@@ -9,10 +9,11 @@
               <a-form-item label="字段编号">
                 <a-input v-model="queryParam.id" allow-clear placeholder="请输入字段编号"/>
               </a-form-item>
-            </a-col>
-            <a-col :md="8" :sm="24">
+            </a-col><a-col :md="8" :sm="24">
               <a-form-item label="模块编号">
-                <a-input v-model="queryParam.module" allow-clear placeholder="请输入模块编号"/>
+                <a-select :allowClear="true" style="width: 100%" v-model="queryParam.module" placeholder="请选择模块编号">
+                  <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+                </a-select>
               </a-form-item>
             </a-col><template v-if="advanced">
               <a-col :md="8" :sm="24">
@@ -23,6 +24,12 @@
               <a-col :md="8" :sm="24">
                 <a-form-item label="字段代码">
                   <a-input v-model="queryParam.attributeCode" allow-clear placeholder="请输入字段代码"/>
+                </a-form-item>
+              </a-col><a-col :md="8" :sm="24">
+                <a-form-item label="字段值类型">
+                  <a-select :allowClear="true" style="width: 100%" v-model="queryParam.valueType" placeholder="请选择字段值类型">
+                    <a-select-option v-for="(item,index) in valueTypeData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+                  </a-select>
                 </a-form-item>
               </a-col>            </template>
 
@@ -51,6 +58,12 @@
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssueExtendAttribute:add')" >
           <a-button type="primary" v-if="hasPerm('SsuIssueExtendAttribute:add')" icon="plus" @click="$refs.addForm.add()">新增问题扩展属性</a-button>
         </template>
+        <span slot="modulescopedSlots" slot-scope="text">
+          {{ 'issue_module' | dictType(text) }}
+        </span>
+        <span slot="valueTypescopedSlots" slot-scope="text">
+          {{ 'code_gen_net_type' | dictType(text) }}
+        </span>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuIssueExtendAttribute:edit')" @click="$refs.editForm.edit(record)">编辑</a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssueExtendAttribute:edit') & hasPerm('SsuIssueExtendAttribute:delete')"/>
@@ -80,6 +93,38 @@
         advanced: false, // 高级搜索 展开/关闭
         queryParam: {},
         columns: [
+          {
+            title: '字段编号',
+            align: 'center',
+sorter: true,
+            dataIndex: 'id'
+          },
+          {
+            title: '模块编号',
+            align: 'center',
+sorter: true,
+            dataIndex: 'module',
+            scopedSlots: { customRender: 'modulescopedSlots' }
+          },
+          {
+            title: '字段名',
+            align: 'center',
+sorter: true,
+            dataIndex: 'attibuteName'
+          },
+          {
+            title: '字段代码',
+            align: 'center',
+sorter: true,
+            dataIndex: 'attributeCode'
+          },
+          {
+            title: '字段值类型',
+            align: 'center',
+sorter: true,
+            dataIndex: 'valueType',
+            scopedSlots: { customRender: 'valueTypescopedSlots' }
+          }
         ],
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
         // 加载数据方法 必须为 Promise 对象
@@ -88,6 +133,8 @@
             return res.data
           })
         },
+        moduleData: [],
+        valueTypeData: [],
         selectedRowKeys: [],
         selectedRows: []
       }
@@ -101,6 +148,10 @@
           scopedSlots: { customRender: 'action' }
         })
       }
+      const moduleOption = this.$options
+      this.moduleData = moduleOption.filters['dictData']('issue_module')
+      const valueTypeOption = this.$options
+      this.valueTypeData = valueTypeOption.filters['dictData']('code_gen_net_type')
     },
     methods: {
       /**

@@ -24,13 +24,13 @@ namespace QMS.Application.Issues.Helper
         /// </summary>
         public static string GetHeader(this PropertyInfo property)
         {
-            if (!property.IsDefined(typeof(ColumnHeaderAttribute)))
+            if (!property.IsDefined(typeof(CommentAttribute)))
                 return property.Name;
 
             var attr =
-                (ColumnHeaderAttribute)property.GetCustomAttribute(typeof(ColumnHeaderAttribute));
+                (CommentAttribute)property.GetCustomAttribute(typeof(CommentAttribute));
 
-            return attr.HeaderName;
+            return attr.Comment;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Furion.DatabaseAccessor;
+using Furion.Extras.Admin.NET;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using QMS.Core.Enum;
@@ -10,12 +11,12 @@ namespace QMS.Core.Entity
 
     [Table("ssu_issue")]
     [Comment("问题记录")]
-    public class SsuIssue : IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<SsuIssue, IssuesDbContextLocator>
+    public class SsuIssue : BaseGenerateIdEntity, IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<SsuIssue, IssuesDbContextLocator>
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Comment("问题编号")]
-        public long Id { get; set; }
+        public override long Id { get; set; }
 
         [Comment("问题简述")]
         [MaxLength(200)]
@@ -55,9 +56,29 @@ namespace QMS.Core.Entity
         [Comment("提出日期")]
         public DateTime CreateTime { get; set; }
 
+        public void SetCreate()
+        {
+            this.CreateTime = DateTime.Now;
+            this.CreatorId = CurrentUserInfo.UserId;
+
+            this.Status = EnumIssueStatus.Created;
+
+            if (this.Verifier == null)
+            {
+                this.Verifier = this.CreatorId;
+            }
+        }
+
 
         [Comment("关闭日期")]
         public DateTime? CloseTime { get; set; }
+
+        public void SetClose()
+        {
+            this.CloseTime = DateTime.Now;
+
+            this.Status = EnumIssueStatus.Closed;
+        }
 
         [Comment("发现人")]
         public long? Discover { get; set; }
@@ -70,6 +91,14 @@ namespace QMS.Core.Entity
 
         [Comment("分发日期")]
         public DateTime? DispatchTime { get; set; }
+
+        public void SetDispatch()
+        {
+            this.DiscoverTime = DateTime.Now;
+            this.Dispatcher = CurrentUserInfo.UserId;
+
+            this.Status = EnumIssueStatus.Dispatched;
+        }
 
         [Comment("预计完成日期")]
         public DateTime? ForecastSolveTime { get; set; }
@@ -84,10 +113,16 @@ namespace QMS.Core.Entity
         [Comment("解决日期")]
         public DateTime? SolveTime { get; set; }
 
+        public void SetSolve()
+        {
+            this.SolveTime = DateTime.Now;
+            this.Executor = CurrentUserInfo.UserId;
+
+            this.Status = EnumIssueStatus.Solved;
+        }
 
         [Comment("验证人")]
         public long? Verifier { get; set; }
-
 
         [Comment("验证地点")]
         [MaxLength(200)]
@@ -95,6 +130,19 @@ namespace QMS.Core.Entity
 
         [Comment("验证日期")]
         public DateTime? ValidateTime { get; set; }
+
+        public void SetVerify(bool pass)
+        {
+            this.Verifier = this.Verifier ?? CurrentUserInfo.UserId;
+            this.ValidateTime = this.ValidateTime ?? DateTime.Now;
+
+            this.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
+        }
+
+        public void SetHangup()
+        {
+            this.Status = EnumIssueStatus.HasHangUp;
+        }
 
         [Comment("软删除")]
         public bool IsDeleted { get; set; } = false;

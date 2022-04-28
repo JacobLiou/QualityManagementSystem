@@ -40,6 +40,19 @@ export function SsuIssueExtendAttributeAdd (parameter) {
 }
 
 /**
+ * 批量添加
+ *
+ * @author licong
+ */
+export function SsuIssueExtendAttributeBatchAdd (parameter) {
+  return axios({
+    url: '/SsuIssueExtendAttribute/batch-add-struct',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 编辑问题扩展属性
  *
  * @author licong

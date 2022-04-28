@@ -1,4 +1,5 @@
 ﻿using Furion.DatabaseAccessor;
+using Furion.Extras.Admin.NET;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.Enum;
 using System.ComponentModel.DataAnnotations;
@@ -44,6 +45,26 @@ namespace QMS.Core.Entity
 
         [Comment("提出日期")]
         public DateTime UpdateTime { get; set; }
+
+        public void SetCreate()
+        {
+            this.CreatorId = CurrentUserInfo.UserId;
+            this.UpdateId = this.CreatorId;
+            this.CreateTime = DateTime.Now;
+            this.UpdateTime = this.CreateTime;
+        }
+
+        public void SetUpdate()
+        {
+            this.UpdateId = CurrentUserInfo.UserId;
+            this.UpdateTime = DateTime.Now;
+        }
+
+        public void SetDelete()
+        {
+            this.SetUpdate();
+            this.IsDeleted = true;
+        }
 
         [Comment("排序优先级")]
         public int Sort { get; set; }

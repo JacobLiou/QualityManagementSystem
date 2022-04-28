@@ -14,14 +14,14 @@ namespace QMS.Application.Issues
         Task<OutputDetailIssue> Get([FromQuery] BaseId input);
         Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input);
         //Task<PageResult<SsuIssueOutput>> Page([FromQuery] SsuIssueInput input);
-        Task Update(UpdateSsuIssueInput input);
+        Task Edit(UpdateSsuIssueInput input);
 
-        Task Update(InSolve input);
-        Task Update(InValidate input);
+        Task Execute(InSolve input);
+        Task Validate(InValidate input);
 
-        Task Update(InHangup input);
+        Task HangUp(InHangup input);
 
-        Task Update(InReDispatch input);
+        Task ReDispatch(InReDispatch input);
 
         /// <summary>
         /// 根据基础条件筛选
@@ -30,6 +30,6 @@ namespace QMS.Application.Issues
         /// <returns></returns>
         Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input);
 
-        Task Export([FromQuery] BaseQueryModel input);
+        Task<IActionResult> Export([FromQuery] BaseQueryModel input);
     }
 }

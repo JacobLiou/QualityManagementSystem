@@ -65,8 +65,8 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         //[Comment("修改人")]
         //public long UpdateId { get; set; }
 
-        [Comment("排序")]
-        public int Sort { get; set; }
+        //[Comment("排序")]
+        //public int Sort { get; set; }
 
         //[Comment("软删除")]
         //public bool IsDeleted { get; set; }

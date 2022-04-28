@@ -15,7 +15,7 @@ namespace QMS.Application.Issues
     /// <summary>
     /// 问题操作记录服务
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuIssueOperation", Order = 100)]
+    [ApiDescriptionSettings("问题管理服务", Name = "SsuIssueOperation", Order = 100)]
     public class SsuIssueOperationService : ISsuIssueOperationService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssueOperation,IssuesDbContextLocator> _ssuIssueOperationRep;

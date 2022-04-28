@@ -185,6 +185,20 @@ export function sysUserSelector(parameter) {
 }
 
 /**
+ * 用户组织树
+ *
+ * @author yubaoshan
+ * @date 2020/6/25 00:25
+ */
+export function sysUserOrgTree(parameter) {
+  return axios({
+    url: '/sysUser/tree',
+    method: 'get',
+    params: parameter
+  })
+}
+
+/**
  * 修改头像
  *
  * @author yubaoshan
