@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="编辑问题记录"
+    title="挂起问题"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"
@@ -48,6 +48,15 @@ export default {
     edit (record) {
       this.visible = true
       this.record = record
+
+      setTimeout(() => {
+        this.form.setFieldsValue(
+          {
+            id: record.id,
+            title: record.title
+          }
+        )
+      }, 100)
     },
     handleSubmit () {
       const { form: { validateFields } } = this

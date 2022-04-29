@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="编辑问题记录"
+    title="分发问题"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"
@@ -34,18 +34,6 @@ export default {
         sm: { span: 15 }
       },
       record: {},
-      moduleData: [],
-      consequenceData: [],
-      issueClassificationData: [],
-      sourceData: [],
-      statusData: [],
-      createTimeDateString: '',
-      closeTimeDateString: '',
-      discoverTimeDateString: '',
-      dispatchTimeDateString: '',
-      forecastSolveTimeDateString: '',
-      solveTimeDateString: '',
-      validateTimeDateString: '',
       visible: false,
       confirmLoading: false,
       form: this.$form.createForm(this)
@@ -57,16 +45,15 @@ export default {
     edit (record) {
       this.visible = true
       this.record = record
-      const moduleOption = this.$options
-      this.moduleData = moduleOption.filters['dictData']('issue_module')
-      const consequenceOption = this.$options
-      this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
-      const issueClassificationOption = this.$options
-      this.issueClassificationData = issueClassificationOption.filters['dictData']('issue_classification')
-      const sourceOption = this.$options
-      this.sourceData = sourceOption.filters['dictData']('issue_source')
-      const statusOption = this.$options
-      this.statusData = statusOption.filters['dictData']('isssue_status')
+
+      setTimeout(() => {
+        this.form.setFieldsValue(
+          {
+            id: record.id,
+            title: record.title
+          }
+        )
+      }, 100)
     },
     handleSubmit () {
       const { form: { validateFields } } = this
@@ -82,30 +69,15 @@ export default {
               this.record[key] = values[key]
             }
           }
-          values.createTime = this.createTimeDateString
-          this.record.createTime = this.createTimeDateString
-          values.closeTime = this.closeTimeDateString
-          this.record.closeTime = this.closeTimeDateString
-          values.discoverTime = this.discoverTimeDateString
-          this.record.discoverTime = this.discoverTimeDateString
-          values.dispatchTime = this.dispatchTimeDateString
-          this.record.dispatchTime = this.dispatchTimeDateString
-          values.forecastSolveTime = this.forecastSolveTimeDateString
-          this.record.forecastSolveTime = this.forecastSolveTimeDateString
-          values.solveTime = this.solveTimeDateString
-          this.record.solveTime = this.solveTimeDateString
-          values.validateTime = this.validateTimeDateString
-          this.record.validateTime = this.validateTimeDateString
 
-
-          SsuIssueDispatch(JSON.stringify(this.record)).then((res) => {
+          SsuIssueDispatch(this.record).then((res) => {
             if (res.success) {
-              this.$message.success('编辑成功')
+              this.$message.success('分发成功')
               this.confirmLoading = false
               this.$emit('ok', this.record)
               this.handleCancel()
             } else {
-              this.$message.error('编辑失败：' + JSON.stringify(res.message))
+              this.$message.error('分发失败：' + JSON.stringify(res.message))
             }
           }).finally((res) => {
             this.confirmLoading = false
@@ -114,27 +86,6 @@ export default {
           this.confirmLoading = false
         }
       })
-    },
-    onChangecreateTime(date, dateString) {
-      this.createTimeDateString = dateString
-    },
-    onChangecloseTime(date, dateString) {
-      this.closeTimeDateString = dateString
-    },
-    onChangediscoverTime(date, dateString) {
-      this.discoverTimeDateString = dateString
-    },
-    onChangedispatchTime(date, dateString) {
-      this.dispatchTimeDateString = dateString
-    },
-    onChangeforecastSolveTime(date, dateString) {
-      this.forecastSolveTimeDateString = dateString
-    },
-    onChangesolveTime(date, dateString) {
-      this.solveTimeDateString = dateString
-    },
-    onChangevalidateTime(date, dateString) {
-      this.validateTimeDateString = dateString
     },
     handleCancel () {
       this.form.resetFields()

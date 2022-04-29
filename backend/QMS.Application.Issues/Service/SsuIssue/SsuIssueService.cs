@@ -111,7 +111,15 @@ namespace QMS.Application.Issues
             //var isExist = await _ssuIssueRep.AnyAsync(u => u.Id == input.Id, false);
             //if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
-            ssuIssue = input.Adapt<SsuIssue>();
+            //ssuIssue = input.Adapt<SsuIssue>();
+
+            // 手动更新，防止已有数据丢失
+            input.SetIssue(ssuIssue);
+
+            SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+
+            input.SetIssueDetail(ssuIssueDetail);
+
             await _ssuIssueRep.UpdateAsync(ssuIssue, ignoreNullValues: true);
 
             await IssueLogger.Log(
@@ -146,19 +154,19 @@ namespace QMS.Application.Issues
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
 
-            common = input.Adapt<SsuIssue>();
             common.SetSolve();
-
-            var detail = input.Adapt<SsuIssueDetail>();
-
+            input.SetIssue(common);
             await this._ssuIssueRep.UpdateAsync(common, true);
-            await this._ssuIssueDetailRep.UpdateAsync(detail, true);
+
+            SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+            input.SetIssueDetail(ssuIssueDetail);
+            await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
                 input.Id,
                 EnumIssueOperationType.Solve,
-                "处理问题"
+                $"【{common.Executor.GetNameByEmpId()}】解决【{common.CreatorId.GetNameByEmpId()}】提出的问题"
             );
         }
 
@@ -166,19 +174,18 @@ namespace QMS.Application.Issues
         public async Task Validate(InValidate input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
-
             bool pass = input.PassResult == YesOrNot.Y;
-            common = input.Adapt<SsuIssue>();
-
             common.SetVerify(pass);
+            input.SetIssue(common);
+            await this._ssuIssueRep.UpdateNowAsync(common, true);
 
-            var detail = input.Adapt<SsuIssueDetail>();
 
-            await this._ssuIssueRep.UpdateAsync(common, true);
-            await this._ssuIssueDetailRep.UpdateAsync(detail, true);
+            SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+            input.SetIssueDetail(ssuIssueDetail);
+            await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
+
 
             EnumIssueOperationType enumIssueOperationType = pass ? EnumIssueOperationType.NoPass : EnumIssueOperationType.Close;
-
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
                 input.Id,
@@ -192,20 +199,21 @@ namespace QMS.Application.Issues
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
 
-            common = input.Adapt<SsuIssue>();
-
             common.SetHangup();
-
-            var detail = input.Adapt<SsuIssueDetail>();
-
+            input.SetIssue(common);
             await this._ssuIssueRep.UpdateAsync(common, true);
-            await this._ssuIssueDetailRep.UpdateAsync(detail, true);
+
+            SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+            if (input.SetIssueDetail(ssuIssueDetail))
+            {
+                await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
+            }
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
                 input.Id,
                 EnumIssueOperationType.HangUp,
-                "挂起问题"
+                $"【{common.HangupId.GetNameByEmpId()}】挂起【{common.CreatorId.GetNameByEmpId()}】提出的问题"
             );
         }
 
@@ -213,24 +221,22 @@ namespace QMS.Application.Issues
         public async Task ReDispatch(InReDispatch input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
-
-            common = input.Adapt<SsuIssue>();
-
             common.SetDispatch();
+            input.SetIssue(common);
 
             await this._ssuIssueRep.UpdateAsync(common, true);
 
-            if (!string.IsNullOrEmpty(input.Comment))
+            SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+            if (input.SetIssueDetail(ssuIssueDetail))
             {
-                var detail = input.Adapt<SsuIssueDetail>();
-                await this._ssuIssueDetailRep.UpdateAsync(detail, true);
+                await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
             }
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
                 input.Id,
                 EnumIssueOperationType.Dispatch,
-                "重分发问题"
+                $"【{common.Dispatcher.GetNameByEmpId()}】将【{common.CreatorId.GetNameByEmpId()}】提出的问题重分发给【{common.Executor.GetNameByEmpId()}】"
             );
         }
 
@@ -368,35 +374,33 @@ namespace QMS.Application.Issues
             //}
         }
 
-        /// <summary>
-        /// 批量导入属性数据
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        [HttpPost("/SsuIssue/import-attribute")]
-        public async Task ImportAttributeData(IFormFile file)
-        {
-            var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}-{file.FileName}");
-            using (var stream = File.Create(path))
-            {
-                await file.CopyToAsync(stream);
-            }
 
-            //var rows = MiniExcel.Query(path); // 解析
-            //foreach (var row in rows)
-            //{
-            //    var a = row.A;
-            //    var b = row.B;
-            //    // 入库等操作
-
-            //}
-        }
-
-
-        public class InDispatch
+        public class InDispatch : IInput
         {
             public long Id { get; set; }
+            public string Title { get; set; }
             public string JsonModel { get; set; }
+
+            public bool SetIssue(SsuIssue issue)
+            {
+                bool changed = false;
+
+                if (issue.Title != this.Title)
+                {
+
+                    issue.Title = this.Title;
+
+                    changed = true;
+                }
+
+                return changed;
+            }
+
+            public bool SetIssueDetail(SsuIssueDetail issueDetail)
+            {
+
+                return true;
+            }
         }
 
         [HttpPost("/SsuIssue/dispatch")]
@@ -404,11 +408,20 @@ namespace QMS.Application.Issues
         {
             SsuIssue issue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
             issue.SetDispatch();
+            if (input.SetIssue(issue))
+            {
+                await this._ssuIssueRep.UpdateAsync(issue);
+            }
 
-            SsuIssueDetail detail = await this._ssuIssueDetailRep.FirstOrDefaultAsync(detail => detail.Id == input.Id);
+            SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
+            await this._ssuIssueDetailRep.UpdateAsync(detail);
 
-            this._ssuIssueRep.UpdateAsync(issue);
-            this._ssuIssueDetailRep.UpdateAsync(detail);
+            await IssueLogger.Log(
+                this._ssuIssueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Dispatch,
+                $"【{issue.Dispatcher.GetNameByEmpId()}】将【{issue.CreatorId.GetNameByEmpId()}】提出的问题分发给【{issue.Executor.GetNameByEmpId()}】"
+            );
         }
     }
 }

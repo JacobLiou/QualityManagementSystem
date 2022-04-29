@@ -8,12 +8,12 @@ namespace QMS.Core.Entity
 {
     [Table("ssu_issue_operation")]
     [Comment("问题操作记录")]
-    public class SsuIssueOperation : IEntity<IssuesDbContextLocator>
+    public class SsuIssueOperation : BaseGenerateIdEntity, IEntity<IssuesDbContextLocator>
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Comment("问题操作记录编号")]
-        public long Id { get; set; }
+        //[Key]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
+        //[Comment("问题操作记录编号")]
+        //public long Id { get; set; }
 
         [Comment("问题编号")]
         public long IssueId { get; set; }

@@ -144,6 +144,19 @@ export function SsuIssueExport (parameter) {
 }
 
 /**
+ * 附件上传
+ *
+ * @author licong
+ */
+export function SsuIssueUploadFile (parameter) {
+  return axios({
+    url: '/SsuIssue/upload-file',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 删除问题记录
  *
  * @author licong

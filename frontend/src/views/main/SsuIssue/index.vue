@@ -78,9 +78,9 @@
           <a-divider type="vertical"/>
           <a :class='{"active": queryBy == 5}' @click="query(5)">未解决</a>
           <a-divider type="vertical"/>
-          <a :class='{"active": queryBy == 7}' @click="query(6)">已关闭</a>
+          <a :class='{"active": queryBy == 6}' @click="query(6)">已关闭</a>
           <a-divider type="vertical"/>
-          <a :class='{"active": queryBy == 6}' @click="query(7)">已挂起</a>
+          <a :class='{"active": queryBy == 7}' @click="query(7)">已挂起</a>
 
           <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">导出</a-button>
         </template>
@@ -406,16 +406,19 @@ sorter: true,
   }
 </script>
 <style lang="less">
-  .table-operator {
+  .s-table-tool-left {
     margin-bottom: 18px;
   }
   button {
     margin-right: 8px;
   }
 
-  .table-operator a.active {
-    background: #dddddd !important;
+  .s-table-tool-left > a {
     padding: 5px;
+  }
+
+  .s-table-tool-left > a.active {
+    background: #dddddd;
   }
 
   .ant-btn-primary {

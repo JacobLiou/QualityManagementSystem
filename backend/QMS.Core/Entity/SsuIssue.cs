@@ -134,13 +134,18 @@ namespace QMS.Core.Entity
         public void SetVerify(bool pass)
         {
             this.Verifier = this.Verifier ?? CurrentUserInfo.UserId;
-            this.ValidateTime = this.ValidateTime ?? DateTime.Now;
+            this.ValidateTime = DateTime.Now;
 
             this.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
         }
 
+        [Comment("挂起人")]
+        public long? HangupId { get; set; }
+
         public void SetHangup()
         {
+            this.HangupId = this.HangupId ?? CurrentUserInfo.UserId;
+
             this.Status = EnumIssueStatus.HasHangUp;
         }
 

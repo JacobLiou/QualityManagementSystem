@@ -47,7 +47,7 @@
         /// <summary>
         /// 发现日期
         /// </summary>
-        public virtual DateTime? DiscoverTime { get; set; }
+        public virtual DateTime DiscoverTime { get; set; }
 
         /// <summary>
         /// 问题状态

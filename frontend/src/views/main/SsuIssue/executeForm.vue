@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="编辑问题记录"
+    title="解决问题"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"
@@ -14,11 +14,11 @@
         </a-form-item>
 
         <a-form-item label="解决日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime',{rules: [{readonly:true}]}]" @change="onChangesolveTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime']" @change="onChangesolveTime"/>
         </a-form-item>
 
         <a-form-item label="解决版本" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{readonly:true, required: true, message: '请选择问题来源！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{required: true, message: '请选择问题来源！' }]}]">
             <a-select-option v-for="(item,index) in solveVersioneData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
@@ -31,14 +31,16 @@
           <a-input placeholder="请输入解决措施" v-decorator="['measures', {rules: [{required: true, message: '请输入解决措施！'}]}]" />
         </a-form-item>
 
-        <a-upload
-          :customRequest="customRequest"
-          :multiple="true"
-          :showUploadList="false"
-          name="file"
-          v-if="hasPerm('sysUser:import')">
-          <a-button icon="up-circle">附件上传</a-button>
-        </a-upload>
+        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="false"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">附件上传</a-button>
+          </a-upload>
+        </a-form-item>
       </a-form>
     </a-spin>
   </a-modal>
@@ -47,9 +49,8 @@
 <script>
 import moment from 'moment'
 import {
-  SsuIssueExecute
+  SsuIssueExecute, SsuIssueUploadFile
 } from '@/api/modular/main/SsuIssueManage'
-import { sysUserImport } from '@/api/modular/system/userManage'
 export default {
   data () {
     return {
@@ -72,6 +73,7 @@ export default {
   methods: {
     moment,
     created() {
+      console.log('解决')
       this.solveVersioneData = this.$options.filters['dictData']('issue_solve_version')
 
       console.log(this.solveVersioneData)
@@ -79,11 +81,22 @@ export default {
     edit(record) {
       this.visible = true
       this.record = record
+
+      console.log(this.$options.filters['dictData'])
+
+      setTimeout(() => {
+        this.form.setFieldsValue(
+          {
+            id: record.id,
+            title: record.title
+          }
+        )
+      }, 100)
     },
     customRequest(data) {
       const formData = new FormData()
       formData.append('file', data.file)
-      sysUserImport(formData).then((res) => {
+      SsuIssueUploadFile(formData).then((res) => {
         if (res.success) {
           this.$message.success('上传成功')
           // this.$refs.table.refresh()

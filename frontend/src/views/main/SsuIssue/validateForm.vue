@@ -21,6 +21,26 @@
         <a-form-item label="验证情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input placeholder="请输入验证情况" v-decorator="['result',{rules: [{required:true, message: '请输入验证情况！'}]}]" />
         </a-form-item>
+
+        <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="验证通过">
+          <a-switch
+            id="passResult"
+            checkedChildren="是"
+            unCheckedChildren="否"
+            v-decorator="['passResult', { valuePropName: 'checked' }]"
+          />
+        </a-form-item>
+
+        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="false"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">附件上传</a-button>
+          </a-upload>
+        </a-form-item>
       </a-form>
     </a-spin>
   </a-modal>
@@ -29,6 +49,7 @@
 <script>
 import moment from 'moment'
 import {
+  SsuIssueUploadFile,
   SsuIssueValidate
 } from '@/api/modular/main/SsuIssueManage'
 export default {
@@ -50,10 +71,32 @@ export default {
   },
   methods: {
     moment,
+    customRequest(data) {
+      const formData = new FormData()
+      formData.append('file', data.file)
+      SsuIssueUploadFile(formData).then((res) => {
+        if (res.success) {
+          this.$message.success('上传成功')
+          this.$refs.table.refresh()
+        } else {
+          this.$message.error('上传失败：' + res.message)
+        }
+      })
+    },
     // 初始化方法
     edit (record) {
       this.visible = true
       this.record = record
+
+      setTimeout(() => {
+        this.form.setFieldsValue(
+          {
+            id: record.id,
+            title: record.title,
+            passResult: true
+          }
+        )
+      }, 100)
     },
     handleSubmit () {
       const { form: { validateFields } } = this

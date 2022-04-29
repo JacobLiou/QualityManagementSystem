@@ -1,8 +1,9 @@
 ﻿using Furion.Extras.Admin.NET;
+using QMS.Core.Entity;
 
 namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
 {
-    public class ValidateCommon
+    public abstract class ValidateCommon : IInput
     {
         /// <summary>
         /// 问题编号
@@ -30,5 +31,35 @@ namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
         public DateTime? ValidateTime { get; set; }
 
         public YesOrNot PassResult { get; set; }
+
+        public bool SetIssue(Core.Entity.SsuIssue issue)
+        {
+            bool changed = false;
+
+            if (issue.Title != this.Title)
+            {
+                issue.Title = this.Title;
+
+                changed = true;
+            }
+
+            if (issue.Verifier != this.Verifier)
+            {
+                issue.Verifier = this.Verifier;
+
+                changed = true;
+            }
+
+            if (issue.ValidateTime != this.ValidateTime)
+            {
+                issue.ValidateTime = this.ValidateTime;
+
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        public abstract bool SetIssueDetail(SsuIssueDetail issueDetail);
     }
 }

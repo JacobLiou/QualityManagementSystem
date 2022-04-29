@@ -1,5 +1,6 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
+using Microsoft.EntityFrameworkCore;
 using QMS.Core;
 using QMS.Core.Entity;
 using System.ComponentModel;
@@ -39,9 +40,18 @@ namespace QMS.Application.Issues.Helper
 
         public static async Task<SsuIssue> CheckIssueExist(IRepository<SsuIssue, IssuesDbContextLocator> ssuIssueRep, long id)
         {
-            SsuIssue issue = await ssuIssueRep.FirstOrDefaultAsync(issue => issue.Id == id);
+            SsuIssue issue = await ssuIssueRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
 
             Helper.Assert(issue != null, $"问题【{id}】不存在");
+
+            return issue;
+        }
+
+        public static async Task<SsuIssueDetail> CheckIssueDetailExist(IRepository<SsuIssueDetail, IssuesDbContextLocator> ssuIssueDetailRep, long id)
+        {
+            SsuIssueDetail issue = await ssuIssueDetailRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
+
+            Helper.Assert(issue != null, $"问题【{id}】详情不存在");
 
             return issue;
         }
@@ -79,7 +89,11 @@ namespace QMS.Application.Issues.Helper
 
         public static string GetNameByEmpId(this long? id)
         {
-            //Assert(false);
+
+            if (id == null)
+            {
+                id = Helper.GetCurrentUser();
+            }
 
             return id.ToString();
         }

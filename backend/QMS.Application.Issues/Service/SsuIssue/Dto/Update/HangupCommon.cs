@@ -1,6 +1,8 @@
-﻿namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
+﻿using QMS.Core.Entity;
+
+namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
 {
-    public class HangupCommon
+    public abstract class HangupCommon : IInput
     {
         /// <summary>
         /// 问题编号
@@ -16,5 +18,20 @@
         /// 挂起人
         /// </summary>
         public long hangupId { get; set; }
+
+        public bool SetIssue(Core.Entity.SsuIssue issue)
+        {
+            bool changed = false;
+
+            if (issue.Title != this.Title)
+            {
+                issue.Title = this.Title;
+
+                changed = true;
+            }
+            return changed;
+        }
+
+        public abstract bool SetIssueDetail(SsuIssueDetail issueDetail);
     }
 }
