@@ -24,8 +24,11 @@ namespace QMS.Application.System
        /// <returns></returns>
         public List<GroupUserOutput> GetUserGroup()
         {
-            var list = _sqlRepository.SqlQuery<GroupUserOutput>(@"SELECT u.`Name` as UserName,u.Id AS UserID,g.GroupName,g.ID AS GroupId FROM `ssu_group`  g JOIN ssu_group_user gu on g.Id = gu.GroupId 
-join sys_user  u on gu.EmployeeId = u.Id where u.Id > @id", new { id = 10 });
+            var list = _sqlRepository.SqlQuery<GroupUserOutput>(@"SELECT u.`Name` as UserName,u.Id AS UserID,g.GroupName,g.ID AS GroupId 
+FROM `ssu_group`  g 
+JOIN ssu_group_user gu ON g.Id = gu.GroupId 
+JOIN sys_user  u ON gu.EmployeeId = u.Id 
+WHERE g.Id = @id", new { id = 281695421571141 });
             return list;
         }
 
