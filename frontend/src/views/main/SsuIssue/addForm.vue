@@ -152,7 +152,8 @@
         form: this.$form.createForm(this),
         projectData: [],
         productData: [],
-        orgTree: []
+        orgTree: [],
+        moduleInit: ''
       }
     },
     created () {
@@ -176,15 +177,11 @@
         this.confirmLoading = false
       })
 
-      this.getOrgData()
+      sysUserOrgTree().then((res) => {
+        this.orgTree = res.data
+      })
     },
     methods: {
-      getOrgData () {
-        sysUserOrgTree().then((res) => {
-          this.orgTree = res.data
-          console.log(res.data)
-        })
-      },
       init() {
         this.visible = true
         const moduleOption = this.$options
@@ -195,8 +192,8 @@
         this.issueClassificationData = issueClassificationOption.filters['dictData']('issue_classification')
         const sourceOption = this.$options
         this.sourceData = sourceOption.filters['dictData']('issue_source')
-        const statusOption = this.$options
-        this.statusData = statusOption.filters['dictData']('isssue_status')
+        // const statusOption = this.$options
+        // this.statusData = statusOption.filters['dictData']('issue_status')
       },
       // 初始化方法
       add (record) {
@@ -223,14 +220,16 @@
               // creatorId: record.creatorId,
               discover: record.discover,
               dispatcher: record.dispatcher,
-              cC: record.cC
+              cC: record.copyTo
               // executor: record.executor,
               // verifier: record.verifier,
               // verifierPlace: record.verifierPlace
               // description: this.description
             }
           )
-        }, 100)
+          // this.form.getFieldDecorator('module', { initialValue: '模块测试' })
+          // this.moduleInit = '模块测试'
+        }, 30)
         this.form.getFieldDecorator('createTime', { initialValue: moment(record.createTime, 'YYYY-MM-DD') })
         this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')
         this.form.getFieldDecorator('closeTime', { initialValue: moment(record.closeTime, 'YYYY-MM-DD') })

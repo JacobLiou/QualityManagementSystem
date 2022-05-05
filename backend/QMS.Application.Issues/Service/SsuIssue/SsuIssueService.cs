@@ -83,7 +83,7 @@ namespace QMS.Application.Issues
             {
                 ssuIssue.IsDeleted = true;
 
-                await this._ssuIssueRep.UpdateAsync(ssuIssue);
+                await this._ssuIssueRep.UpdateNowAsync(ssuIssue);
 
                 await IssueLogger.Log(
                     this._ssuIssueOperateRep,
@@ -115,12 +115,12 @@ namespace QMS.Application.Issues
 
             // 手动更新，防止已有数据丢失
             input.SetIssue(ssuIssue);
+            await _ssuIssueRep.UpdateNowAsync(ssuIssue, ignoreNullValues: true);
 
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
 
             input.SetIssueDetail(ssuIssueDetail);
-
-            await _ssuIssueRep.UpdateAsync(ssuIssue, ignoreNullValues: true);
+            await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -154,13 +154,13 @@ namespace QMS.Application.Issues
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
 
-            common.SetSolve();
+            common.DoSolve();
             input.SetIssue(common);
-            await this._ssuIssueRep.UpdateAsync(common, true);
+            await this._ssuIssueRep.UpdateNowAsync(common, true);
 
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             input.SetIssueDetail(ssuIssueDetail);
-            await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
+            await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -175,7 +175,7 @@ namespace QMS.Application.Issues
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
             bool pass = input.PassResult == YesOrNot.Y;
-            common.SetVerify(pass);
+            common.DoVerify(pass);
             input.SetIssue(common);
             await this._ssuIssueRep.UpdateNowAsync(common, true);
 
@@ -190,7 +190,7 @@ namespace QMS.Application.Issues
                 this._ssuIssueOperateRep,
                 input.Id,
                 enumIssueOperationType,
-                $"验证【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过" + "】")
+                $"验证【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过") + "】"
                 );
         }
 
@@ -201,12 +201,12 @@ namespace QMS.Application.Issues
 
             common.SetHangup();
             input.SetIssue(common);
-            await this._ssuIssueRep.UpdateAsync(common, true);
+            await this._ssuIssueRep.UpdateNowAsync(common, true);
 
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             if (input.SetIssueDetail(ssuIssueDetail))
             {
-                await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
+                await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
             }
 
             await IssueLogger.Log(
@@ -221,15 +221,15 @@ namespace QMS.Application.Issues
         public async Task ReDispatch(InReDispatch input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
-            common.SetDispatch();
+            common.DoDispatch();
             input.SetIssue(common);
 
-            await this._ssuIssueRep.UpdateAsync(common, true);
+            await this._ssuIssueRep.UpdateNowAsync(common, true);
 
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             if (input.SetIssueDetail(ssuIssueDetail))
             {
-                await this._ssuIssueDetailRep.UpdateAsync(ssuIssueDetail, true);
+                await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
             }
 
             await IssueLogger.Log(
@@ -379,6 +379,15 @@ namespace QMS.Application.Issues
         {
             public long Id { get; set; }
             public string Title { get; set; }
+            public DateTime? ForecastSolveTime { get; set; }
+            public EnumConsequence Consequence { get; set; }
+            public EnumIssueClassification IssueClassification { get; set; }
+            /// <summary>
+            /// 执行人
+            /// </summary>
+            public long? Executor { get; set; }
+            public long? CC { get; set; }
+
             public string JsonModel { get; set; }
 
             public bool SetIssue(SsuIssue issue)
@@ -387,11 +396,16 @@ namespace QMS.Application.Issues
 
                 if (issue.Title != this.Title)
                 {
-
                     issue.Title = this.Title;
 
                     changed = true;
                 }
+
+                issue.IssueClassification = this.IssueClassification;
+                issue.Consequence = this.Consequence;
+                issue.Executor = this.Executor;
+                issue.CC = this.CC;
+                issue.ForecastSolveTime = this.ForecastSolveTime;
 
                 return changed;
             }
@@ -407,14 +421,12 @@ namespace QMS.Application.Issues
         public async Task Dispatch(InDispatch input)
         {
             SsuIssue issue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
-            issue.SetDispatch();
-            if (input.SetIssue(issue))
-            {
-                await this._ssuIssueRep.UpdateAsync(issue);
-            }
+            issue.DoDispatch();
+            input.SetIssue(issue);
+            await this._ssuIssueRep.UpdateNowAsync(issue);
 
             SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
-            await this._ssuIssueDetailRep.UpdateAsync(detail);
+            await this._ssuIssueDetailRep.UpdateNowAsync(detail);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,

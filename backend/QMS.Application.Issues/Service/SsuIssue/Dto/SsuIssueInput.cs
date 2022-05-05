@@ -64,52 +64,52 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 关闭日期
         /// </summary>
-        public virtual DateTime CloseTime { get; set; }
+        public virtual DateTime? CloseTime { get; set; }
 
         /// <summary>
         /// 发现人
         /// </summary>
-        public virtual long Discover { get; set; }
+        public virtual long? Discover { get; set; }
 
         /// <summary>
         /// 发现日期
         /// </summary>
-        public virtual DateTime DiscoverTime { get; set; }
+        public virtual DateTime? DiscoverTime { get; set; }
 
         /// <summary>
         /// 分发人
         /// </summary>
-        public virtual long Dispatcher { get; set; }
+        public virtual long? Dispatcher { get; set; }
 
         /// <summary>
         /// 分发日期
         /// </summary>
-        public virtual DateTime DispatchTime { get; set; }
+        public virtual DateTime? DispatchTime { get; set; }
 
         /// <summary>
         /// 预计完成日期
         /// </summary>
-        public virtual DateTime ForecastSolveTime { get; set; }
+        public virtual DateTime? ForecastSolveTime { get; set; }
 
         /// <summary>
         /// 被抄送人
         /// </summary>
-        public virtual long CC { get; set; }
+        public virtual long? CC { get; set; }
 
         /// <summary>
         /// 解决人
         /// </summary>
-        public virtual long Executor { get; set; }
+        public virtual long? Executor { get; set; }
 
         /// <summary>
         /// 解决日期
         /// </summary>
-        public virtual DateTime SolveTime { get; set; }
+        public virtual DateTime? SolveTime { get; set; }
 
         /// <summary>
         /// 验证人
         /// </summary>
-        public virtual long Verifier { get; set; }
+        public virtual long? Verifier { get; set; }
 
         /// <summary>
         /// 验证地点
@@ -119,26 +119,24 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 验证日期
         /// </summary>
-        public virtual DateTime ValidateTime { get; set; }
+        public virtual DateTime? ValidateTime { get; set; }
 
         /// <summary>
         /// 详情
         /// </summary>
-        public virtual string Description { get; set; }
+        public virtual string? Description { get; set; }
         /// <summary>
         /// 原因
         /// </summary>
-        public virtual string Reason { get; set; }
+        public virtual string? Reason { get; set; }
         /// <summary>
         /// 解决措施
         /// </summary>
-        public virtual string Measures { get; set; }
+        public virtual string? Measures { get; set; }
         /// <summary>
         /// 验证情况
         /// </summary>
-        public virtual string Result { get; set; }
-
-
+        public virtual string? Result { get; set; }
     }
 
     public class AddSsuIssueInput : SsuIssueInput
