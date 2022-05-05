@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace QMS.Application.System.Service
 {
+    [Serializable]
     public class GroupUserOutput
     {
         /// <summary>

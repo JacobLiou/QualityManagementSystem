@@ -29,9 +29,9 @@
     "WithExposedHeaders": [ "access-token", "x-access-token", "Content-Disposition" ]
   },
   "Cache": {
-    "CacheType": "MemoryCache", // RedisCache
-    "RedisConnectionString": "127.0.0.1:6379,password=,defaultDatabase=2",
-    "InstanceName": "dilon_"
+    "CacheType": "MemoryCache", // RedisCache  /   MemoryCache
+    "RedisConnectionString": "172.16.16.33:6379,password=,defaultDatabase=2",
+    "InstanceName": "qms_"
   },
   "SnowId": {
     "WorkerId": "1" // 取值范围0~63,默认1
