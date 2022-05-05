@@ -90,12 +90,12 @@ namespace QMS.Application.Issues.Helper
         public static string GetNameByEmpId(this long? id)
         {
 
-            if (id == null)
-            {
-                id = Helper.GetCurrentUser();
-            }
+            //if (id == null)
+            //{
+            //    id = Helper.GetCurrentUser();
+            //}
 
-            return id.ToString();
+            return id?.ToString();
         }
 
         public static string GetNameByEmpId(this long id)

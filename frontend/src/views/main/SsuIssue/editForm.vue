@@ -200,59 +200,68 @@
 
             this.record.description = data.description
             this.record.measures = data.measures
-            this.record.result = data.record
+            this.record.result = data.result
             this.record.reason = data.reason
 
-            // this.handleCancel()
+            setTimeout(() => {
+              this.form.setFieldsValue(
+                {
+                  id: record.id,
+                  title: record.title,
+                  projectId: record.projectId,
+                  productId: record.productId,
+                  module: record.module,
+                  consequence: record.consequence,
+                  issueClassification: record.issueClassification,
+                  source: record.source,
+                  // status: record.status,
+                  // creatorId: record.creatorId,
+                  discover: record.discover,
+                  dispatcher: record.dispatcher,
+                  cC: record.copyTo,
+                  executor: record.executor,
+                  verifier: record.verifier,
+                  verifierPlace: record.verifierPlace,
+
+                  description: record.description,
+                  reason: record.reason,
+                  measures: record.measures,
+                  result: record.result
+                }
+              )
+            }, 30)
+
+            this.form.getFieldDecorator('createTime', { initialValue: moment(record.createTime, 'YYYY-MM-DD') })
+            this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')
+            // this.form.getFieldDecorator('closeTime', { initialValue: moment(record.closeTime, 'YYYY-MM-DD') })
+            // this.closeTimeDateString = moment(record.closeTime).format('YYYY-MM-DD')
+            if (record.discoverTime) {
+              this.form.getFieldDecorator('discoverTime', { initialValue: moment(record.discoverTime, 'YYYY-MM-DD') })
+              this.discoverTimeDateString = moment(record.discoverTime).format('YYYY-MM-DD')
+            }
+            if (record.dispatchTime) {
+              this.form.getFieldDecorator('dispatchTime', { initialValue: moment(record.dispatchTime, 'YYYY-MM-DD') })
+              this.dispatchTimeDateString = moment(record.dispatchTime).format('YYYY-MM-DD')
+            }
+            if (record.forecastSolveTime) {
+              this.form.getFieldDecorator('forecastSolveTime', { initialValue: moment(record.forecastSolveTime, 'YYYY-MM-DD') })
+              this.forecastSolveTimeDateString = moment(record.forecastSolveTime).format('YYYY-MM-DD')
+            }
+            if (record.solveTime) {
+              this.form.getFieldDecorator('solveTime', { initialValue: moment(record.solveTime, 'YYYY-MM-DD') })
+              this.solveTimeDateString = moment(record.solveTime).format('YYYY-MM-DD')
+            }
+            if (record.validateTime) {
+              this.form.getFieldDecorator('validateTime', { initialValue: moment(record.validateTime, 'YYYY-MM-DD') })
+              this.validateTimeDateString = moment(record.validateTime).format('YYYY-MM-DD')
+            }
+
           } else {
             this.$message.error('获取问题' + this.record.title + '详情失败：' + JSON.stringify(res.message))
           }
         }).finally((res) => {
           this.confirmLoading = false
         })
-
-        setTimeout(() => {
-          this.form.setFieldsValue(
-            {
-              id: record.id,
-              title: record.title,
-              projectId: record.projectId,
-              productId: record.productId,
-              module: record.module,
-              consequence: record.consequence,
-              issueClassification: record.issueClassification,
-              source: record.source,
-              // status: record.status,
-              // creatorId: record.creatorId,
-              discover: record.discover,
-              dispatcher: record.dispatcher,
-              cC: record.cC,
-              executor: record.executor,
-              verifier: record.verifier,
-              verifierPlace: record.verifierPlace,
-
-              description: record.description,
-              reason: record.reason,
-              measures: record.measures,
-              result: record.result
-            }
-          )
-        }, 100)
-
-        this.form.getFieldDecorator('createTime', { initialValue: moment(record.createTime, 'YYYY-MM-DD') })
-        this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')
-        // this.form.getFieldDecorator('closeTime', { initialValue: moment(record.closeTime, 'YYYY-MM-DD') })
-        // this.closeTimeDateString = moment(record.closeTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('discoverTime', { initialValue: moment(record.discoverTime, 'YYYY-MM-DD') })
-        this.discoverTimeDateString = moment(record.discoverTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('dispatchTime', { initialValue: moment(record.dispatchTime, 'YYYY-MM-DD') })
-        this.dispatchTimeDateString = moment(record.dispatchTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('forecastSolveTime', { initialValue: moment(record.forecastSolveTime, 'YYYY-MM-DD') })
-        this.forecastSolveTimeDateString = moment(record.forecastSolveTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('solveTime', { initialValue: moment(record.solveTime, 'YYYY-MM-DD') })
-        this.solveTimeDateString = moment(record.solveTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('validateTime', { initialValue: moment(record.validateTime, 'YYYY-MM-DD') })
-        this.validateTimeDateString = moment(record.validateTime).format('YYYY-MM-DD')
       },
       handleSubmit () {
         const { form: { validateFields } } = this

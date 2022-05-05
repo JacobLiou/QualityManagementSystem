@@ -21,6 +21,9 @@
         <a-form-item label="验证情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input placeholder="请输入验证情况" v-decorator="['result',{rules: [{required:true, message: '请输入验证情况！'}]}]" />
         </a-form-item>
+        <a-form-item label="验证地点" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace',{rules: [{required:true, message: '请输入验证地点！'}]}]" />
+        </a-form-item>
 
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="验证通过">
           <a-switch
@@ -114,7 +117,7 @@ export default {
           }
           SsuIssueValidate(this.record).then((res) => {
             if (res.success) {
-              this.$message.success('验证成功')
+              this.$message.success('验证完成')
               this.confirmLoading = false
               this.$emit('ok', this.record)
               this.handleCancel()

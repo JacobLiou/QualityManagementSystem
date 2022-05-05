@@ -162,7 +162,7 @@
     },
     data () {
       return {
-        queryBy: '',
+        queryBy: 0,
         advanced: false, // 高级搜索 展开/关闭
         queryParam: {},
         columns: [

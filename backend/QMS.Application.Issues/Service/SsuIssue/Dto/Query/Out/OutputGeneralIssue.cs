@@ -9,7 +9,9 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
     {
         public string Title { get; set; }
         public string ProjectName { get; set; }
+        public long ProjectId { get; set; }
         public string ProductName { get; set; }
+        public long ProductId { get; set; }
         public EnumModule Module { get; set; }
         public EnumConsequence Consequence { get; set; }
         public EnumIssueClassification IssueClassification { get; set; }
@@ -49,8 +51,13 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
 
             this.Creator = model.CreatorId.GetNameByEmpId();
             this.Dispatcher = model.Dispatcher.GetNameByEmpId();
+            
             this.ProjectName = model.ProjectId.GetNameByProjectId();
+            this.ProjectId = model.ProjectId;
+
             this.ProductName = model.ProductId.GetNameByProductId();
+            this.ProductId = model.ProductId;
+
             this.Discover = model.Discover.GetNameByEmpId();
             this.Executor = model.Executor.GetNameByEmpId();
             this.Verifier = model.Verifier == null ? this.Creator : model.Verifier.GetNameByEmpId();

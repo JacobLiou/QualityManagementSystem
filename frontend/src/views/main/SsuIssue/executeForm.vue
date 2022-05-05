@@ -18,8 +18,9 @@
         </a-form-item>
 
         <a-form-item label="解决版本" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{required: true, message: '请选择问题来源！' }]}]">
-            <a-select-option v-for="(item,index) in solveVersioneData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+<!--            <a-input placeholder="请输入问题简述" v-decorator="['solveVersion', {rules: [{required: true, message: '请输入解决版本！'}]}]" />-->
+          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{required: true, message: '请选择解决版本！' }]}]">
+            <a-select-option v-for="(item,index) in solveVersionData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
 
@@ -67,22 +68,16 @@ export default {
       visible: false,
       confirmLoading: false,
       form: this.$form.createForm(this),
-      solveVersioneData: []
+      solveVersionData: []
     }
   },
   methods: {
     moment,
-    created() {
-      console.log('解决')
-      this.solveVersioneData = this.$options.filters['dictData']('issue_solve_version')
-
-      console.log(this.solveVersioneData)
-    },
     edit(record) {
       this.visible = true
       this.record = record
 
-      console.log(this.$options.filters['dictData'])
+      this.solveVersionData = this.$options.filters['dictData']('issue_solve_version')
 
       setTimeout(() => {
         this.form.setFieldsValue(

@@ -92,9 +92,9 @@ namespace QMS.Core.Entity
         [Comment("分发日期")]
         public DateTime? DispatchTime { get; set; }
 
-        public void SetDispatch()
+        public void DoDispatch()
         {
-            this.DiscoverTime = DateTime.Now;
+            this.DispatchTime = DateTime.Now;
             this.Dispatcher = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.Dispatched;
@@ -113,7 +113,7 @@ namespace QMS.Core.Entity
         [Comment("解决日期")]
         public DateTime? SolveTime { get; set; }
 
-        public void SetSolve()
+        public void DoSolve()
         {
             this.SolveTime = DateTime.Now;
             this.Executor = CurrentUserInfo.UserId;
@@ -131,12 +131,17 @@ namespace QMS.Core.Entity
         [Comment("验证日期")]
         public DateTime? ValidateTime { get; set; }
 
-        public void SetVerify(bool pass)
+        public void DoVerify(bool pass)
         {
-            this.Verifier = this.Verifier ?? CurrentUserInfo.UserId;
+            this.Verifier = CurrentUserInfo.UserId;
             this.ValidateTime = DateTime.Now;
 
             this.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
+
+            if (pass)
+            {
+                this.CloseTime = DateTime.Now;
+            }
         }
 
         [Comment("挂起人")]
@@ -144,7 +149,7 @@ namespace QMS.Core.Entity
 
         public void SetHangup()
         {
-            this.HangupId = this.HangupId ?? CurrentUserInfo.UserId;
+            this.HangupId = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.HasHangUp;
         }

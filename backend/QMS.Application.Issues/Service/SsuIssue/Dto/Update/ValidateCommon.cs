@@ -43,16 +43,9 @@ namespace QMS.Application.Issues.Service.SsuIssue.Dto.Update
                 changed = true;
             }
 
-            if (issue.Verifier != this.Verifier)
+            if (issue.VerifierPlace != this.VerifierPlace)
             {
-                issue.Verifier = this.Verifier;
-
-                changed = true;
-            }
-
-            if (issue.ValidateTime != this.ValidateTime)
-            {
-                issue.ValidateTime = this.ValidateTime;
+                issue.VerifierPlace = this.VerifierPlace;
 
                 changed = true;
             }
