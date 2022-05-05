@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using QMS.Application.System.Service;
+using QMS.Core;
 
 namespace QMS.Application.System
 {

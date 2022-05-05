@@ -30,13 +30,11 @@ namespace QMS.Web.Core
         public void UseDefault()
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(@"SofarSolar.Com");
+            Console.WriteLine(@"qms.sofarsolar.com");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(@"");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(@"期待您的PR，让.net更好！
-
-");
+            Console.WriteLine(@"期待您的PR，让.net更好！");
         }
 
         public void UseOther()
