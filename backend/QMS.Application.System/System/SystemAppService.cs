@@ -1,5 +1,6 @@
 ﻿using Furion.DynamicApiController;
 using Microsoft.AspNetCore.Mvc;
+using QMS.Application.System.Service;
 
 namespace QMS.Application.System
 {
@@ -23,6 +24,26 @@ namespace QMS.Application.System
         public string GetDescription()
         {
             return _systemService.GetDescription();
+        }
+
+        /// <summary>
+        ///  获取人员和组
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/System/UserGroup")]
+        public List<GroupUserOutput> GetUserGroup()
+        {
+            return _systemService.GetUserGroup();
+        }
+
+        /// <summary>
+        /// 获取组
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/System/group")]
+        public List<SsuGroupOutput> GetGroup()
+        {
+            return _systemService.GetGroup();
         }
     }
 }
