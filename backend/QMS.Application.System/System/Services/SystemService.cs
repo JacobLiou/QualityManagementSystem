@@ -1,7 +1,7 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
-using QMS.Application.System.Service;
+using QMS.Core;
 
 namespace QMS.Application.System
 {

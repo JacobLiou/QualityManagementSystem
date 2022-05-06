@@ -1,4 +1,6 @@
-﻿using QMS.Application.System.Service;
+﻿
+
+using QMS.Core;
 
 namespace QMS.Application.System
 {
