@@ -1,16 +1,20 @@
-﻿using Furion.DatabaseAccessor;
+﻿using Furion;
+using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
+using Furion.JsonSerialization;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MiniExcelLibs;
+using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
 using QMS.Application.Issues.IssueService.Dto.QueryList;
+using QMS.Application.Issues.Service.SsuIssue;
 using QMS.Application.Issues.Service.SsuIssue.Dto;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Add;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Update;
@@ -31,16 +35,22 @@ namespace QMS.Application.Issues
         private readonly IRepository<SsuIssue, IssuesDbContextLocator> _ssuIssueRep;
         private readonly IRepository<SsuIssueDetail, IssuesDbContextLocator> _ssuIssueDetailRep;
         private readonly IRepository<SsuIssueOperation, IssuesDbContextLocator> _ssuIssueOperateRep;
+        private readonly IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> _ssuIssueAttrRep;
+        private readonly IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> _ssuIssueAttrValueRep;
 
         public SsuIssueService(
             IRepository<SsuIssue, IssuesDbContextLocator> ssuIssueRep,
             IRepository<SsuIssueDetail, IssuesDbContextLocator> ssuIssueDetailRep,
-            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperateRep
+            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperateRep,
+            IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> ssuIssueAttrRep,
+            IRepository<SsuIssueExtendAttributeValue, IssuesDbContextLocator> ssuIssueAttrValueRep
         )
         {
             this._ssuIssueRep = ssuIssueRep;
             this._ssuIssueDetailRep = ssuIssueDetailRep;
             this._ssuIssueOperateRep = ssuIssueOperateRep;
+            this._ssuIssueAttrRep = ssuIssueAttrRep;
+            this._ssuIssueAttrValueRep = ssuIssueAttrValueRep;
         }
 
         /// <summary>
@@ -48,13 +58,16 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssue/add")]
+        [HttpPost("/SsuIssue/Add")]
         public async Task Add(InIssue input)
         {
             var ssuIssue = input.Adapt<SsuIssue>();
             ssuIssue.SetCreate();
 
             EntityEntry<SsuIssue> issue = await this._ssuIssueRep.InsertNowAsync(ssuIssue, ignoreNullValues: true);
+
+            // 插入扩展字段数据
+            await this.AddAttributeValuesBatch(input.ExtendAttribute);
 
             var detail = input.Adapt<SsuIssueDetail>();
             detail.Id = issue.Entity.Id;
@@ -69,12 +82,31 @@ namespace QMS.Application.Issues
             );
         }
 
+        private async Task AddAttributeValuesBatch(string ExtendAttribute)
+        {
+            if (!string.IsNullOrEmpty(ExtendAttribute))
+            {
+                List<FieldValue> list = App.GetService<IJsonSerializerProvider>().Deserialize<List<FieldValue>>(ExtendAttribute);
+
+
+                await this._ssuIssueAttrValueRep.Entities.AddRangeAsync(list.Select<FieldValue, SsuIssueExtendAttributeValue>(model => new SsuIssueExtendAttributeValue
+                {
+                    Id = model.AttributeId,
+                    IssueNum = model.IssueId,
+                    AttibuteValue = model.Value
+                }));
+
+                await this._ssuIssueAttrValueRep.Context.SaveChangesAsync();
+            }
+        }
+
+        #region 已测试完毕
         /// <summary>
         /// 删除问题记录
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssue/delete")]
+        [HttpPost("/SsuIssue/Delete")]
         public async Task Delete(DeleteSsuIssueInput input)
         {
             SsuIssue ssuIssue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -103,7 +135,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssue/edit")]
+        [HttpPost("/SsuIssue/Edit")]
         public async Task Edit(UpdateSsuIssueInput input)
         {
             SsuIssue ssuIssue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -130,26 +162,30 @@ namespace QMS.Application.Issues
             );
         }
 
-        [HttpGet("/SsuIssue/detail")]
-        public async Task<OutputDetailIssue> Get([FromQuery] BaseId input)
-        {
-            OutputDetailIssue issue = (await this._ssuIssueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
-
-            return issue;
-        }
 
         /// <summary>
-        /// 获取问题记录列表
+        /// 获取问题详情
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuIssue/list")]
-        public async Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input)
+        [HttpGet("/SsuIssue/Detail")]
+        public async Task<OutputDetailIssue> Get([FromQuery] BaseId input)
         {
-            return await _ssuIssueRep.DetachedEntities.ProjectToType<SsuIssueOutput>().ToListAsync();
+            return (await this._ssuIssueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
         }
 
-        [HttpPost("/SsuIssue/execute")]
+        //[HttpGet("/SsuIssue/list")]
+        //public async Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input)
+        //{
+        //    return await _ssuIssueRep.DetachedEntities.ProjectToType<SsuIssueOutput>().ToListAsync();
+        //}
+
+        /// <summary>
+        /// 执行者处理问题
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/Execute")]
         public async Task Execute(InSolve input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -170,7 +206,12 @@ namespace QMS.Application.Issues
             );
         }
 
-        [HttpPost("/SsuIssue/validate")]
+        /// <summary>
+        /// 提出者或验证者验证问题是否解决
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/Validate")]
         public async Task Validate(InValidate input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -193,8 +234,13 @@ namespace QMS.Application.Issues
                 $"验证【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过") + "】"
                 );
         }
-
-        [HttpPost("/SsuIssue/hangup")]
+        
+        /// <summary>
+        /// 挂起问题
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/Hangup")]
         public async Task HangUp(InHangup input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -217,7 +263,12 @@ namespace QMS.Application.Issues
             );
         }
 
-        [HttpPost("/SsuIssue/redispatch")]
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/Redispatch")]
         public async Task ReDispatch(InReDispatch input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
@@ -272,6 +323,9 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Hangup:
                     querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.HasHangUp);
                     break;
+                case EnumQueryCondition.CC:
+                    querable = querable.Where(item => item.CC == Helper.Helper.GetCurrentUser());
+                    break;
             }
 
             return querable;
@@ -282,7 +336,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuIssue/page")]
+        [HttpGet("/SsuIssue/Page")]
         public async Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input)
         {
             IQueryable<SsuIssue> querable = this.GetQueryable(input);
@@ -293,6 +347,7 @@ namespace QMS.Application.Issues
 
             return ssuIssues;
         }
+        #endregion
 
         private IQueryable<ExportIssueDto> GetExportQuerable(BaseQueryModel input)
         {
@@ -332,7 +387,7 @@ namespace QMS.Application.Issues
             }
         }
 
-        [HttpPost("/SsuIssue/export")]
+        [HttpPost("/SsuIssue/Export")]
         public async Task<IActionResult> Export(BaseQueryModel input)
         {
             IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
@@ -355,7 +410,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssue/upload-file")]
+        [HttpPost("/SsuIssue/UploadFile")]
         public async Task AttachmentUpload(IFormFile file)
         {
             var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}-{file.FileName}");
@@ -417,7 +472,7 @@ namespace QMS.Application.Issues
             }
         }
 
-        [HttpPost("/SsuIssue/dispatch")]
+        [HttpPost("/SsuIssue/Dispatch")]
         public async Task Dispatch(InDispatch input)
         {
             SsuIssue issue = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);

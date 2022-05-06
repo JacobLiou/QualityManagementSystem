@@ -31,6 +31,11 @@ namespace QMS.Application.Issues
         /// 时间
         /// </summary>
         public DateTime OperationTime { get; set; }
-        
+
+        /// <summary>
+        /// 操作人
+        /// </summary>
+        public string OperatorName { get; set; }
+
     }
 }

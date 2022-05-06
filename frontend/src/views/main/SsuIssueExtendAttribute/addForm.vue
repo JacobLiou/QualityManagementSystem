@@ -30,9 +30,9 @@
 </template>
 
 <script>
-  import {
-    SsuIssueExtendAttributeAdd
-  } from '@/api/modular/main/SsuIssueExtendAttributeManage'
+import {
+  SsuIssueExtendAttributeBatchAdd
+} from '@/api/modular/main/SsuIssueExtendAttributeManage'
 
   export default {
     data () {
@@ -74,7 +74,7 @@
                 values[key] = JSON.stringify(values[key])
               }
             }
-            SsuIssueExtendAttributeAdd(values).then((res) => {
+            SsuIssueExtendAttributeBatchAdd(values).then((res) => {
               if (res.success) {
                 this.$message.success('新增成功')
                 this.confirmLoading = false

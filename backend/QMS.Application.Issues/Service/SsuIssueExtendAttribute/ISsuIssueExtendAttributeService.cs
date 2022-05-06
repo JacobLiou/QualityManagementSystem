@@ -1,7 +1,7 @@
 ﻿using Furion.Extras.Admin.NET;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using QMS.Application.Issues.Field;
+using static QMS.Application.Issues.SsuIssueExtendAttributeService;
 
 namespace QMS.Application.Issues
 {
@@ -9,9 +9,9 @@ namespace QMS.Application.Issues
     {
         Task Add(AddSsuIssueExtendAttributeInput input);
         Task Delete(DeleteSsuIssueExtendAttributeInput input);
-        Task<SsuIssueExtendAttributeOutput> Get([FromQuery] QueryeSsuIssueExtendAttributeInput input);
-        Task<List<SsuIssueExtendAttributeOutput>> List([FromQuery] SsuIssueExtendAttributeInput input);
-        Task<PageResult<SsuIssueExtendAttributeOutput>> Page([FromQuery] SsuIssueExtendAttributeInput input);
+        //Task<SsuIssueExtendAttributeOutput> Get([FromQuery] QueryeSsuIssueExtendAttributeInput input);
+        Task<List<FieldStruct>> List([FromQuery] ModuleType input);
+        //Task<PageResult<SsuIssueExtendAttributeOutput>> Page([FromQuery] SsuIssueExtendAttributeInput input);
         Task Update(UpdateSsuIssueExtendAttributeInput input);
     }
 }

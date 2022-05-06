@@ -7,7 +7,7 @@
  */
 export function SsuIssueDetail (parameter) {
   return axios({
-    url: '/SsuIssue/detail',
+    url: '/SsuIssue/Detail',
     method: 'get',
     params: parameter
   })
@@ -20,7 +20,7 @@ export function SsuIssueDetail (parameter) {
  */
 export function SsuIssuePage (parameter) {
   return axios({
-    url: '/SsuIssue/page',
+    url: '/SsuIssue/Page',
     method: 'get',
     params: parameter
   })
@@ -33,7 +33,7 @@ export function SsuIssuePage (parameter) {
  */
 export function SsuIssueList (parameter) {
   return axios({
-    url: '/SsuIssue/list',
+    url: '/SsuIssue/List',
     method: 'get',
     params: parameter
   })
@@ -46,7 +46,7 @@ export function SsuIssueList (parameter) {
  */
 export function SsuIssueAdd (parameter) {
   return axios({
-    url: '/SsuIssue/add',
+    url: '/SsuIssue/Add',
     method: 'post',
     data: parameter
   })
@@ -59,7 +59,7 @@ export function SsuIssueAdd (parameter) {
  */
 export function SsuIssueEdit (parameter) {
   return axios({
-    url: '/SsuIssue/edit',
+    url: '/SsuIssue/Edit',
     method: 'post',
     data: parameter
   })
@@ -72,7 +72,7 @@ export function SsuIssueEdit (parameter) {
  */
 export function SsuIssueExecute (parameter) {
   return axios({
-    url: '/SsuIssue/execute',
+    url: '/SsuIssue/Execute',
     method: 'post',
     data: parameter
   })
@@ -85,7 +85,7 @@ export function SsuIssueExecute (parameter) {
  */
 export function SsuIssueValidate (parameter) {
   return axios({
-    url: '/SsuIssue/validate',
+    url: '/SsuIssue/Validate',
     method: 'post',
     data: parameter
   })
@@ -98,7 +98,7 @@ export function SsuIssueValidate (parameter) {
  */
 export function SsuIssueHangup (parameter) {
   return axios({
-    url: '/SsuIssue/hangup',
+    url: '/SsuIssue/Hangup',
     method: 'post',
     data: parameter
   })
@@ -111,7 +111,7 @@ export function SsuIssueHangup (parameter) {
  */
 export function SsuIssueRedispatch (parameter) {
   return axios({
-    url: '/SsuIssue/redispatch',
+    url: '/SsuIssue/Redispatch',
     method: 'post',
     data: parameter
   })
@@ -124,7 +124,7 @@ export function SsuIssueRedispatch (parameter) {
  */
 export function SsuIssueDispatch (parameter) {
   return axios({
-    url: '/SsuIssue/dispatch',
+    url: '/SsuIssue/Dispatch',
     method: 'post',
     data: parameter
   })
@@ -137,7 +137,7 @@ export function SsuIssueDispatch (parameter) {
  */
 export function SsuIssueExport (parameter) {
   return axios({
-    url: '/SsuIssue/export',
+    url: '/SsuIssue/Export',
     method: 'post',
     data: parameter
   })
@@ -150,7 +150,7 @@ export function SsuIssueExport (parameter) {
  */
 export function SsuIssueUploadFile (parameter) {
   return axios({
-    url: '/SsuIssue/upload-file',
+    url: '/SsuIssue/UploadFile',
     method: 'post',
     data: parameter
   })
@@ -163,7 +163,20 @@ export function SsuIssueUploadFile (parameter) {
  */
 export function SsuIssueDelete (parameter) {
   return axios({
-    url: '/SsuIssue/delete',
+    url: '/SsuIssue/Delete',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 操作记录
+ *
+ * @author licong
+ */
+export function OperationPage (parameter) {
+  return axios({
+    url: '/SsuIssueOperation/Page',
     method: 'post',
     data: parameter
   })

@@ -81,6 +81,8 @@
           <a :class='{"active": queryBy == 6}' @click="query(6)">已关闭</a>
           <a-divider type="vertical"/>
           <a :class='{"active": queryBy == 7}' @click="query(7)">已挂起</a>
+          <a-divider type="vertical"/>
+          <a :class='{"active": queryBy == 8}' @click="query(8)">抄送给我</a>
 
           <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">导出</a-button>
         </template>
@@ -97,7 +99,7 @@
           {{ 'issue_source' | dictType(text) }}
         </span>
         <span slot="statusscopedSlots" slot-scope="text">
-          {{ 'isssue_status' | dictType(text) }}
+          {{ 'issue_status' | dictType(text) }}
         </span>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuIssue:copy')" @click="$refs.addForm.copy(record)">复制</a>
@@ -352,7 +354,7 @@ sorter: true,
       const consequenceOption = this.$options
       this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
       const statusOption = this.$options
-      this.statusData = statusOption.filters['dictData']('isssue_status')
+      this.statusData = statusOption.filters['dictData']('issue_status')
     },
     methods: {
       query(index) {
@@ -419,6 +421,7 @@ sorter: true,
 
   .s-table-tool-left > a.active {
     background: #dddddd;
+    border-radius: 5px;
   }
 
   .ant-btn-primary {

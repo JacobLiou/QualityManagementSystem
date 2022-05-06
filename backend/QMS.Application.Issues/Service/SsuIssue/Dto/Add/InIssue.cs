@@ -11,5 +11,10 @@
         /// Json ["url1","url2"]
         /// </summary>
         public string Attachments { get; set; }
+
+        /// <summary>
+        /// List<ExtendAttributeModel>.ToJson()
+        /// </summary>
+        public string ExtendAttribute { get; set; }
     }
 }

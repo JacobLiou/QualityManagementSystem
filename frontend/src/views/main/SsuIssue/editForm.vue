@@ -104,6 +104,16 @@
         </a-form-item>
       </a-form>
     </a-spin>
+
+    <div>
+      <strong>历史记录</strong>
+
+      <ul  v-if="this.operationRecords!=''">
+        <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
+          {{index+1}}. {{item.operationTime}}, 由 <b>{{item.operatorName}}</b> {{'issue_operation_type'| dictType(item.operationTypeId)}}
+        </li>
+      </ul>
+    </div>
   </a-modal>
 </template>
 
@@ -111,7 +121,8 @@
   import moment from 'moment'
   import {
     SsuIssueEdit,
-    SsuIssueDetail
+    SsuIssueDetail,
+    OperationPage
   } from '@/api/modular/main/SsuIssueManage'
   import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
   import { SsuProductList } from '@/api/modular/main/SsuProductManage'
@@ -144,7 +155,8 @@
         confirmLoading: false,
         form: this.$form.createForm(this),
         projectData: [],
-        productData: []
+        productData: [],
+        operationRecords: ''
       }
     },
     created () {
@@ -183,7 +195,7 @@
         const sourceOption = this.$options
         this.sourceData = sourceOption.filters['dictData']('issue_source')
         const statusOption = this.$options
-        this.statusData = statusOption.filters['dictData']('isssue_status')
+        this.statusData = statusOption.filters['dictData']('issue_status')
 
         SsuIssueDetail(this.record).then((res) => {
           if (res.success) {
@@ -256,6 +268,16 @@
               this.validateTimeDateString = moment(record.validateTime).format('YYYY-MM-DD')
             }
 
+            this.record.issueId = this.record.id
+            OperationPage(this.record).then((res) => {
+              if (res.success) {
+                this.operationRecords = res.data.rows
+              } else {
+                this.$message.error('问题操作记录读取失败')
+              }
+            }).finally((res) => {
+              this.confirmLoading = false
+            })
           } else {
             this.$message.error('获取问题' + this.record.title + '详情失败：' + JSON.stringify(res.message))
           }

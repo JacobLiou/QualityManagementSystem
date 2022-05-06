@@ -122,6 +122,7 @@
   import {
     SsuProductList
   } from '@/api/modular/main/SsuProductManage'
+
   import { sysUserOrgTree } from '@/api/modular/system/userManage'
 
   export default {
@@ -152,8 +153,7 @@
         form: this.$form.createForm(this),
         projectData: [],
         productData: [],
-        orgTree: [],
-        moduleInit: ''
+        orgTree: []
       }
     },
     created () {
@@ -196,12 +196,13 @@
         // this.statusData = statusOption.filters['dictData']('issue_status')
       },
       // 初始化方法
-      add (record) {
+      add () {
         this.init()
 
         this.form.resetFields()
 
-        this.discoverTime = this.discoverTimeDateString
+        this.discoverTimeDateString = ''
+        this.discoverTime = ''
       },
       copy (record) {
         this.init()
@@ -227,8 +228,6 @@
               // description: this.description
             }
           )
-          // this.form.getFieldDecorator('module', { initialValue: '模块测试' })
-          // this.moduleInit = '模块测试'
         }, 30)
         this.form.getFieldDecorator('createTime', { initialValue: moment(record.createTime, 'YYYY-MM-DD') })
         this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')

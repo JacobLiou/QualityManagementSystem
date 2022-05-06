@@ -12,7 +12,7 @@ namespace QMS.Application.Issues
         Task Add(InIssue input);
         Task Delete(DeleteSsuIssueInput input);
         Task<OutputDetailIssue> Get([FromQuery] BaseId input);
-        Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input);
+        //Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input);
         //Task<PageResult<SsuIssueOutput>> Page([FromQuery] SsuIssueInput input);
         Task Edit(UpdateSsuIssueInput input);
 

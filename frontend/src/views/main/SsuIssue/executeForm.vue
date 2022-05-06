@@ -44,12 +44,23 @@
         </a-form-item>
       </a-form>
     </a-spin>
+
+    <div>
+      <strong>历史记录</strong>
+
+      <ul  v-if="this.operationRecords!=''">
+        <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
+          {{index+1}}. {{item.operationTime}}, 由 <b>{{item.operatorName}}</b> {{'issue_operation_type'| dictType(item.operationTypeId)}}
+        </li>
+      </ul>
+    </div>
   </a-modal>
 </template>
 
 <script>
 import moment from 'moment'
 import {
+  OperationPage,
   SsuIssueExecute, SsuIssueUploadFile
 } from '@/api/modular/main/SsuIssueManage'
 export default {
@@ -68,7 +79,8 @@ export default {
       visible: false,
       confirmLoading: false,
       form: this.$form.createForm(this),
-      solveVersionData: []
+      solveVersionData: [],
+      operationRecords: ''
     }
   },
   methods: {
@@ -87,6 +99,17 @@ export default {
           }
         )
       }, 100)
+
+      this.record.issueId = this.record.id
+      OperationPage(this.record).then((res) => {
+        if (res.success) {
+          this.operationRecords = res.data.rows
+        } else {
+          this.$message.error('问题操作记录读取失败')
+        }
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
     },
     customRequest(data) {
       const formData = new FormData()

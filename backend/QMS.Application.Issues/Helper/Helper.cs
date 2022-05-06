@@ -70,14 +70,14 @@ namespace QMS.Application.Issues.Helper
         {
             //Assert(false);
 
-            return id.ToString();
+            return "项目" + id.ToString();
         }
 
         public static string GetNameByProductId(this long id)
         {
             //Assert(false);
 
-            return id.ToString();
+            return "产品" + id.ToString();
         }
         #endregion
 
@@ -89,20 +89,19 @@ namespace QMS.Application.Issues.Helper
 
         public static string GetNameByEmpId(this long? id)
         {
-
             //if (id == null)
             //{
             //    id = Helper.GetCurrentUser();
             //}
 
-            return id?.ToString();
+            return "用户" + id?.ToString();
         }
 
         public static string GetNameByEmpId(this long id)
         {
             //Assert(false);
 
-            return id.ToString();
+            return "用户" + id.ToString();
         }
         #endregion
 

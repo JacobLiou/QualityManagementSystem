@@ -5,13 +5,13 @@
  *
  * @author licong
  */
-export function SsuIssueExtendAttributePage (parameter) {
-  return axios({
-    url: '/SsuIssueExtendAttribute/page',
-    method: 'get',
-    params: parameter
-  })
-}
+// export function SsuIssueExtendAttributePage (parameter) {
+//   return axios({
+//     url: '/SsuIssueExtendAttribute/Page',
+//     method: 'get',
+//     params: parameter
+//   })
+// }
 
 /**
  * 问题扩展属性列表
@@ -20,7 +20,7 @@ export function SsuIssueExtendAttributePage (parameter) {
  */
 export function SsuIssueExtendAttributeList (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/list',
+    url: '/SsuIssueExtendAttribute/ListStruct',
     method: 'get',
     params: parameter
   })
@@ -33,7 +33,7 @@ export function SsuIssueExtendAttributeList (parameter) {
  */
 export function SsuIssueExtendAttributeAdd (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/add',
+    url: '/SsuIssueExtendAttribute/AddStruct',
     method: 'post',
     data: parameter
   })
@@ -46,7 +46,7 @@ export function SsuIssueExtendAttributeAdd (parameter) {
  */
 export function SsuIssueExtendAttributeBatchAdd (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/batch-add-struct',
+    url: '/SsuIssueExtendAttribute/BatchAddStruct',
     method: 'post',
     data: parameter
   })
@@ -59,7 +59,7 @@ export function SsuIssueExtendAttributeBatchAdd (parameter) {
  */
 export function SsuIssueExtendAttributeEdit (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/edit',
+    url: '/SsuIssueExtendAttribute/EditStruct',
     method: 'post',
     data: parameter
   })
@@ -72,7 +72,7 @@ export function SsuIssueExtendAttributeEdit (parameter) {
  */
 export function SsuIssueExtendAttributeDelete (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/delete',
+    url: '/SsuIssueExtendAttribute/DeleteStruct',
     method: 'post',
     data: parameter
   })

@@ -23,6 +23,7 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         Solved,
         Unsolve,
         Closed,
-        Hangup
+        Hangup,
+        CC
     }
 }
