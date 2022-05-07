@@ -9,12 +9,13 @@ namespace QMS.Application.System
     /// <summary>
     /// 系统服务接口
     /// </summary>
-    [ApiDescriptionSettings("质量管理基础数据", Name = "System", Order = 100)]
-    public class SystemAppService : IDynamicApiController
+    [ApiDescriptionSettings("基础数据服务", Name = "group", Order = 100)]
+    [Route("system/[controller]")]
+    public class GroupAppService : IDynamicApiController
     {
         private readonly ISystemService _systemService;
         private readonly IDistributedCache _cache;
-        public SystemAppService(ISystemService systemService, IDistributedCache cache)
+        public GroupAppService(ISystemService systemService, IDistributedCache cache)
         {
             _systemService = systemService;
             _cache = cache;
@@ -22,20 +23,30 @@ namespace QMS.Application.System
 
 
         /// <summary>
-        ///  获取人员和组
+        /// 用户登录
         /// </summary>
+        /// <param name="input">
+        /// groupId：用户组ID 
+        /// </param>
+        /// <remarks>备注说明<br />
+        /// 返回用户组<br />
+        /// GroupName：组名<br />
+        /// GroupID：组ID<br />
+        /// UserName：用户<br />
+        /// UserID：用户ID
+        /// </remarks>
         /// <returns></returns>
-        [HttpGet("/System/UserGroup")]
-        public async Task<List<GroupUserOutput>> GetUserGroup()
+        [HttpGet("usergroup")]
+        public async Task<List<GroupUserOutput>> GetUserGroup(long groupId = 281695421571141)
         {
-            var userGruop = _cache.GetObject<List<GroupUserOutput>>(CacheKeys.CachedUserGroup);
+            var userGruop = _cache.GetObject<List<GroupUserOutput>>(CacheKeys.CachedUserGroup + groupId);
             if (userGruop == null)
             {
-                userGruop = _systemService.GetUserGroup();
+                userGruop = _systemService.GetUserGroup(groupId);
 
                 DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); //设置10分钟后过期
-                _cache.SetObject(CacheKeys.CachedUserGroup, userGruop, cacheOption);
+                _cache.SetObject(CacheKeys.CachedUserGroup + groupId, userGruop, cacheOption);
             }
             return userGruop;
         }
@@ -55,7 +66,7 @@ namespace QMS.Application.System
         /// 获取组
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/System/group")]
+        [HttpGet("get")]
         public List<SsuGroupOutput> GetGroup()
         {
             return _systemService.GetGroup();

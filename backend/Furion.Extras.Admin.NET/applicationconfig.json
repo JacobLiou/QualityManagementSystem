@@ -29,8 +29,8 @@
     "WithExposedHeaders": [ "access-token", "x-access-token", "Content-Disposition" ]
   },
   "Cache": {
-    "CacheType": "MemoryCache", // RedisCache  /   MemoryCache
-    "RedisConnectionString": "172.16.16.33:6379,password=,defaultDatabase=2",
+    "CacheType": "RedisCache", // RedisCache  /   MemoryCache
+    "RedisConnectionString": "172.16.16.33:6379,password=sofar-monitor",
     "InstanceName": "qms_"
   },
   "SnowId": {

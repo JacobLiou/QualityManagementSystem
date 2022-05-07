@@ -8,7 +8,7 @@ namespace QMS.Application.System
     {
         string GetDescription();
 
-        List<GroupUserOutput> GetUserGroup();
+        List<GroupUserOutput> GetUserGroup(long groupId);
 
         List<SsuGroupOutput> GetGroup();
     }

@@ -46,15 +46,12 @@ namespace QMS.Application.Issues
 
         }
 
-
-
     }
 
     public class ApiModel<T>
     {
         public bool success { get; set; }
         public int code { get; set; }
-
         public T data { get; set; }
         public string message { get; set; }
     }

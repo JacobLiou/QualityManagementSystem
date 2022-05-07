@@ -2,7 +2,7 @@
 $remoteIp = "172.16.16.33"
 
 # supervisor 服务名称
-$supervisorServername = "DotnetSmartPrison"
+$supervisorServername = "DotnetQMS"
 
 # 定义路径
 $buildFolder = (Get-Item -Path "./" -Verbose).FullName
@@ -18,12 +18,12 @@ New-Item -Path $outputFolder -ItemType Directory
 ### 还原&打包
 Set-Location $coreFolder
 dotnet restore
-dotnet publish --no-restore --output (Join-Path $outputFolder "smart_prison_core") --configuration Release 
+dotnet publish --no-restore --output (Join-Path $outputFolder "dotnetqms_core") --configuration Release 
 
 ### 推送到服务器
 Set-Location $outputFolder
-ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_core; exit"
-scp -r (Join-Path $outputFolder "smart_prison_core") root@${remoteIp}:/wwwroot
+ssh root@$remoteIp "rm -rf /wwwroot/dotnetqms_core; exit"
+scp -r (Join-Path $outputFolder "dotnetqms_core") root@${remoteIp}:/wwwroot
 
 ### dotnet 命令运行
 # ssh root@$remoteIp "cd /wwwroot/smart_prison_core; dotnet QMS.Web.Entry.dll --urls http://*:5566; exit"
