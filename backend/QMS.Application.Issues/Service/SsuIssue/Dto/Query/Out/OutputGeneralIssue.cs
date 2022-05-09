@@ -8,27 +8,45 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
     public class OutputGeneralIssue : BaseId
     {
         public string Title { get; set; }
+
         public string ProjectName { get; set; }
         public long ProjectId { get; set; }
+
         public string ProductName { get; set; }
         public long ProductId { get; set; }
+
         public EnumModule Module { get; set; }
         public EnumConsequence Consequence { get; set; }
         public EnumIssueClassification IssueClassification { get; set; }
         public EnumIssueSource Source { get; set; }
         public EnumIssueStatus Status { get; set; }
-        public string Creator { get; set; }
+
+        public long? Creator { get; set; }
+        public string CreatorName { get; set; }
+
         public DateTime? CreateTime { get; set; }
         public DateTime? CloseTime { get; set; }
-        public string Discover { get; set; }
+
+        public long? Discover { get; set; }
+        public string DiscoverName { get; set; }
         public DateTime? DiscoverTime { get; set; }
-        public string Dispatcher { get; set; }
+
+        
+        public long? Dispatcher { get; set; }
+        public string DispatcherName { get; set; }
         public DateTime? DispatchTime { get; set; }
+        
         public DateTime? ForecastSolveTime { get; set; }
-        public string CopyTo { get; set; }
-        public string Executor { get; set; }
+
+        public long? CopyTo { get; set; }
+        public string CopyToName { get; set; }
+
+        public long? Executor { get; set; }
+        public string ExecutorName { get; set; }
         public DateTime? SolveTime { get; set; }
-        public string Verifier { get; set; }
+
+        public long? Verifier { get; set; }
+        public string VerifierName { get; set; }
         public string VerifierPlace { get; set; }
         public DateTime? ValidateTime { get; set; }
 
@@ -49,8 +67,11 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
             this.VerifierPlace = model.VerifierPlace;
             this.ValidateTime = model.ValidateTime;
 
-            this.Creator = model.CreatorId.GetNameByEmpId();
-            this.Dispatcher = model.Dispatcher.GetNameByEmpId();
+            this.Creator = model.CreatorId;
+            this.CreatorName = model.CreatorId.GetNameByEmpId();
+
+            this.Dispatcher = model.Dispatcher;
+            this.DispatcherName = model.Dispatcher.GetNameByEmpId();
             
             this.ProjectName = model.ProjectId.GetNameByProjectId();
             this.ProjectId = model.ProjectId;
@@ -58,12 +79,19 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
             this.ProductName = model.ProductId.GetNameByProductId();
             this.ProductId = model.ProductId;
 
-            this.Discover = model.Discover.GetNameByEmpId();
-            this.Executor = model.Executor.GetNameByEmpId();
-            this.Verifier = model.Verifier == null ? this.Creator : model.Verifier.GetNameByEmpId();
+            this.Discover = model.Discover;
+            this.DiscoverName = model.Discover.GetNameByEmpId();
+
+            this.Executor = model.Executor;
+            this.ExecutorName = model.Executor.GetNameByEmpId();
+
+            this.Verifier = model.Verifier;
+            this.VerifierName = model.Verifier == null ? this.CreatorName : model.Verifier.GetNameByEmpId();
             
             this.CloseTime = model.CloseTime;
-            this.CopyTo = model.CC.GetNameByEmpId();
+
+            this.CopyTo = model.CC;
+            this.CopyToName = model.CC.GetNameByEmpId();
         }
     }
 }

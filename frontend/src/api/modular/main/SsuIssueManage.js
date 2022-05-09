@@ -139,6 +139,34 @@ export function SsuIssueExport (parameter) {
   return axios({
     url: '/SsuIssue/Export',
     method: 'post',
+    data: parameter,
+    responseType: 'blob'
+  })
+}
+
+/**
+ * 问题模板下载
+ *
+ * @author licong
+ */
+export function SsuIssueTemplate (parameter) {
+  return axios({
+    url: '/SsuIssue/Template',
+    method: 'get',
+    data: parameter,
+    responseType: 'blob'
+  })
+}
+
+/**
+ * 数据导入
+ *
+ * @author licong
+ */
+export function SsuIssueImportData (parameter) {
+  return axios({
+    url: '/SsuIssue/Import',
+    method: 'post',
     data: parameter
   })
 }
@@ -180,4 +208,22 @@ export function OperationPage (parameter) {
     method: 'post',
     data: parameter
   })
+}
+
+export function Downloadfile (res) {
+  var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' })
+  var contentDisposition = res.headers['content-disposition']
+  var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*')
+  var result = patt.exec(contentDisposition)
+  var filename = result[1]
+  var downloadElement = document.createElement('a')
+  var href = window.URL.createObjectURL(blob) // 创建下载的链接
+  var reg = /^["](.*)["]$/g
+  downloadElement.style.display = 'none'
+  downloadElement.href = href
+  downloadElement.download = decodeURI(filename.replace(reg, '$1')) // 下载后文件名
+  document.body.appendChild(downloadElement)
+  downloadElement.click() // 点击下载
+  document.body.removeChild(downloadElement) // 下载完成移除元素
+  window.URL.revokeObjectURL(href)
 }

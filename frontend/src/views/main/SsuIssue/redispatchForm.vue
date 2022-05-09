@@ -101,12 +101,12 @@ export default {
 
           SsuIssueRedispatch(this.record).then((res) => {
             if (res.success) {
-              this.$message.success('重分派成功')
+              this.$message.success('重分发成功')
               this.confirmLoading = false
               this.$emit('ok', this.record)
               this.handleCancel()
             } else {
-              this.$message.error('重分派失败：' + JSON.stringify(res.message))
+              this.$message.error('重分发失败：' + JSON.stringify(res.message))
             }
           }).finally((res) => {
             this.confirmLoading = false

@@ -64,6 +64,16 @@ namespace QMS.Core.Entity
         [MaxLength(1500)]
         public string ExtendAttribute { get; set; }
 
+        /// <summary>
+        /// [
+        ///     {"IssueId":long, "FileName":originName, "AttachmentId": long, "AttachmentType": 0},
+        ///     {"IssueId":long, "FileName":originName, "AttachmentId": long, "AttachmentType": 0}
+        /// ]
+        /// </summary>
+        [Comment("附件信息")]
+        [MaxLength(1000)]
+        public string Attachments { get; set; }
+
         public void Configure(EntityTypeBuilder<SsuIssueDetail> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
         }

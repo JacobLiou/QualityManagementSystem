@@ -16,12 +16,12 @@
           <a-input placeholder="请输入问题详情" v-decorator="['description', {rules: [{required: true, message: '请输入问题详情！'}]}]" />
         </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-select :allowClear="true" placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
+          <a-select placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
             <a-select-option v-for="(item,index) in projectData" :key="index" :value="item.id">{{ item.projectName }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item label="产品编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-select :allowClear="true" placeholder="请选择产品" style="width: 100%" v-decorator="['productId', {rules: [{ required: true, message: '请选择产品！' }]}]">
+          <a-select placeholder="请选择产品" style="width: 100%" v-decorator="['productId', {rules: [{ required: true, message: '请选择产品！' }]}]">
             <a-select-option v-for="(item,index) in productData" :key="index" :value="item.id">{{ item.productName }}</a-select-option>
           </a-select>
         </a-form-item>
@@ -102,6 +102,17 @@
         <a-form-item label="验证情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input placeholder="请选择验证情况" v-decorator="['result']" />
         </a-form-item>
+
+        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="true"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">附件上传</a-button>
+          </a-upload>
+        </a-form-item>
       </a-form>
     </a-spin>
 
@@ -122,7 +133,8 @@
   import {
     SsuIssueEdit,
     SsuIssueDetail,
-    OperationPage
+    OperationPage,
+    SsuIssueUploadFile
   } from '@/api/modular/main/SsuIssueManage'
   import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
   import { SsuProductList } from '@/api/modular/main/SsuProductManage'
@@ -156,7 +168,8 @@
         form: this.$form.createForm(this),
         projectData: [],
         productData: [],
-        operationRecords: ''
+        operationRecords: '',
+        fileObj: ''
       }
     },
     created () {
@@ -182,6 +195,9 @@
     },
     methods: {
       moment,
+      customRequest(data) {
+        this.fileObj = data.file
+      },
       // 初始化方法
       edit (record) {
         this.visible = true
@@ -315,6 +331,24 @@
             this.record.validateTime = this.validateTimeDateString
             SsuIssueEdit(this.record).then((res) => {
               if (res.success) {
+
+                if(this.fileObj) {
+                  const formData = new FormData()
+                  formData.append('file', this.fileObj)
+                  formData.append('issueId', this.record.issueId)
+                  // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+                  formData.append('attachmentType', '0')
+                  SsuIssueUploadFile(formData).then((res) => {
+                    if (res.success) {
+                      this.$message.success('上传成功')
+                      this.fileObj = ''
+                      // this.$refs.table.refresh()
+                    } else {
+                      this.$message.error('上传失败：' + res.message)
+                    }
+                  })
+                }
+
                 this.$message.success('编辑成功')
                 this.confirmLoading = false
                 this.$emit('ok', this.record)

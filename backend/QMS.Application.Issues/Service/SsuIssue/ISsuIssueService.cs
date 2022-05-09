@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using QMS.Application.Issues.IssueService.Dto.QueryList;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Add;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Update;
+using static QMS.Application.Issues.SsuIssueService;
 
 namespace QMS.Application.Issues
 {
     public interface ISsuIssueService
     {
-        Task Add(InIssue input);
+        Task<long> Add(InIssue input);
         Task Delete(DeleteSsuIssueInput input);
         Task<OutputDetailIssue> Get([FromQuery] BaseId input);
         //Task<List<SsuIssueOutput>> List([FromQuery] SsuIssueInput input);
@@ -22,6 +23,8 @@ namespace QMS.Application.Issues
         Task HangUp(InHangup input);
 
         Task ReDispatch(InReDispatch input);
+
+        Task Dispatch(InDispatch input);
 
         /// <summary>
         /// 根据基础条件筛选

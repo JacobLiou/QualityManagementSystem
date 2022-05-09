@@ -84,7 +84,24 @@
           <a-divider type="vertical"/>
           <a :class='{"active": queryBy == 8}' @click="query(8)">抄送给我</a>
 
-          <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">导出</a-button>
+          <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">问题导出</a-button>
+
+          <a v-if="hasPerm('SsuIssue:donwload')" @click="templateFile">
+            <a-tooltip title='模板下载' placement='top'>
+              <a-icon type='download' />
+              模板下载
+            </a-tooltip>
+          </a>
+
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="false"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">问题导入</a-button>
+          </a-upload>
+
         </template>
         <span slot="modulescopedSlots" slot-scope="text">
           {{ 'issue_module' | dictType(text) }}
@@ -102,22 +119,52 @@
           {{ 'issue_status' | dictType(text) }}
         </span>
         <span slot="action" slot-scope="text, record">
-          <a v-if="hasPerm('SsuIssue:copy')" @click="$refs.addForm.copy(record)">复制</a>
+          <a v-if="hasPerm('SsuIssue:copy')" @click="$refs.addForm.copy(record)">
+            <a-tooltip title='复制' placement='top'>
+              <a-icon type='copy' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:copy')"/>
-          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.dispatchForm.edit(record)">分发</a>
+          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.dispatchForm.edit(record)">
+            <a-tooltip title='分发' placement='top'>
+              <a-icon type='swap' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a v-if="hasPerm('SsuIssue:execute')" @click="$refs.executeForm.edit(record)">解决</a>
+          <a v-if="hasPerm('SsuIssue:execute')" @click="$refs.executeForm.edit(record)">
+            <a-tooltip title='解决' placement='top'>
+              <a-icon type='check' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a v-if="hasPerm('SsuIssue:validate')" @click="$refs.validateForm.edit(record)">验证</a>
+          <a v-if="hasPerm('SsuIssue:validate')" @click="$refs.validateForm.edit(record)">
+            <a-tooltip title='验证' placement='top'>
+              <a-icon type='meh' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.redispatchForm.edit(record)">转交</a>
+          <a v-if="hasPerm('SsuIssue:dispatch')" @click="$refs.redispatchForm.edit(record)">
+            <a-tooltip title='转交' placement='top'>
+              <a-icon type='rollback' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a v-if="hasPerm('SsuIssue:hangup')" @click="$refs.hangupForm.edit(record)">挂起</a>
+          <a v-if="hasPerm('SsuIssue:hangup')" @click="$refs.hangupForm.edit(record)">
+            <a-tooltip title='挂起' placement='top'>
+              <a-icon type='question' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a v-if="hasPerm('SsuIssue:edit')" @click="$refs.editForm.edit(record)">编辑</a>
+          <a v-if="hasPerm('SsuIssue:edit')" @click="$refs.editForm.edit(record)">
+            <a-tooltip title='编辑' placement='top'>
+              <a-icon type='edit' />
+            </a-tooltip>
+          </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
           <a-popconfirm v-if="hasPerm('SsuIssue:delete')" placement="topRight" title="确认删除？" @confirm="() => SsuIssueDelete(record)">
-            <a>删除</a>
+            <a-tooltip title='删除' placement='top'>
+              <a-icon type='delete' />
+            </a-tooltip>
           </a-popconfirm>
         </span>
       </s-table>
@@ -137,7 +184,10 @@
   import {
     SsuIssuePage,
     SsuIssueDelete,
-    SsuIssueExport
+    SsuIssueExport,
+    SsuIssueTemplate,
+    SsuIssueImportData,
+    Downloadfile
   } from '@/api/modular/main/SsuIssueManage'
   import executeForm from './executeForm.vue'
   import validateForm from './validateForm.vue'
@@ -232,7 +282,7 @@ sorter: true,
             title: '提出人',
             align: 'center',
 sorter: true,
-            dataIndex: 'creator'
+            dataIndex: 'creatorName'
           },
           {
             title: '提出日期',
@@ -250,7 +300,7 @@ sorter: true,
             title: '发现人',
             align: 'center',
 sorter: true,
-            dataIndex: 'discover'
+            dataIndex: 'discoverName'
           },
           {
             title: '发现日期',
@@ -262,7 +312,7 @@ sorter: true,
             title: '分发人',
             align: 'center',
 sorter: true,
-            dataIndex: 'dispatcher'
+            dataIndex: 'dispatcherName'
           },
           {
             title: '分发日期',
@@ -280,13 +330,13 @@ sorter: true,
             title: '被抄送人',
             align: 'center',
 sorter: true,
-            dataIndex: 'copyTo'
+            dataIndex: 'copyToName'
           },
           {
             title: '解决人',
             align: 'center',
 sorter: true,
-            dataIndex: 'executor'
+            dataIndex: 'executorName'
           },
           {
             title: '解决日期',
@@ -298,7 +348,7 @@ sorter: true,
             title: '验证人',
             align: 'center',
 sorter: true,
-            dataIndex: 'verifier'
+            dataIndex: 'verifierName'
           },
           {
             title: '验证地点',
@@ -326,7 +376,8 @@ sorter: true,
         selectedRowKeys: [],
         selectedRows: [],
         defaultColumns: [],
-        projectData: []
+        projectData: [],
+        fileObj: ''
       }
     },
     created () {
@@ -357,6 +408,25 @@ sorter: true,
       this.statusData = statusOption.filters['dictData']('issue_status')
     },
     methods: {
+      customRequest(data) {
+        this.fileObj = data.file
+
+        if (this.fileObj) {
+          const formData = new FormData()
+          formData.append('file', this.fileObj)
+          // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+          formData.append('attachmentType', '0')
+          SsuIssueImportData(formData).then((res) => {
+            if (res.success) {
+              this.$message.success('导入成功')
+              this.fileObj = ''
+              this.$refs.table.refresh()
+            } else {
+              this.$message.error('导入失败：' + res.message)
+            }
+          })
+        }
+      },
       query(index) {
         this.queryParam.QueryCondition = index
         this.queryBy = index
@@ -364,15 +434,24 @@ sorter: true,
       },
       exportData() {
         SsuIssueExport(this.queryParam).then((res) => {
-          if (res.success) {
-            this.$message.success('导出成功')
-            this.confirmLoading = false
-            // this.$emit('ok', this.record)
-
-            // this.handleCancel()
-          } else {
-            this.$message.error('下载错误：获取文件流错误')
-          }
+          this.confirmLoading = false
+          Downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        }).catch((err) => {
+          this.confirmLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
+        }).finally((res) => {
+          this.confirmLoading = false
+        })
+      },
+      templateFile() {
+        SsuIssueTemplate().then((res) => {
+          this.confirmLoading = false
+          Downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        }).catch((err) => {
+          this.confirmLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
         }).finally((res) => {
           this.confirmLoading = false
         })

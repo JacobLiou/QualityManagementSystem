@@ -20,7 +20,7 @@
         <a-form-item label="解决版本" :labelCol="labelCol" :wrapperCol="wrapperCol">
 <!--            <a-input placeholder="请输入问题简述" v-decorator="['solveVersion', {rules: [{required: true, message: '请输入解决版本！'}]}]" />-->
           <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{required: true, message: '请选择解决版本！' }]}]">
-            <a-select-option v-for="(item,index) in solveVersionData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+            <a-select-option v-for="(item,index) in solveVersionData" :key="index" :value="item.name">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
 
@@ -36,7 +36,7 @@
           <a-upload
             :customRequest="customRequest"
             :multiple="true"
-            :showUploadList="false"
+            :showUploadList="true"
             name="file"
             v-if="hasPerm('sysUser:import')">
             <a-button icon="upload">附件上传</a-button>
@@ -80,11 +80,15 @@ export default {
       confirmLoading: false,
       form: this.$form.createForm(this),
       solveVersionData: [],
-      operationRecords: ''
+      operationRecords: '',
+      fileObj: ''
     }
   },
   methods: {
     moment,
+    customRequest(data) {
+      this.fileObj = data.file
+    },
     edit(record) {
       this.visible = true
       this.record = record
@@ -111,18 +115,6 @@ export default {
         this.confirmLoading = false
       })
     },
-    customRequest(data) {
-      const formData = new FormData()
-      formData.append('file', data.file)
-      SsuIssueUploadFile(formData).then((res) => {
-        if (res.success) {
-          this.$message.success('上传成功')
-          // this.$refs.table.refresh()
-        } else {
-          this.$message.error('上传失败：' + res.message)
-        }
-      })
-    },
     handleSubmit () {
       const { form: { validateFields } } = this
       this.confirmLoading = true
@@ -141,6 +133,24 @@ export default {
           this.record.solveTime = this.solveTimeDateString
           SsuIssueExecute(this.record).then((res) => {
             if (res.success) {
+              if (this.fileObj) {
+                const formData = new FormData()
+                formData.append('file', this.fileObj)
+                formData.append('issueId', this.record.issueId)
+                // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+                formData.append('attachmentType', '0')
+                SsuIssueUploadFile(formData).then((res) => {
+                  if (res.success) {
+                    this.$message.success('上传成功')
+                    this.fileObj = ''
+                    // this.$refs.table.refresh()
+                  } else {
+                    this.$message.error('上传失败：' + res.message)
+                  }
+                })
+              }
+
+
               this.$message.success('处理成功')
               this.confirmLoading = false
               this.$emit('ok', this.record)

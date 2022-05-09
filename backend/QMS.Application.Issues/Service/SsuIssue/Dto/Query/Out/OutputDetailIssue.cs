@@ -14,10 +14,7 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         public string Description { get; set; }
 
         /// <summary>
-        /// [
-        ///     {"Name":"CustomerID","Alias":"客户ID","Value":"100"},
-        ///     {"Name":"PCBVersion","Alias":"PCB版本","Value":"AAA"}
-        /// ]
+        /// List<FieldValue>.ToJson()
         /// </summary>
         public string ExtendAttribute { get; set; }
 

@@ -24,5 +24,11 @@ namespace QMS.Core.Enum
 
         [Description("编辑")]
         Edit,
+
+        [Description("重分发")]
+        ReDispatch,
+
+        [Description("上传文件")]
+        Upload
     }
 }

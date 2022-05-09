@@ -82,7 +82,7 @@ namespace QMS.Application.Issues
         public async Task Update(UpdateSsuIssueExtendAttributeInput input)
         {
             var isExist = await _ssuIssueExtendAttributeRep.AnyAsync(u => u.Id == input.Id, false);
-            if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+            if (!isExist) throw Oops.Oh(ErrorCode.D1007);
 
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
             ssuIssueExtendAttribute.SetUpdate();
@@ -136,6 +136,11 @@ namespace QMS.Application.Issues
         [HttpPost($"/SsuIssueExtendAttribute/BatchAddStruct")]
         public async Task BatchAddFieldStruct(BatchFieldStruct input)
         {
+            if (input.List==null || input.List.Count == 0)
+            {
+                throw Oops.Oh(ErrorCode.D1007);
+            }
+
             long updateId = Helper.Helper.GetCurrentUser();
             DateTime now = DateTime.Now;
             IEnumerable<SsuIssueExtendAttribute> attributes =

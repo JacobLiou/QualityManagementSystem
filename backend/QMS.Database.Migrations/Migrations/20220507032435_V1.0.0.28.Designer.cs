@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220507032435_V1.0.0.28")]
+    partial class V10028
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,8 +140,8 @@ namespace QMS.Database.Migrations.Migrations
                         .HasComment("问题编号");
 
                     b.Property<string>("Attachments")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
                         .HasComment("附件信息");
 
                     b.Property<string>("Batch")

@@ -104,6 +104,17 @@
 <!--        <a-form-item label="验证日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
 <!--          <a-date-picker style="width: 100%" placeholder="请选择验证日期" v-decorator="['validateTime']" @change="onChangevalidateTime"/>-->
 <!--        </a-form-item>-->
+
+        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="true"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">附件上传</a-button>
+          </a-upload>
+        </a-form-item>
       </a-form>
     </a-spin>
   </a-modal>
@@ -111,8 +122,9 @@
 
 <script>
   import {
-    SsuIssueAdd
+    SsuIssueAdd, SsuIssueUploadFile
   } from '@/api/modular/main/SsuIssueManage'
+
   import moment from 'moment'
 
   import {
@@ -153,7 +165,8 @@
         form: this.$form.createForm(this),
         projectData: [],
         productData: [],
-        orgTree: []
+        orgTree: [],
+        fileObj: ''
       }
     },
     created () {
@@ -194,6 +207,9 @@
         this.sourceData = sourceOption.filters['dictData']('issue_source')
         // const statusOption = this.$options
         // this.statusData = statusOption.filters['dictData']('issue_status')
+      },
+      customRequest(data) {
+        this.fileObj = data.file
       },
       // 初始化方法
       add () {
@@ -267,6 +283,23 @@
 
             SsuIssueAdd(values).then((res) => {
               if (res.success) {
+                if (this.fileObj) {
+                  const formData = new FormData()
+                  formData.append('file', this.fileObj)
+                  formData.append('issueId', res.data)
+                  // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+                  formData.append('attachmentType', '0')
+                  SsuIssueUploadFile(formData).then((res) => {
+                    if (res.success) {
+                      this.$message.success('上传成功')
+                      this.fileObj = ''
+                      // this.$refs.table.refresh()
+                    } else {
+                      this.$message.error('上传失败：' + res.message)
+                    }
+                  })
+                }
+
                 this.$message.success('新增成功')
                 this.confirmLoading = false
                 this.$emit('ok', values)

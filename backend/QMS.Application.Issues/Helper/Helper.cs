@@ -3,6 +3,7 @@ using Furion.Extras.Admin.NET;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -34,6 +35,34 @@ namespace QMS.Application.Issues.Helper
 
             return name;
         }
+
+        public static int GetIntFromEnumDescription(dynamic value)
+        {
+            KeyValuePair<int, string> pair = new KeyValuePair<int, string>(-1, "Empty");
+
+            Type[] types = new Type[]
+            {
+                typeof(EnumModule),
+                typeof(EnumConsequence),
+                typeof(EnumIssueClassification),
+                typeof(EnumIssueSource),
+                typeof(EnumIssueStatus),
+            };
+
+            Dictionary<int, string> map;
+
+            foreach (var item in types)
+            {
+                map = EnumUtil.GetEnumDescDictionary(item);
+                if (map.ContainsValue(value))
+                {
+                    return map.FirstOrDefault(m => m.Value == value).Key;
+                }
+            }
+
+            throw new Exception("导入的数据(模块,问题性质,问题分类,问题来源,问题状态)超出范围");
+        }
+
         #endregion
 
         #region Assert
@@ -59,6 +88,14 @@ namespace QMS.Application.Issues.Helper
         public static void Assert(bool result, string errorMsg = "参数错误")
         {
             if (!result)
+            {
+                throw new ArgumentException(errorMsg);
+            }
+        }
+
+        public static void Assert(string param, Predicate<string> predicate, string errorMsg = "参数错误")
+        {
+            if (predicate != null && !predicate.Invoke(param))
             {
                 throw new ArgumentException(errorMsg);
             }
@@ -94,14 +131,14 @@ namespace QMS.Application.Issues.Helper
             //    id = Helper.GetCurrentUser();
             //}
 
-            return "用户" + id?.ToString();
+            return "员工" + id?.ToString();
         }
 
         public static string GetNameByEmpId(this long id)
         {
             //Assert(false);
 
-            return "用户" + id.ToString();
+            return "员工" + id.ToString();
         }
         #endregion
 

@@ -349,7 +349,7 @@ namespace Furion.Extras.Admin.NET.Service
         [HttpPost("/sysUser/import")]
         public async Task ImportUser(IFormFile file)
         {
-            var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}.xlsx");
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{YitIdHelper.NextId()}.xlsx");
             using (var stream = File.Create(path))
             {
                 await file.CopyToAsync(stream);

@@ -3,6 +3,7 @@ using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
+using Furion.Extras.Admin.NET.Entity.Common.Enum;
 using Furion.Extras.Admin.NET.Service;
 using Furion.JsonSerialization;
 using Mapster;
@@ -11,10 +12,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MiniExcelLibs;
+using Newtonsoft.Json;
 using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
 using QMS.Application.Issues.IssueService.Dto.QueryList;
-using QMS.Application.Issues.Service.SsuIssue;
+using QMS.Application.Issues.Service.SsuIssue.Attachment;
 using QMS.Application.Issues.Service.SsuIssue.Dto;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Add;
 using QMS.Application.Issues.Service.SsuIssue.Dto.Update;
@@ -22,7 +24,8 @@ using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
 using System.Linq.Dynamic.Core;
-using Yitter.IdGenerator;
+using System.Text;
+using System.Web;
 
 namespace QMS.Application.Issues
 {
@@ -59,20 +62,20 @@ namespace QMS.Application.Issues
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost("/SsuIssue/Add")]
-        public async Task Add(InIssue input)
+        public async Task<long> Add(InIssue input)
         {
             var ssuIssue = input.Adapt<SsuIssue>();
             ssuIssue.SetCreate();
 
             EntityEntry<SsuIssue> issue = await this._ssuIssueRep.InsertNowAsync(ssuIssue, ignoreNullValues: true);
 
-            // 插入扩展字段数据
-            await this.AddAttributeValuesBatch(input.ExtendAttribute);
-
             var detail = input.Adapt<SsuIssueDetail>();
             detail.Id = issue.Entity.Id;
 
             await this._ssuIssueDetailRep.InsertNowAsync(detail, ignoreNullValues: true);
+
+            // 插入扩展字段数据
+            await this.AddAttributeValuesBatch(input.ExtendAttribute);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -80,14 +83,15 @@ namespace QMS.Application.Issues
                 EnumIssueOperationType.New,
                 "新建问题"
             );
+
+            return detail.Id;
         }
 
         private async Task AddAttributeValuesBatch(string ExtendAttribute)
         {
             if (!string.IsNullOrEmpty(ExtendAttribute))
             {
-                List<FieldValue> list = App.GetService<IJsonSerializerProvider>().Deserialize<List<FieldValue>>(ExtendAttribute);
-
+                List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
 
                 await this._ssuIssueAttrValueRep.Entities.AddRangeAsync(list.Select<FieldValue, SsuIssueExtendAttributeValue>(model => new SsuIssueExtendAttributeValue
                 {
@@ -194,9 +198,11 @@ namespace QMS.Application.Issues
             input.SetIssue(common);
             await this._ssuIssueRep.UpdateNowAsync(common, true);
 
+
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             input.SetIssueDetail(ssuIssueDetail);
             await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
+
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -215,6 +221,7 @@ namespace QMS.Application.Issues
         public async Task Validate(InValidate input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
             bool pass = input.PassResult == YesOrNot.Y;
             common.DoVerify(pass);
             input.SetIssue(common);
@@ -234,7 +241,7 @@ namespace QMS.Application.Issues
                 $"验证【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过") + "】"
                 );
         }
-        
+
         /// <summary>
         /// 挂起问题
         /// </summary>
@@ -249,11 +256,13 @@ namespace QMS.Application.Issues
             input.SetIssue(common);
             await this._ssuIssueRep.UpdateNowAsync(common, true);
 
+
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             if (input.SetIssueDetail(ssuIssueDetail))
             {
                 await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
             }
+
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -272,10 +281,11 @@ namespace QMS.Application.Issues
         public async Task ReDispatch(InReDispatch input)
         {
             SsuIssue common = await Helper.Helper.CheckIssueExist(this._ssuIssueRep, input.Id);
+
             common.DoDispatch();
             input.SetIssue(common);
-
             await this._ssuIssueRep.UpdateNowAsync(common, true);
+
 
             SsuIssueDetail ssuIssueDetail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             if (input.SetIssueDetail(ssuIssueDetail))
@@ -283,18 +293,22 @@ namespace QMS.Application.Issues
                 await this._ssuIssueDetailRep.UpdateNowAsync(ssuIssueDetail, true);
             }
 
+
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
                 input.Id,
-                EnumIssueOperationType.Dispatch,
+                EnumIssueOperationType.ReDispatch,
                 $"【{common.Dispatcher.GetNameByEmpId()}】将【{common.CreatorId.GetNameByEmpId()}】提出的问题重分发给【{common.Executor.GetNameByEmpId()}】"
             );
         }
 
+
+
+
         private IQueryable<SsuIssue> GetQueryable(BaseQueryModel input)
         {
             IQueryable<SsuIssue> querable = this._ssuIssueRep.DetachedEntities
-                                     .Where(input.ProjectId > 0, u => u.ProductId == input.ProjectId)
+                                     .Where(input.ProjectId > 0, u => u.ProjectId == input.ProjectId)
                                      .Where(input.Module != null, u => u.Module == input.Module)
                                      .Where(input.Consequence != null, u => u.Consequence == input.Consequence)
                                      .Where(input.Status != null, u => u.Status == input.Status)
@@ -312,16 +326,16 @@ namespace QMS.Application.Issues
                     querable = querable.Where(item => item.Executor == Helper.Helper.GetCurrentUser());
                     break;
                 case EnumQueryCondition.Solved:
-                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.Solved);
+                    querable = querable.Where(item => item.Status == EnumIssueStatus.Solved);
                     break;
                 case EnumQueryCondition.Unsolve:
-                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.UnSolve);
+                    querable = querable.Where(item => item.Status == EnumIssueStatus.UnSolve);
                     break;
                 case EnumQueryCondition.Closed:
-                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.Closed);
+                    querable = querable.Where(item => item.Status == EnumIssueStatus.Closed);
                     break;
                 case EnumQueryCondition.Hangup:
-                    querable = querable.Where(item => item.Status == Core.Enum.EnumIssueStatus.HasHangUp);
+                    querable = querable.Where(item => item.Status == EnumIssueStatus.HasHangUp);
                     break;
                 case EnumQueryCondition.CC:
                     querable = querable.Where(item => item.CC == Helper.Helper.GetCurrentUser());
@@ -330,7 +344,6 @@ namespace QMS.Application.Issues
 
             return querable;
         }
-
         /// <summary>
         /// 多种条件分页查询
         /// </summary>
@@ -358,7 +371,6 @@ namespace QMS.Application.Issues
                                         (issue, detail) => new ExportIssueDto(issue, detail)
                                       );
         }
-
         private void AddFilter(BaseQueryModel input, IQueryable<ExportIssueDto> querable)
         {
             switch (input.QueryCondition)
@@ -373,20 +385,19 @@ namespace QMS.Application.Issues
                     querable = querable.Where(item => item.ExecutorId == Helper.Helper.GetCurrentUser());
                     break;
                 case EnumQueryCondition.Solved:
-                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.Solved);
+                    querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.Solved);
                     break;
                 case EnumQueryCondition.Unsolve:
-                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.UnSolve);
+                    querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.UnSolve);
                     break;
                 case EnumQueryCondition.Closed:
-                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.Closed);
+                    querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.Closed);
                     break;
                 case EnumQueryCondition.Hangup:
-                    querable = querable.Where(item => item.IssueStatus == Core.Enum.EnumIssueStatus.HasHangUp);
+                    querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.HasHangUp);
                     break;
             }
         }
-
         [HttpPost("/SsuIssue/Export")]
         public async Task<IActionResult> Export(BaseQueryModel input)
         {
@@ -396,13 +407,73 @@ namespace QMS.Application.Issues
 
             PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize);
 
+            Helper.Helper.Assert(list != null && list.Rows.Count > 0, "不存在任何问题记录!");
+
+            return await this.DownloadFile(list.Rows);
+        }
+
+        private async Task<IActionResult> DownloadFile(object data, string fileName = null)
+        {
+            Helper.Helper.Assert(data != null, "数据为空，无法下载文件!");
+
             var memoryStream = new MemoryStream();
-            memoryStream.SaveAs(list.Rows);
+            await memoryStream.SaveAsAsync(data);
             memoryStream.Seek(0, SeekOrigin.Begin);
-            return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+            fileName = fileName ?? DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            return await Task.FromResult(
+                new FileStreamResult(memoryStream, "application/octet-stream")
+                {
+                    FileDownloadName = HttpUtility.UrlEncode(fileName + ".xlsx", Encoding.GetEncoding("UTF-8"))
+                });
+        }
+
+
+        [HttpGet("/SsuIssue/Template")]
+        public async Task<IActionResult> Template()
+        {
+            var item = this._ssuIssueRep.Where(model => model.Title!=null).Take<SsuIssue>(1).ProjectToType<InIssue>();
+            return await this.DownloadFile(item, "IssueTemplate");
+        }
+
+        /// <summary>
+        /// 问题数据导入
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssue/Import")]
+        public async Task ImportIssues(IFormFile file)
+        {
+            Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), "文件为空");
+
+            Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
+
+            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true);
+
+            foreach (var item in collection)
             {
-                FileDownloadName = DateTime.Now.ToString("yyyyMMddHHmmss") + "partial-issues.xlsx"
-            });
+                var issue = new InIssue()
+                {
+                    Title = item.标题,
+                    Description = item.详情,
+                    ProjectId = Convert.ToInt64(item.项目编号),
+                    ProductId = Convert.ToInt64(item.产品编号),
+                    Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块),
+                    Consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质),
+                    IssueClassification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类),
+                    Dispatcher = Convert.ToInt64(item.分发人编号),
+                    Source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源),
+                    Discover = Convert.ToInt64(item.发现人编号),
+                    DiscoverTime = Convert.ToDateTime(item.发现日期),
+                    Status = (EnumIssueStatus)Helper.Helper.GetIntFromEnumDescription(item.问题状态),
+                    CreatorId = Convert.ToInt64(item.提出人编号),
+                    CreateTime = Convert.ToDateTime(item.提出日期),
+                    CC = Convert.ToInt64(item.被抄送人编号)
+                };
+
+                await this.Add(issue);
+            }
         }
 
         /// <summary>
@@ -411,22 +482,38 @@ namespace QMS.Application.Issues
         /// <param name="file"></param>
         /// <returns></returns>
         [HttpPost("/SsuIssue/UploadFile")]
-        public async Task AttachmentUpload(IFormFile file)
+        public async Task AttachmentUpload(IFormFile file, long issueId, EnumAttachmentType attachmentType)
         {
-            var path = Path.Combine(Path.GetTempPath(), $"{YitIdHelper.NextId()}-{file.FileName}");
-            using (var stream = File.Create(path))
+            if (file == null || string.IsNullOrEmpty(file.FileName))
             {
-                await file.CopyToAsync(stream);
+                return;
             }
 
-            //var rows = MiniExcel.Query(path); // 解析
-            //foreach (var row in rows)
-            //{
-            //    var a = row.A;
-            //    var b = row.B;
-            //    // 入库等操作
+            SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, issueId);
 
-            //}
+            var list = new List<AttachmentModel>();
+            if (!string.IsNullOrEmpty(detail.Attachments))
+            {
+                list = JsonConvert.DeserializeObject<List<AttachmentModel>>(detail.Attachments);
+            }
+
+            Helper.Helper.Assert(!list.Select<AttachmentModel, string>(model => model.FileName.ToLower()).Contains(file.FileName.ToLower()), "同名附件已存在");
+
+            long attachmentId = await App.GetService<ISysFileService>().UploadFileDefault(file);
+
+            list.Add(new AttachmentModel()
+            {
+                //IssueId = issueId,
+                AttachmentId = attachmentId,
+                FileName = file.FileName,
+                AttachmentType = attachmentType
+            });
+
+            detail.Attachments = JsonConvert.SerializeObject(list);
+
+            await this._ssuIssueDetailRep.UpdateIncludeAsync(detail, new string[] { nameof(detail.Attachments) }, true);
+
+            await Helper.IssueLogger.Log(this._ssuIssueOperateRep, issueId, EnumIssueOperationType.Upload, file.FileName);
         }
 
 
@@ -480,8 +567,10 @@ namespace QMS.Application.Issues
             input.SetIssue(issue);
             await this._ssuIssueRep.UpdateNowAsync(issue);
 
+
             SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
             await this._ssuIssueDetailRep.UpdateNowAsync(detail);
+
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,

@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.DefaultDb
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220507032057_V1.0.0.26")]
+    partial class V10026
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2869,6 +2871,10 @@ namespace QMS.Database.Migrations.Migrations
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
                         .HasComment("Id主键");
+
+                    b.Property<int>("AttachmentType")
+                        .HasColumnType("int")
+                        .HasComment("附件来源");
 
                     b.Property<DateTime?>("CreatedTime")
                         .HasColumnType("datetime(6)")
