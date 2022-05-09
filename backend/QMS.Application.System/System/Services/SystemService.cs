@@ -22,13 +22,13 @@ namespace QMS.Application.System
        /// 
        /// </summary>
        /// <returns></returns>
-        public List<GroupUserOutput> GetUserGroup()
+        public List<GroupUserOutput> GetUserGroup(long groupId)
         {
             var list = _sqlRepository.SqlQuery<GroupUserOutput>(@"SELECT u.`Name` as UserName,u.Id AS UserID,g.GroupName,g.ID AS GroupId 
 FROM `ssu_group`  g 
 JOIN ssu_group_user gu ON g.Id = gu.GroupId 
 JOIN sys_user  u ON gu.EmployeeId = u.Id 
-WHERE g.Id = @id", new { id = 281695421571141 });
+WHERE g.Id = @id", new { id = groupId });
             return list;
         }
 

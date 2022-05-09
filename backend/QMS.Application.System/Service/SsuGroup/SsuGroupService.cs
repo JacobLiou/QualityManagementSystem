@@ -35,7 +35,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuGroup/page")]
+        [HttpGet("/ssuGroup/page")]
         public async Task<PageResult<SsuGroupOutput>> Page([FromQuery] SsuGroupInput input)
         {
             var ssuGroups = await _ssuGroupRep.DetachedEntities

@@ -52,8 +52,12 @@ namespace Furion.Extras.Admin.NET.Service
         /// <summary>
         /// 用户登录
         /// </summary>
-        /// <param name="input"></param>
-        /// <remarks>默认用户名/密码：admin/admin</remarks>
+        /// <param name="input">
+        /// Account：用户名 <br />
+        /// Password：密码
+        /// </param>
+        /// <remarks>用户登录接口备注说明<br />
+        /// 返回授权的accessToken </remarks>
         /// <returns></returns>
         [HttpPost("/login")]
         [AllowAnonymous]
