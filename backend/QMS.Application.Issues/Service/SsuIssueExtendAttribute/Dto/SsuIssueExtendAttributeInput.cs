@@ -1,5 +1,6 @@
 ﻿using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
+using MiniExcelLibs.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -57,31 +58,35 @@ namespace QMS.Application.Issues
         
     }
 
-    public class AddSsuIssueExtendAttributeInput : SsuIssueExtendAttributeInput
+    public class AddSsuIssueExtendAttributeInput
     {
         /// <summary>
         /// 模块编号
         /// </summary>
+        [ExcelColumnName("模块名")]
         [Required(ErrorMessage = "模块编号不能为空")]
-        public override QMS.Core.Enum.EnumModule? Module { get; set; }
-        
+        public QMS.Core.Enum.EnumModule? Module { get; set; }
+
         /// <summary>
         /// 字段名
         /// </summary>
+        [ExcelColumnName("字段名")]
         [Required(ErrorMessage = "字段名不能为空")]
-        public override string AttibuteName { get; set; }
+        public string AttibuteName { get; set; }
         
         /// <summary>
         /// 字段代码
         /// </summary>
+        [ExcelColumnName("字段代码")]
         [Required(ErrorMessage = "字段代码不能为空")]
-        public override string AttributeCode { get; set; }
-        
+        public string AttributeCode { get; set; }
+
         /// <summary>
         /// 字段值类型
         /// </summary>
+        [ExcelColumnName("字段值类型")]
         [Required(ErrorMessage = "字段值类型不能为空")]
-        public override string ValueType { get; set; }
+        public string ValueType { get; set; }
         
     }
 

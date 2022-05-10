@@ -1,11 +1,15 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MiniExcelLibs;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text;
+using System.Web;
 
 namespace QMS.Application.Issues.Helper
 {
@@ -63,6 +67,25 @@ namespace QMS.Application.Issues.Helper
             throw new Exception("导入的数据(模块,问题性质,问题分类,问题来源,问题状态)超出范围");
         }
 
+        #endregion
+
+        #region Download、Upload
+        public static async Task<IActionResult> ExportExcel(object data, string fileName = null)
+        {
+            Helper.Assert(data != null, "数据为空，无法下载文件!");
+
+            var memoryStream = new MemoryStream();
+            await memoryStream.SaveAsAsync(data);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            fileName = fileName ?? DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            return await Task.FromResult(
+                new FileStreamResult(memoryStream, "application/octet-stream")
+                {
+                    FileDownloadName = HttpUtility.UrlEncode(fileName + ".xlsx", Encoding.GetEncoding("UTF-8"))
+                });
+        }
         #endregion
 
         #region Assert

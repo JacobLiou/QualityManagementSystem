@@ -5,13 +5,13 @@
  *
  * @author licong
  */
-// export function SsuIssueExtendAttributePage (parameter) {
-//   return axios({
-//     url: '/SsuIssueExtendAttribute/Page',
-//     method: 'get',
-//     params: parameter
-//   })
-// }
+export function SsuIssueExtendAttributePage (parameter) {
+  return axios({
+    url: '/SsuIssueExtendAttribute/Page',
+    method: 'get',
+    params: parameter
+  })
+}
 
 /**
  * 问题扩展属性列表
@@ -75,5 +75,32 @@ export function SsuIssueExtendAttributeDelete (parameter) {
     url: '/SsuIssueExtendAttribute/DeleteStruct',
     method: 'post',
     data: parameter
+  })
+}
+
+/**
+ * 数据导入
+ *
+ * @author licong
+ */
+export function SsuIssueExtendAttributeImportData (parameter) {
+  return axios({
+    url: '/SsuIssueExtendAttribute/Import',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 问题模板下载
+ *
+ * @author licong
+ */
+export function SsuIssueExtendAttributeTemplate (parameter) {
+  return axios({
+    url: '/SsuIssueExtendAttribute/Template',
+    method: 'get',
+    data: parameter,
+    responseType: 'blob'
   })
 }

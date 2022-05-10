@@ -4,15 +4,20 @@ using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
 using Mapster;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MiniExcelLibs;
 using Newtonsoft.Json;
 using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
+using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Text;
+using System.Web;
 
 namespace QMS.Application.Issues
 {
@@ -103,6 +108,31 @@ namespace QMS.Application.Issues
         //    return (await _ssuIssueExtendAttributeRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<SsuIssueExtendAttributeOutput>();
         //}
 
+        /// <summary>
+        /// 分页查询问题扩展属性
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpGet("/SsuIssueExtendAttribute/page")]
+        public async Task<PageResult<SsuIssueExtendAttributeOutput>> Page([FromQuery] SsuIssueExtendAttributeInput input)
+        {
+            var ssuIssueExtendAttributes = await _ssuIssueExtendAttributeRep.DetachedEntities
+                                     .Where(input.Module != null, u => u.Module == input.Module)
+                                     .Where(!string.IsNullOrEmpty(input.AttibuteName), u => u.AttibuteName == input.AttibuteName)
+                                     .Where(!string.IsNullOrEmpty(input.AttributeCode), u => u.AttributeCode == input.AttributeCode)
+                                     .Where(!string.IsNullOrEmpty(input.ValueType), u => u.ValueType == input.ValueType)
+                                     //.Where(u => u.CreatorId == input.CreatorId)
+                                     //.Where(u => u.CreateTime == input.CreateTime)
+                                     //.Where(u => u.UpdateId == input.UpdateId)
+                                     //.Where(u => u.UpdateTime == input.UpdateTime)
+                                     //.Where(u => u.Sort == input.Sort)
+                                     .OrderBy(PageInputOrder.OrderBuilder<SsuIssueExtendAttributeInput>(input))
+                                     .ProjectToType<SsuIssueExtendAttributeOutput>()
+                                     .ToADPagedListAsync(input.PageNo, input.PageSize);
+
+            return ssuIssueExtendAttributes;
+        }
+
         public class ModuleType
         {
             public EnumModule Module { get; set; }
@@ -128,15 +158,10 @@ namespace QMS.Application.Issues
                 }).ToListAsync();
         }
 
-        public class BatchFieldStruct
-        {
-            public List<FieldStruct> List { get; set; }
-        }
-
         [HttpPost($"/SsuIssueExtendAttribute/BatchAddStruct")]
-        public async Task BatchAddFieldStruct(BatchFieldStruct input)
+        public async Task BatchAddFieldStruct(List<FieldStruct> input)
         {
-            if (input.List==null || input.List.Count == 0)
+            if (input == null || input.Count == 0)
             {
                 throw Oops.Oh(ErrorCode.D1007);
             }
@@ -144,7 +169,7 @@ namespace QMS.Application.Issues
             long updateId = Helper.Helper.GetCurrentUser();
             DateTime now = DateTime.Now;
             IEnumerable<SsuIssueExtendAttribute> attributes =
-                input.List.Select<FieldStruct, SsuIssueExtendAttribute>(
+                input.Select<FieldStruct, SsuIssueExtendAttribute>(
                     fieldStruct =>
                         new SsuIssueExtendAttribute()
                         {
@@ -164,6 +189,43 @@ namespace QMS.Application.Issues
 
             await IssueLogger.Log(this._ssuIssueOperationRep, updateId, EnumIssueOperationType.New, JsonConvert.SerializeObject(input));
         }
+
+
+        [HttpGet("/SsuIssueExtendAttribute/Template")]
+        public async Task<IActionResult> Template()
+        {
+            var item = this._ssuIssueExtendAttributeRep.Where(model=>1==0).Take(1).ProjectToType<AddSsuIssueExtendAttributeInput>();
+            return await Helper.Helper.ExportExcel(item, "IssueExtAttrTemplate");
+        }
+
+        /// <summary>
+        /// 问题数据导入
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuIssueExtendAttribute/Import")]
+        public async Task ImportIssues(IFormFile file)
+        {
+            Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), "文件为空");
+
+            Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueExtAttrTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
+
+            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true);
+
+            foreach (var item in collection)
+            {
+                var extendAttr = new AddSsuIssueExtendAttributeInput()
+                {
+                    Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.模块名),
+                    AttibuteName = item.字段名,
+                    AttributeCode = item.字段代码,
+                    ValueType = item.字段值类型,
+                };
+
+                await this.Add(extendAttr);
+            }
+        }
+
 
         public class BatchFieldValue
         {
@@ -229,5 +291,7 @@ namespace QMS.Application.Issues
             this._ssuIssueExtendAttributeValueRep.Entities.UpdateRange(values);
             await this._ssuIssueExtendAttributeValueRep.Context.SaveChangesAsync();
         }
+
+
     }
 }

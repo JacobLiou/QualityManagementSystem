@@ -409,24 +409,7 @@ namespace QMS.Application.Issues
 
             Helper.Helper.Assert(list != null && list.Rows.Count > 0, "不存在任何问题记录!");
 
-            return await this.DownloadFile(list.Rows);
-        }
-
-        private async Task<IActionResult> DownloadFile(object data, string fileName = null)
-        {
-            Helper.Helper.Assert(data != null, "数据为空，无法下载文件!");
-
-            var memoryStream = new MemoryStream();
-            await memoryStream.SaveAsAsync(data);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            fileName = fileName ?? DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            return await Task.FromResult(
-                new FileStreamResult(memoryStream, "application/octet-stream")
-                {
-                    FileDownloadName = HttpUtility.UrlEncode(fileName + ".xlsx", Encoding.GetEncoding("UTF-8"))
-                });
+            return await Helper.Helper.ExportExcel(list.Rows);
         }
 
 
@@ -434,7 +417,7 @@ namespace QMS.Application.Issues
         public async Task<IActionResult> Template()
         {
             var item = this._ssuIssueRep.Where(model => model.Title!=null).Take<SsuIssue>(1).ProjectToType<InIssue>();
-            return await this.DownloadFile(item, "IssueTemplate");
+            return await Helper.Helper.ExportExcel(item, "IssueTemplate");
         }
 
         /// <summary>
@@ -516,6 +499,44 @@ namespace QMS.Application.Issues
             await Helper.IssueLogger.Log(this._ssuIssueOperateRep, issueId, EnumIssueOperationType.Upload, file.FileName);
         }
 
+        private class Attachment
+        {
+            public long IssueId { get; set; }
+            public long AttachmentId { get; set; }
+        }
+
+        //[HttpPost("/SsuIssue/DownloadFile")]
+        //public async Task AttachmentDwnload(Attachment input)
+        //{
+        //    Helper.Helper.Assert(input != null && input.IssueId != 0 && input.AttachmentId != 0, "查询信息有误，无法获取附件Id");
+
+        //    SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.IssueId);
+
+        //    var list = new List<AttachmentModel>();
+        //    if (!string.IsNullOrEmpty(detail.Attachments))
+        //    {
+        //        list = JsonConvert.DeserializeObject<List<AttachmentModel>>(detail.Attachments);
+        //    }
+
+        //    Helper.Helper.Assert(!list.Select<AttachmentModel, string>(model => model.FileName.ToLower()).Contains(file.FileName.ToLower()), "同名附件已存在");
+
+        //    long attachmentId = await App.GetService<ISysFileService>().UploadFileDefault(file);
+
+        //    list.Add(new AttachmentModel()
+        //    {
+        //        //IssueId = issueId,
+        //        AttachmentId = attachmentId,
+        //        FileName = file.FileName,
+        //        AttachmentType = attachmentType
+        //    });
+
+        //    detail.Attachments = JsonConvert.SerializeObject(list);
+
+        //    await this._ssuIssueDetailRep.UpdateIncludeAsync(detail, new string[] { nameof(detail.Attachments) }, true);
+
+        //    await Helper.IssueLogger.Log(this._ssuIssueOperateRep, issueId, EnumIssueOperationType.Upload, file.FileName);
+        //}
+
 
         public class InDispatch : IInput
         {
@@ -530,7 +551,7 @@ namespace QMS.Application.Issues
             public long? Executor { get; set; }
             public long? CC { get; set; }
 
-            public string JsonModel { get; set; }
+            public string ExtendAttribute { get; set; }
 
             public bool SetIssue(SsuIssue issue)
             {
@@ -569,8 +590,9 @@ namespace QMS.Application.Issues
 
 
             SsuIssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._ssuIssueDetailRep, input.Id);
-            await this._ssuIssueDetailRep.UpdateNowAsync(detail);
+            await this._ssuIssueDetailRep.UpdateNowAsync(detail, null);
 
+            await this.UpdateAttributeValuesBatch(input.ExtendAttribute);
 
             await IssueLogger.Log(
                 this._ssuIssueOperateRep,
@@ -578,6 +600,23 @@ namespace QMS.Application.Issues
                 EnumIssueOperationType.Dispatch,
                 $"【{issue.Dispatcher.GetNameByEmpId()}】将【{issue.CreatorId.GetNameByEmpId()}】提出的问题分发给【{issue.Executor.GetNameByEmpId()}】"
             );
+        }
+
+        private async Task UpdateAttributeValuesBatch(string ExtendAttribute)
+        {
+            if (!string.IsNullOrEmpty(ExtendAttribute))
+            {
+                List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
+
+                this._ssuIssueAttrValueRep.Entities.UpdateRange(list.Select<FieldValue, SsuIssueExtendAttributeValue>(model => new SsuIssueExtendAttributeValue
+                {
+                    Id = model.AttributeId,
+                    IssueNum = model.IssueId,
+                    AttibuteValue = model.Value
+                }));
+
+                await this._ssuIssueAttrValueRep.Context.SaveChangesAsync();
+            }
         }
     }
 }

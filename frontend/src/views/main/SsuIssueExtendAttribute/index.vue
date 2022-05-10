@@ -57,6 +57,22 @@
         :rowSelection="{ selectedRowKeys: selectedRowKeys, onChange: onSelectChange }">
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuIssueExtendAttribute:add')" >
           <a-button type="primary" v-if="hasPerm('SsuIssueExtendAttribute:add')" icon="plus" @click="$refs.addForm.add()">新增问题扩展属性</a-button>
+
+          <a v-if="hasPerm('SsuIssue:donwload')" @click="templateFile">
+            <a-tooltip title='模板下载' placement='top'>
+              <a-icon type='download' />
+              模板下载
+            </a-tooltip>
+          </a>
+
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="false"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">问题导入</a-button>
+          </a-upload>
         </template>
         <span slot="modulescopedSlots" slot-scope="text">
           {{ 'issue_module' | dictType(text) }}
@@ -79,9 +95,15 @@
 </template>
 <script>
   import { STable } from '@/components'
-  import { SsuIssueExtendAttributePage, SsuIssueExtendAttributeDelete } from '@/api/modular/main/SsuIssueExtendAttributeManage'
+  import {
+    SsuIssueExtendAttributePage,
+    SsuIssueExtendAttributeDelete,
+    SsuIssueExtendAttributeImportData,
+    SsuIssueExtendAttributeTemplate
+  } from '@/api/modular/main/SsuIssueExtendAttributeManage'
   import addForm from './addForm.vue'
   import editForm from './editForm.vue'
+  import { Downloadfile } from '@/api/modular/main/SsuIssueManage'
   export default {
     components: {
       STable,
@@ -154,6 +176,37 @@ sorter: true,
       this.valueTypeData = valueTypeOption.filters['dictData']('code_gen_net_type')
     },
     methods: {
+      customRequest(data) {
+        this.fileObj = data.file
+
+        if (this.fileObj) {
+          const formData = new FormData()
+          formData.append('file', this.fileObj)
+          // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+          formData.append('attachmentType', '0')
+          SsuIssueExtendAttributeImportData(formData).then((res) => {
+            if (res.success) {
+              this.$message.success('导入成功')
+              this.fileObj = ''
+              this.$refs.table.refresh()
+            } else {
+              this.$message.error('导入失败：' + res.message)
+            }
+          })
+        }
+      },
+      templateFile() {
+        SsuIssueExtendAttributeTemplate().then((res) => {
+          this.confirmLoading = false
+          Downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        }).catch((err) => {
+          this.confirmLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
+        }).finally((res) => {
+          this.confirmLoading = false
+        })
+      },
       /**
        * 查询参数组装
        */
