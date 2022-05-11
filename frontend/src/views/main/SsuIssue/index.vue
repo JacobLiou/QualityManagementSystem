@@ -93,6 +93,13 @@
             </a-tooltip>
           </a>
 
+          <a v-if="hasPerm('SsuIssue:donwload')" @click="downloadFile">
+            <a-tooltip title='附件下载' placement='top'>
+              <a-icon type='download' />
+              附件下载
+            </a-tooltip>
+          </a>
+
           <a-upload
             :customRequest="customRequest"
             :multiple="true"
@@ -161,7 +168,7 @@
             </a-tooltip>
           </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
-          <a-popconfirm v-if="hasPerm('SsuIssue:delete')" placement="topRight" title="确认删除？" @confirm="() => SsuIssueDelete(record)">
+          <a-popconfirm v-if="hasPerm('SsuIssue:delete')" placement="topRight" title="确认删除？" @confirm="() => Delete(record)">
             <a-tooltip title='删除' placement='top'>
               <a-icon type='delete' />
             </a-tooltip>
@@ -182,11 +189,11 @@
 <script>
   import { STable } from '@/components'
   import {
-    SsuIssuePage,
-    SsuIssueDelete,
-    SsuIssueExport,
-    SsuIssueTemplate,
-    SsuIssueImportData,
+    IssuePage,
+    IssueDelete,
+    IssueExport,
+    IssueTemplate,
+    IssueImport,
     Downloadfile
   } from '@/api/modular/main/SsuIssueManage'
   import executeForm from './executeForm.vue'
@@ -201,6 +208,7 @@
   import {
     SsuProjectList
   } from '@/api/modular/main/SsuProjectManage'
+  import { sysFileInfoDownload } from '@/api/modular/system/fileManage'
   export default {
     components: {
       STable,
@@ -366,7 +374,7 @@ sorter: true,
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
         // 加载数据方法 必须为 Promise 对象
         loadData: parameter => {
-          return SsuIssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
+          return IssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
             return res.data
           })
         },
@@ -414,9 +422,7 @@ sorter: true,
         if (this.fileObj) {
           const formData = new FormData()
           formData.append('file', this.fileObj)
-          // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
-          formData.append('attachmentType', '0')
-          SsuIssueImportData(formData).then((res) => {
+          IssueImport(formData).then((res) => {
             if (res.success) {
               this.$message.success('导入成功')
               this.fileObj = ''
@@ -433,7 +439,7 @@ sorter: true,
         this.$refs.table.refresh(true)
       },
       exportData() {
-        SsuIssueExport(this.queryParam).then((res) => {
+        IssueExport(this.queryParam).then((res) => {
           this.confirmLoading = false
           Downloadfile(res)
           // eslint-disable-next-line handle-callback-err
@@ -445,7 +451,26 @@ sorter: true,
         })
       },
       templateFile() {
-        SsuIssueTemplate().then((res) => {
+        IssueTemplate().then((res) => {
+          this.confirmLoading = false
+          Downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        }).catch((err) => {
+          this.confirmLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
+        }).finally((res) => {
+          this.confirmLoading = false
+        })
+      },
+      downloadFile() {
+        // this.model.issueId = 286390745276485
+        // this.model.attachmentId = 285680457277509
+
+        var model = {
+          Id: 277503259144261
+        }
+
+        sysFileInfoDownload(model).then((res) => {
           this.confirmLoading = false
           Downloadfile(res)
           // eslint-disable-next-line handle-callback-err
@@ -463,8 +488,8 @@ sorter: true,
         const obj = JSON.parse(JSON.stringify(this.queryParam))
         return obj
       },
-      SsuIssueDelete (record) {
-        SsuIssueDelete(record).then((res) => {
+      Delete (record) {
+        IssueDelete(record).then((res) => {
           if (res.success) {
             this.$message.success('删除成功')
             this.$refs.table.refresh()

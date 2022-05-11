@@ -5,9 +5,9 @@
  *
  * @author licong
  */
-export function SsuIssueDetail (parameter) {
+export function IssueDetail (parameter) {
   return axios({
-    url: '/SsuIssue/Detail',
+    url: '/issue/detail',
     method: 'get',
     params: parameter
   })
@@ -18,9 +18,9 @@ export function SsuIssueDetail (parameter) {
  *
  * @author licong
  */
-export function SsuIssuePage (parameter) {
+export function IssuePage (parameter) {
   return axios({
-    url: '/SsuIssue/Page',
+    url: '/issue/page',
     method: 'get',
     params: parameter
   })
@@ -31,9 +31,9 @@ export function SsuIssuePage (parameter) {
  *
  * @author licong
  */
-export function SsuIssueList (parameter) {
+export function IssueList (parameter) {
   return axios({
-    url: '/SsuIssue/List',
+    url: '/issue/list',
     method: 'get',
     params: parameter
   })
@@ -44,9 +44,9 @@ export function SsuIssueList (parameter) {
  *
  * @author licong
  */
-export function SsuIssueAdd (parameter) {
+export function IssueAdd (parameter) {
   return axios({
-    url: '/SsuIssue/Add',
+    url: '/issue/add',
     method: 'post',
     data: parameter
   })
@@ -57,9 +57,9 @@ export function SsuIssueAdd (parameter) {
  *
  * @author licong
  */
-export function SsuIssueEdit (parameter) {
+export function IssueEdit (parameter) {
   return axios({
-    url: '/SsuIssue/Edit',
+    url: '/issue/edit',
     method: 'post',
     data: parameter
   })
@@ -70,9 +70,9 @@ export function SsuIssueEdit (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExecute (parameter) {
+export function IssueExecute (parameter) {
   return axios({
-    url: '/SsuIssue/Execute',
+    url: '/issue/execute',
     method: 'post',
     data: parameter
   })
@@ -83,9 +83,9 @@ export function SsuIssueExecute (parameter) {
  *
  * @author licong
  */
-export function SsuIssueValidate (parameter) {
+export function IssueValidate (parameter) {
   return axios({
-    url: '/SsuIssue/Validate',
+    url: '/issue/validate',
     method: 'post',
     data: parameter
   })
@@ -96,9 +96,9 @@ export function SsuIssueValidate (parameter) {
  *
  * @author licong
  */
-export function SsuIssueHangup (parameter) {
+export function IssueHangup (parameter) {
   return axios({
-    url: '/SsuIssue/Hangup',
+    url: '/issue/hangup',
     method: 'post',
     data: parameter
   })
@@ -109,9 +109,9 @@ export function SsuIssueHangup (parameter) {
  *
  * @author licong
  */
-export function SsuIssueRedispatch (parameter) {
+export function IssueRedispatch (parameter) {
   return axios({
-    url: '/SsuIssue/Redispatch',
+    url: '/issue/redispatch',
     method: 'post',
     data: parameter
   })
@@ -122,9 +122,9 @@ export function SsuIssueRedispatch (parameter) {
  *
  * @author licong
  */
-export function SsuIssueDispatch (parameter) {
+export function IssueDispatch (parameter) {
   return axios({
-    url: '/SsuIssue/Dispatch',
+    url: '/issue/dispatch',
     method: 'post',
     data: parameter
   })
@@ -135,9 +135,9 @@ export function SsuIssueDispatch (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExport (parameter) {
+export function IssueExport (parameter) {
   return axios({
-    url: '/SsuIssue/Export',
+    url: '/issue/export',
     method: 'post',
     data: parameter,
     responseType: 'blob'
@@ -149,9 +149,9 @@ export function SsuIssueExport (parameter) {
  *
  * @author licong
  */
-export function SsuIssueTemplate (parameter) {
+export function IssueTemplate (parameter) {
   return axios({
-    url: '/SsuIssue/Template',
+    url: '/issue/template',
     method: 'get',
     data: parameter,
     responseType: 'blob'
@@ -163,22 +163,36 @@ export function SsuIssueTemplate (parameter) {
  *
  * @author licong
  */
-export function SsuIssueImportData (parameter) {
+export function IssueImport (parameter) {
   return axios({
-    url: '/SsuIssue/Import',
+    url: '/issue/import',
     method: 'post',
     data: parameter
   })
 }
 
 /**
- * 附件上传
+ * 附件上传后通知问题表保存附件id
+ * 20220511 逻辑改动：由原来的后端上传并保存Id信息改为前端上传、后端保存Id
  *
  * @author licong
  */
-export function SsuIssueUploadFile (parameter) {
+export function IssueAttachmentSaveId (parameter) {
   return axios({
-    url: '/SsuIssue/UploadFile',
+    url: '/issue/attachment/saveId',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 附件下载时获取该问题所属的附件编号等信息
+ *
+ * @author licong
+ */
+export function IssueAttachmentInfoList (parameter) {
+  return axios({
+    url: '/issue/attachment/infoList',
     method: 'post',
     data: parameter
   })
@@ -189,9 +203,9 @@ export function SsuIssueUploadFile (parameter) {
  *
  * @author licong
  */
-export function SsuIssueDelete (parameter) {
+export function IssueDelete (parameter) {
   return axios({
-    url: '/SsuIssue/Delete',
+    url: '/issue/delete',
     method: 'post',
     data: parameter
   })
@@ -202,9 +216,9 @@ export function SsuIssueDelete (parameter) {
  *
  * @author licong
  */
-export function OperationPage (parameter) {
+export function IssueOperationPage (parameter) {
   return axios({
-    url: '/SsuIssueOperation/Page',
+    url: '/issue/operation/page',
     method: 'post',
     data: parameter
   })

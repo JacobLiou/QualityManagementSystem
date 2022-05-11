@@ -2,9 +2,12 @@
 
 namespace QMS.Application.Issues.Service.SsuIssue.Attachment
 {
-    internal class AttachmentModel
+    public class AttachmentModel
     {
         //public long IssueId { get; set; }
+        /// <summary>
+        /// 附件编号
+        /// </summary>
         public long AttachmentId { get; set; }
         public string FileName { get; set; }
         public EnumAttachmentType AttachmentType { get; set; }

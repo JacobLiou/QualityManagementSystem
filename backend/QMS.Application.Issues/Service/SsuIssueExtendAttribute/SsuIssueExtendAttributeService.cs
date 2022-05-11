@@ -14,17 +14,14 @@ using QMS.Application.Issues.Helper;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
-using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
-using System.Web;
 
 namespace QMS.Application.Issues
 {
     /// <summary>
     /// 问题扩展属性服务
     /// </summary>
-    [ApiDescriptionSettings("问题管理服务", Name = "SsuIssueExtendAttribute", Order = 100)]
+    [ApiDescriptionSettings("问题管理服务", Name = "IssueExtAttr", Order = 100)]
     public class SsuIssueExtendAttributeService : ISsuIssueExtendAttributeService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssueExtendAttribute, IssuesDbContextLocator> _ssuIssueExtendAttributeRep;
@@ -47,7 +44,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssueExtendAttribute/AddStruct")]
+        [HttpPost("/issue/extAttr/addStruct")]
         public async Task Add(AddSsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttribute = input.Adapt<SsuIssueExtendAttribute>();
@@ -63,7 +60,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssueExtendAttribute/DeleteStruct")]
+        [HttpPost("/issue/extAttr/deleteStruct")]
         public async Task Delete(DeleteSsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttribute = await _ssuIssueExtendAttributeRep.FirstOrDefaultAsync(u => u.Id == input.Id);
@@ -83,7 +80,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssueExtendAttribute/EditStruct")]
+        [HttpPost("/issue/extAttr/editStruct")]
         public async Task Update(UpdateSsuIssueExtendAttributeInput input)
         {
             var isExist = await _ssuIssueExtendAttributeRep.AnyAsync(u => u.Id == input.Id, false);
@@ -113,7 +110,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuIssueExtendAttribute/page")]
+        [HttpGet("/issue/extAttr/page")]
         public async Task<PageResult<SsuIssueExtendAttributeOutput>> Page([FromQuery] SsuIssueExtendAttributeInput input)
         {
             var ssuIssueExtendAttributes = await _ssuIssueExtendAttributeRep.DetachedEntities
@@ -143,7 +140,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuIssueExtendAttribute/ListStruct")]
+        [HttpGet("/issue/extAttr/listStruct")]
         public async Task<List<FieldStruct>> List([FromQuery] ModuleType input)
         {
             return await _ssuIssueExtendAttributeRep.DetachedEntities
@@ -158,7 +155,7 @@ namespace QMS.Application.Issues
                 }).ToListAsync();
         }
 
-        [HttpPost($"/SsuIssueExtendAttribute/BatchAddStruct")]
+        [HttpPost($"/issue/extAttr/batchAddStruct")]
         public async Task BatchAddFieldStruct(List<FieldStruct> input)
         {
             if (input == null || input.Count == 0)
@@ -166,10 +163,29 @@ namespace QMS.Application.Issues
                 throw Oops.Oh(ErrorCode.D1007);
             }
 
+            var list = this._ssuIssueExtendAttributeRep.DetachedEntities
+                .Where<SsuIssueExtendAttribute>(attr => attr.Module == input.First().Module)
+                .Select<SsuIssueExtendAttribute, string>(attr => attr.AttributeCode);
+
+
+            var finalyList = input.Where<FieldStruct>(field => !list.Contains(field.FieldCode));
+
+
+            //IEqualityComparer<string> equalityComparer = new MyStringComparer();
+
+            //Helper.Helper.Assert(!this._ssuIssueExtendAttributeRep
+            //    .Any(
+            //        model =>
+            //        input.Select<FieldStruct, string>(field => field.FieldCode)
+            //        .Contains(model.AttributeCode, equalityComparer)
+            //    ),
+            //    "同名属性编码已存在"
+            //    );
+
             long updateId = Helper.Helper.GetCurrentUser();
             DateTime now = DateTime.Now;
             IEnumerable<SsuIssueExtendAttribute> attributes =
-                input.Select<FieldStruct, SsuIssueExtendAttribute>(
+                finalyList.Select<FieldStruct, SsuIssueExtendAttribute>(
                     fieldStruct =>
                         new SsuIssueExtendAttribute()
                         {
@@ -191,10 +207,10 @@ namespace QMS.Application.Issues
         }
 
 
-        [HttpGet("/SsuIssueExtendAttribute/Template")]
+        [HttpGet("/issue/extAttr/template")]
         public async Task<IActionResult> Template()
         {
-            var item = this._ssuIssueExtendAttributeRep.Where(model=>1==0).Take(1).ProjectToType<AddSsuIssueExtendAttributeInput>();
+            var item = this._ssuIssueExtendAttributeRep.Where(model => 1 == 0).Take(1).ProjectToType<AddSsuIssueExtendAttributeInput>();
             return await Helper.Helper.ExportExcel(item, "IssueExtAttrTemplate");
         }
 
@@ -203,7 +219,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssueExtendAttribute/Import")]
+        [HttpPost("/issue/extAttr/import")]
         public async Task ImportIssues(IFormFile file)
         {
             Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), "文件为空");
@@ -234,7 +250,7 @@ namespace QMS.Application.Issues
         }
 
         [Obsolete]
-        [HttpPost($"/SsuIssueExtendAttribute/BatchAddValue")]
+        [HttpPost($"/issue/extAttr/batchAddValue")]
         public async Task AddFieldValue(BatchFieldValue input)
         {
             DateTime now = DateTime.Now;
@@ -251,7 +267,7 @@ namespace QMS.Application.Issues
         }
 
         [Obsolete]
-        [HttpPost($"/SsuIssueExtendAttribute/UpdateValue")]
+        [HttpPost($"/issue/extAttr/updateValue")]
         public async Task UpdateFieldValue(long IssueId, List<FieldValue> fieldValues)
         {
             DateTime now = DateTime.Now;
@@ -291,7 +307,6 @@ namespace QMS.Application.Issues
             this._ssuIssueExtendAttributeValueRep.Entities.UpdateRange(values);
             await this._ssuIssueExtendAttributeValueRep.Context.SaveChangesAsync();
         }
-
 
     }
 }

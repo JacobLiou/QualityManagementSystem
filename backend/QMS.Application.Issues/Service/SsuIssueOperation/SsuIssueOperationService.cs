@@ -13,7 +13,7 @@ namespace QMS.Application.Issues
     /// <summary>
     /// 问题操作记录服务
     /// </summary>
-    [ApiDescriptionSettings("问题管理服务", Name = "SsuIssueOperation", Order = 100)]
+    [ApiDescriptionSettings("问题管理服务", Name = "IssueOperation", Order = 100)]
     public class SsuIssueOperationService : ISsuIssueOperationService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuIssueOperation,IssuesDbContextLocator> _ssuIssueOperationRep;
@@ -30,7 +30,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/SsuIssueOperation/Page")]
+        [HttpPost("/issue/operation/page")]
         public async Task<PageResult<SsuIssueOperationOutput>> Page(SsuIssueOperationInput input)
         {
             var ssuIssueOperations = await _ssuIssueOperationRep.DetachedEntities

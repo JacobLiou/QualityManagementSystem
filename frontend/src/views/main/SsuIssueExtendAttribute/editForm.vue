@@ -32,7 +32,7 @@
 
 <script>
   import {
-    SsuIssueExtendAttributeEdit
+    IssueExtAttrEditStruct
   } from '@/api/modular/main/SsuIssueExtendAttributeManage'
   export default {
     data () {
@@ -88,7 +88,7 @@
                  this.record[key] = values[key]
               }
             }
-            SsuIssueExtendAttributeEdit(this.record).then((res) => {
+            IssueExtAttrEditStruct(this.record).then((res) => {
               if (res.success) {
                 this.$message.success('编辑成功')
                 this.confirmLoading = false

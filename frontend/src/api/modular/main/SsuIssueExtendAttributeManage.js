@@ -5,9 +5,9 @@
  *
  * @author licong
  */
-export function SsuIssueExtendAttributePage (parameter) {
+export function IssueExtAttrPage (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/Page',
+    url: '/issue/extAttr/Page',
     method: 'get',
     params: parameter
   })
@@ -18,9 +18,9 @@ export function SsuIssueExtendAttributePage (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeList (parameter) {
+export function IssueExtAttrListStruct (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/ListStruct',
+    url: '/issue/extAttr/listStruct',
     method: 'get',
     params: parameter
   })
@@ -31,9 +31,9 @@ export function SsuIssueExtendAttributeList (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeAdd (parameter) {
+export function IssueExtAttrAddStruct (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/AddStruct',
+    url: '/issue/extAttr/addStruct',
     method: 'post',
     data: parameter
   })
@@ -44,9 +44,9 @@ export function SsuIssueExtendAttributeAdd (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeBatchAdd (parameter) {
+export function IssueExtAttrBatchAddStruct (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/BatchAddStruct',
+    url: '/issue/extAttr/batchAddStruct',
     method: 'post',
     data: parameter
   })
@@ -57,9 +57,9 @@ export function SsuIssueExtendAttributeBatchAdd (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeEdit (parameter) {
+export function IssueExtAttrEditStruct (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/EditStruct',
+    url: '/issue/extAttr/editStruct',
     method: 'post',
     data: parameter
   })
@@ -70,9 +70,9 @@ export function SsuIssueExtendAttributeEdit (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeDelete (parameter) {
+export function IssueExtAttrDeleteStruct (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/DeleteStruct',
+    url: '/issue/extAttr/deleteStruct',
     method: 'post',
     data: parameter
   })
@@ -83,9 +83,9 @@ export function SsuIssueExtendAttributeDelete (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeImportData (parameter) {
+export function IssueExtAttrImport (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/Import',
+    url: '/issue/extAttr/import',
     method: 'post',
     data: parameter
   })
@@ -96,9 +96,9 @@ export function SsuIssueExtendAttributeImportData (parameter) {
  *
  * @author licong
  */
-export function SsuIssueExtendAttributeTemplate (parameter) {
+export function IssueExtAttrTemplate (parameter) {
   return axios({
-    url: '/SsuIssueExtendAttribute/Template',
+    url: '/issue/extAttr/template',
     method: 'get',
     data: parameter,
     responseType: 'blob'

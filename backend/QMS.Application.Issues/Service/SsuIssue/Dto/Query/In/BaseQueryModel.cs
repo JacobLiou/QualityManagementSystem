@@ -11,6 +11,21 @@ namespace QMS.Application.Issues.IssueService.Dto.QueryList
         public EnumIssueStatus? Status { get; set; }
         public string Title { get; set; }
 
+
+        public long? Creator { get; set; } // 提出人
+        public long? Dispatcher { get; set; } // 转发人
+        public long? Executor { get; set; } // 解决人
+
+        public DateTime? CreateTimeFrom { get; set; } // 提出时间起点
+        public DateTime? CreateTimeTo { get; set; } // 提出时间终点
+
+        public DateTime? DispatchTimeFrom { get; set; } // 转发时间起点
+        public DateTime? DispatchTimeTo { get; set; } // 转发时间终点
+
+        public DateTime? SolveTimeFrom { get; set; } // 解决时间起点
+        public DateTime? SolveTimeTo { get; set; } // 解决时间终点
+
+
         public EnumQueryCondition QueryCondition { get; set; }
     }
 

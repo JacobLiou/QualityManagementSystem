@@ -96,10 +96,10 @@
 <script>
   import { STable } from '@/components'
   import {
-    SsuIssueExtendAttributePage,
-    SsuIssueExtendAttributeDelete,
-    SsuIssueExtendAttributeImportData,
-    SsuIssueExtendAttributeTemplate
+    IssueExtAttrPage,
+    IssueExtAttrDeleteStruct,
+    IssueExtAttrImport,
+    IssueExtAttrTemplate
   } from '@/api/modular/main/SsuIssueExtendAttributeManage'
   import addForm from './addForm.vue'
   import editForm from './editForm.vue'
@@ -151,7 +151,7 @@ sorter: true,
         tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
         // 加载数据方法 必须为 Promise 对象
         loadData: parameter => {
-          return SsuIssueExtendAttributePage(Object.assign(parameter, this.queryParam)).then((res) => {
+          return IssueExtAttrPage(Object.assign(parameter, this.queryParam)).then((res) => {
             return res.data
           })
         },
@@ -184,7 +184,7 @@ sorter: true,
           formData.append('file', this.fileObj)
           // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
           formData.append('attachmentType', '0')
-          SsuIssueExtendAttributeImportData(formData).then((res) => {
+          IssueExtAttrImport(formData).then((res) => {
             if (res.success) {
               this.$message.success('导入成功')
               this.fileObj = ''
@@ -196,7 +196,7 @@ sorter: true,
         }
       },
       templateFile() {
-        SsuIssueExtendAttributeTemplate().then((res) => {
+        IssueExtAttrTemplate().then((res) => {
           this.confirmLoading = false
           Downloadfile(res)
           // eslint-disable-next-line handle-callback-err
@@ -215,7 +215,7 @@ sorter: true,
         return obj
       },
       SsuIssueExtendAttributeDelete (record) {
-        SsuIssueExtendAttributeDelete(record).then((res) => {
+        IssueExtAttrDeleteStruct(record).then((res) => {
           if (res.success) {
             this.$message.success('删除成功')
             this.$refs.table.refresh()

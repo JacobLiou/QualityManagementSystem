@@ -54,8 +54,8 @@
 <script>
 import moment from 'moment'
 import {
-  OperationPage,
-  SsuIssueDispatch
+  IssueOperationPage,
+  IssueDispatch
 } from '@/api/modular/main/SsuIssueManage'
 export default {
   data () {
@@ -106,7 +106,7 @@ export default {
       }, 100)
 
       this.record.issueId = this.record.id
-      OperationPage(this.record).then((res) => {
+      IssueOperationPage(this.record).then((res) => {
         if (res.success) {
           this.operationRecords = res.data.rows
         } else {
@@ -134,7 +134,7 @@ export default {
           values.forecastSolveTime = this.forecastSolveTimeDateString
           this.record.forecastSolveTime = this.forecastSolveTimeDateString
 
-          SsuIssueDispatch(this.record).then((res) => {
+          IssueDispatch(this.record).then((res) => {
             if (res.success) {
               this.$message.success('分发成功')
               this.confirmLoading = false
