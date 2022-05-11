@@ -19,6 +19,13 @@ namespace Furion.Extras.Admin.NET
         public string Uuid { get; set; }
 
         /// <summary>
+        ///外部用户ID
+        /// </summary>
+        [Comment("外部用户ID")]
+        [MaxLength(20)]
+        public string OpenId { get; set; }
+
+        /// <summary>
         /// 用户授权的token
         /// </summary>
         [Comment("Token")]
@@ -55,7 +62,7 @@ namespace Furion.Extras.Admin.NET
         /// 邮箱
         /// </summary>
         [Comment("邮箱")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string Email { get; set; }
 
         /// <summary>
