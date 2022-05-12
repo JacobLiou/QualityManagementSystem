@@ -1,5 +1,4 @@
 using System.Data;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace QMS.Application.Issues.Helper

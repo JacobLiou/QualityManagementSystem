@@ -143,7 +143,7 @@ export default {
 
                     // 后端将附件Id和问题Id关联
                     var attachmentId = res.data
-                    var fileName = this.fileObj.fileName
+                    var fileName = this.fileObj.name
                     // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
                     var attachmentType = 0
 

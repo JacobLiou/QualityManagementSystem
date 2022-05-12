@@ -1,6 +1,9 @@
 ﻿using Furion;
+using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
-using QMS.Application.Issues.Service;
+using Furion.JsonSerialization;
+using QMS.Core;
+using QMS.Core.Entity;
 using QMS.Core.Enum;
 using System.ComponentModel;
 using System.Reflection;
@@ -87,10 +90,10 @@ namespace QMS.Application.Issues.Helper
 
         public static string GetNameByEmpId(this long? id)
         {
-            //if (id == null)
-            //{
-            //    id = Helper.GetCurrentUser();
-            //}
+            if (id == null)
+            {
+                return string.Empty;
+            }
 
             return "员工" + id?.ToString();
         }
@@ -104,18 +107,57 @@ namespace QMS.Application.Issues.Helper
         #endregion
 
         #region 获取列名集合
-        public static async  Task<KeyValuePair<string, string>[]> GetColumns()
+        public static async Task<Dictionary<string, string>> GetUserColumns(IRepository<IssueColumnDisplay, IssuesDbContextLocator> columnDisplayRepository)
         {
-            return await App.GetService<IssueCacheService>().GetUserColumns(CurrentUserInfo.UserId);
+            long userId = CurrentUserInfo.UserId;
+
+            var cacheService = App.GetService<IssueCacheService>();
+
+            string cacheString = await cacheService.GetUserColumns(userId);
+
+            // 如果缓存没有，就尝试从数据取并放到缓存，最终取缓存
+            if (string.IsNullOrEmpty(cacheString))
+            {
+                var model = columnDisplayRepository?.DetachedEntities.FirstOrDefault(column => column.UserId == userId);
+                if (model != null)
+                {
+                    await SetUserColumns(columnDisplayRepository, model.Columns);
+                }
+                else
+                {
+                    string jsonStr = JSON.Serialize(Constants.USER_COLUMN_NAMES);
+                    await columnDisplayRepository.InsertNowAsync(new IssueColumnDisplay
+                    {
+                        UserId = CurrentUserInfo.UserId,
+                        Columns = jsonStr
+                    });
+
+                    await columnDisplayRepository.Context.SaveChangesAsync();
+
+                    await cacheService.SetUserColumns(CurrentUserInfo.UserId, jsonStr);
+                }
+            }
+
+            string json = await cacheService.GetUserColumns(userId);
+
+            return JSON.Deserialize<Dictionary<string, string>>(json);
         }
 
-        //public async Task SetColumns(KeyValuePair<string, string>[] columns)
-        //{
-        //    var cacheKey = CommonConst.CACHE_KEY_MENU + $"{userId}-{appCode}";
-        //    await _cache.SetStringAsync(cacheKey, JSON.Serialize(menus));
+        public static async Task SetUserColumns(
+            IRepository<IssueColumnDisplay, IssuesDbContextLocator> columnDisplayRepository,
+            string jsonStr
+        )
+        {
+            await App.GetService<IssueCacheService>().SetUserColumns(CurrentUserInfo.UserId, jsonStr);
 
-        //    await AddCacheKey(cacheKey);
-        //}
+            await columnDisplayRepository.UpdateNowAsync(new IssueColumnDisplay
+            {
+                UserId = CurrentUserInfo.UserId,
+                Columns = jsonStr
+            });
+
+            await columnDisplayRepository.Context.SaveChangesAsync();
+        }
         #endregion
     }
 }

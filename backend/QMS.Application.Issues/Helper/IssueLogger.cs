@@ -7,13 +7,13 @@ namespace QMS.Application.Issues.Helper
     public static class IssueLogger
     {
         public static async Task Log(
-            IRepository<SsuIssueOperation, IssuesDbContextLocator> ssuIssueOperateRep, 
+            IRepository<IssueOperation, IssuesDbContextLocator> issueOperateRep, 
             long id, 
             Core.Enum.EnumIssueOperationType enumIssueOperationType, 
             string content
         )
         {
-            await ssuIssueOperateRep.InsertAsync(new SsuIssueOperation()
+            await issueOperateRep.InsertAsync(new IssueOperation()
             {
                 IssueId = id,
                 OperationTypeId = enumIssueOperationType,

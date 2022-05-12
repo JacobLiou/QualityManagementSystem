@@ -14,7 +14,7 @@ namespace QMS.Application.Issues.Helper
         #region Download、Upload
         public static async Task<IActionResult> ExportExcel(object data, string fileName = null)
         {
-            Helper.Assert(data != null, "数据为空，无法下载文件!");
+            Assert(data != null, "数据为空，无法下载文件!");
 
             var memoryStream = new MemoryStream();
             await memoryStream.SaveAsAsync(data);
@@ -31,21 +31,20 @@ namespace QMS.Application.Issues.Helper
         #endregion
 
         #region Assert
-
-        public static async Task<SsuIssue> CheckIssueExist(IRepository<SsuIssue, IssuesDbContextLocator> ssuIssueRep, long id)
+        public static async Task<Issue> CheckIssueExist(IRepository<Issue, IssuesDbContextLocator> issueRep, long id)
         {
-            SsuIssue issue = await ssuIssueRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
+            Issue issue = await issueRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
 
-            Helper.Assert(issue != null, $"问题【{id}】不存在");
+            Assert(issue != null, $"问题【{id}】不存在");
 
             return issue;
         }
 
-        public static async Task<SsuIssueDetail> CheckIssueDetailExist(IRepository<SsuIssueDetail, IssuesDbContextLocator> ssuIssueDetailRep, long id)
+        public static async Task<IssueDetail> CheckIssueDetailExist(IRepository<IssueDetail, IssuesDbContextLocator> issueDetailRep, long id)
         {
-            SsuIssueDetail issue = await ssuIssueDetailRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
+            IssueDetail issue = await issueDetailRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
 
-            Helper.Assert(issue != null, $"问题【{id}】详情不存在");
+            Assert(issue != null, $"问题【{id}】详情不存在");
 
             return issue;
         }
@@ -55,6 +54,14 @@ namespace QMS.Application.Issues.Helper
             if (!result)
             {
                 throw new ArgumentException(errorMsg);
+            }
+        }
+
+        public static void Assert(bool result, Exception exception)
+        {
+            if (!result)
+            {
+                throw exception;
             }
         }
 

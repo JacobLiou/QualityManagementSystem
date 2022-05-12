@@ -71,7 +71,7 @@
             :showUploadList="false"
             name="file"
             v-if="hasPerm('sysUser:import')">
-            <a-button icon="upload">问题导入</a-button>
+            <a-button icon="upload">扩展字段导入</a-button>
           </a-upload>
         </template>
         <span slot="modulescopedSlots" slot-scope="text">

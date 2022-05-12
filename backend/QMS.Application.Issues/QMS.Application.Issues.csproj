@@ -9,14 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Service\SsuIssueExtendAttributeValue\**" />
-    <Compile Remove="Service\SsuIssues\**" />
+    <Compile Remove="Service\IssueExtendAttributeValue\**" />
     <Compile Remove="System\**" />
-    <EmbeddedResource Remove="Service\SsuIssueExtendAttributeValue\**" />
-    <EmbeddedResource Remove="Service\SsuIssues\**" />
+    <EmbeddedResource Remove="Service\IssueExtendAttributeValue\**" />
     <EmbeddedResource Remove="System\**" />
-    <None Remove="Service\SsuIssueExtendAttributeValue\**" />
-    <None Remove="Service\SsuIssues\**" />
+    <None Remove="Service\IssueExtendAttributeValue\**" />
     <None Remove="System\**" />
   </ItemGroup>
 

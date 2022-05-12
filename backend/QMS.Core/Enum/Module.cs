@@ -13,7 +13,7 @@ namespace QMS.Core.Enum
         [Description("试产")]
         TrialProduce = 2,
 
-        [Description("来料")]
+        [Description("IQC")]
         IQC = 3,
 
         [Description("量产")]

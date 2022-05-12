@@ -251,8 +251,10 @@ import {
         this.createTimeDateString = moment(record.createTime).format('YYYY-MM-DD')
         this.form.getFieldDecorator('closeTime', { initialValue: moment(record.closeTime, 'YYYY-MM-DD') })
         this.closeTimeDateString = moment(record.closeTime).format('YYYY-MM-DD')
-        this.form.getFieldDecorator('discoverTime', { initialValue: moment(record.discoverTime, 'YYYY-MM-DD') })
-        this.discoverTimeDateString = moment(record.discoverTime).format('YYYY-MM-DD')
+        if (record.discoverTime) {
+          this.form.getFieldDecorator('discoverTime', { initialValue: moment(record.discoverTime, 'YYYY-MM-DD') })
+          this.discoverTimeDateString = moment(record.discoverTime).format('YYYY-MM-DD')
+        }
         this.form.getFieldDecorator('dispatchTime', { initialValue: moment(record.dispatchTime, 'YYYY-MM-DD') })
         this.dispatchTimeDateString = moment(record.dispatchTime).format('YYYY-MM-DD')
         this.form.getFieldDecorator('forecastSolveTime', { initialValue: moment(record.forecastSolveTime, 'YYYY-MM-DD') })
@@ -297,7 +299,7 @@ import {
 
                       // 后端将附件Id和问题Id关联
                       var attachmentId = res.data
-                      var fileName = this.fileObj.fileName
+                      var fileName = this.fileObj.name
                       // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
                       var attachmentType = 0
 

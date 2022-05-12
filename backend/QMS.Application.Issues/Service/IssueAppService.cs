@@ -9,7 +9,7 @@ namespace QMS.Application.Issues
 { /// <summary>
   /// 系统服务接口
   /// </summary>
-    [ApiDescriptionSettings("问题管理", Name = "Issue", Order = 100)]
+    [ApiDescriptionSettings("问题管理Demo", Name = "Issue", Order = 100)]
 
     public class IssueAppService : IDynamicApiController
     {

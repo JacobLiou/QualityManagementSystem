@@ -19,7 +19,7 @@ namespace QMS.Database.Migrations.Migrations
                 .HasAnnotation("ProductVersion", "6.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssue", b =>
+            modelBuilder.Entity("QMS.Core.Entity.Issue", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -126,12 +126,31 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ssu_issue");
+                    b.ToTable("issue");
 
                     b.HasComment("问题记录");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssueDetail", b =>
+            modelBuilder.Entity("QMS.Core.Entity.IssueColumnDisplay", b =>
+                {
+                    b.Property<long>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasComment("用户编号");
+
+                    b.Property<string>("Columns")
+                        .HasMaxLength(600)
+                        .HasColumnType("varchar(600)")
+                        .HasComment("列名集合");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("issue_column_display");
+
+                    b.HasComment("问题列表显示列明记录");
+                });
+
+            modelBuilder.Entity("QMS.Core.Entity.IssueDetail", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -193,12 +212,12 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ssu_issue_detail");
+                    b.ToTable("issue_detail");
 
                     b.HasComment("详细问题记录");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssueExtendAttribute", b =>
+            modelBuilder.Entity("QMS.Core.Entity.IssueExtendAttribute", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,12 +271,12 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ssu_issue_extend_attribute");
+                    b.ToTable("issue_ext_attr");
 
                     b.HasComment("问题扩展属性");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssueExtendAttributeValue", b =>
+            modelBuilder.Entity("QMS.Core.Entity.IssueExtendAttributeValue", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -275,12 +294,12 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id", "IssueNum");
 
-                    b.ToTable("ssu_issue_extend_attribute_value");
+                    b.ToTable("issue_ext_attr_val");
 
                     b.HasComment("问题扩展属性值");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssueOperation", b =>
+            modelBuilder.Entity("QMS.Core.Entity.IssueOperation", b =>
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
@@ -314,23 +333,23 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ssu_issue_operation");
+                    b.ToTable("issue_operation");
 
                     b.HasComment("问题操作记录");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssueDetail", b =>
+            modelBuilder.Entity("QMS.Core.Entity.IssueDetail", b =>
                 {
-                    b.HasOne("QMS.Core.Entity.SsuIssue", "Issue")
+                    b.HasOne("QMS.Core.Entity.Issue", "Issue")
                         .WithOne("SsuIssueDetail")
-                        .HasForeignKey("QMS.Core.Entity.SsuIssueDetail", "Id")
+                        .HasForeignKey("QMS.Core.Entity.IssueDetail", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Issue");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.SsuIssue", b =>
+            modelBuilder.Entity("QMS.Core.Entity.Issue", b =>
                 {
                     b.Navigation("SsuIssueDetail");
                 });
