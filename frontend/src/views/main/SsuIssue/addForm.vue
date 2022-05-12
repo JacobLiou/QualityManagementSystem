@@ -1,4 +1,5 @@
-﻿<template>
+﻿<script src='../../../api/modular/main/SsuIssueManage.js'></script>
+<template>
   <a-modal
     title="新增问题记录"
     :width="900"
@@ -121,9 +122,9 @@
 </template>
 
 <script>
-  import {
-    SsuIssueAdd, SsuIssueUploadFile
-  } from '@/api/modular/main/SsuIssueManage'
+import {
+  IssueAdd, IssueAttachmentSaveId
+} from '@/api/modular/main/SsuIssueManage'
 
   import moment from 'moment'
 
@@ -136,6 +137,7 @@
   } from '@/api/modular/main/SsuProductManage'
 
   import { sysUserOrgTree } from '@/api/modular/system/userManage'
+  import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
 
   export default {
     data () {
@@ -281,19 +283,41 @@
             values.solveTime = this.solveTimeDateString
             values.validateTime = this.validateTimeDateString
 
-            SsuIssueAdd(values).then((res) => {
+            IssueAdd(values).then((res) => {
               if (res.success) {
+                var issueId = res.data
+
                 if (this.fileObj) {
                   const formData = new FormData()
                   formData.append('file', this.fileObj)
-                  formData.append('issueId', res.data)
-                  // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
-                  formData.append('attachmentType', '0')
-                  SsuIssueUploadFile(formData).then((res) => {
+                  sysFileInfoUpload(formData).then((res) => {
                     if (res.success) {
                       this.$message.success('上传成功')
-                      this.fileObj = ''
                       // this.$refs.table.refresh()
+
+                      // 后端将附件Id和问题Id关联
+                      var attachmentId = res.data
+                      var fileName = this.fileObj.fileName
+                      // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+                      var attachmentType = 0
+
+                      var data = {
+                        attachment:{
+                          attachmentId: attachmentId,
+                          fileName: fileName,
+                          attachmentType: attachmentType
+                        },
+                        issueId: issueId
+                      }
+
+                      IssueAttachmentSaveId(data).then((res) => {
+                        if (!res.success){
+                          this.$message.error('附件信息保存失败：' + res.message)
+                        } else {
+                          this.fileObj = ''
+                        }
+                      })
+
                     } else {
                       this.$message.error('上传失败：' + res.message)
                     }

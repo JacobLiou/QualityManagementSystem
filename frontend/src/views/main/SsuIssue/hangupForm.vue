@@ -33,8 +33,8 @@
 <script>
 import moment from 'moment'
 import {
-  OperationPage,
-  SsuIssueHangup
+  IssueOperationPage,
+  IssueHangup
 } from '@/api/modular/main/SsuIssueManage'
 export default {
   data () {
@@ -71,7 +71,7 @@ export default {
       }, 100)
 
       this.record.issueId = this.record.id
-      OperationPage(this.record).then((res) => {
+      IssueOperationPage(this.record).then((res) => {
         if (res.success) {
           this.operationRecords = res.data.rows
         } else {
@@ -96,7 +96,7 @@ export default {
             }
           }
 
-          SsuIssueHangup(this.record).then((res) => {
+          IssueHangup(this.record).then((res) => {
             if (res.success) {
               this.$message.success('挂起成功')
               this.confirmLoading = false

@@ -36,8 +36,8 @@
 <script>
 import moment from 'moment'
 import {
-  OperationPage,
-  SsuIssueRedispatch
+  IssueOperationPage,
+  IssueRedispatch
 } from '@/api/modular/main/SsuIssueManage'
 export default {
   data () {
@@ -74,7 +74,7 @@ export default {
       }, 100)
 
       this.record.issueId = this.record.id
-      OperationPage(this.record).then((res) => {
+      IssueOperationPage(this.record).then((res) => {
         if (res.success) {
           this.operationRecords = res.data.rows
         } else {
@@ -99,7 +99,7 @@ export default {
             }
           }
 
-          SsuIssueRedispatch(this.record).then((res) => {
+          IssueRedispatch(this.record).then((res) => {
             if (res.success) {
               this.$message.success('重分发成功')
               this.confirmLoading = false

@@ -4,11 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using QMS.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QMS.Application.Issues
 { /// <summary>
@@ -36,7 +31,7 @@ namespace QMS.Application.Issues
             var request = _contextAccessor.HttpContext.Request;
             var authHeader = request.Headers["Authorization"];
 
-            var response = await "http://localhost:5566/System/UserGroup".SetHeaders(new
+            var response = await "http://localhost:5566/System/group/UserGroup".SetHeaders(new
             {
                 Authorization = authHeader
             }).GetAsStringAsync();

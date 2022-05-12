@@ -131,13 +131,14 @@
 <script>
   import moment from 'moment'
   import {
-    SsuIssueEdit,
-    SsuIssueDetail,
-    OperationPage,
-    SsuIssueUploadFile
+    IssueEdit,
+    IssueDetail,
+    IssueOperationPage,
+    IssueAttachmentSaveId
   } from '@/api/modular/main/SsuIssueManage'
   import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
   import { SsuProductList } from '@/api/modular/main/SsuProductManage'
+  import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
 
   export default {
     data () {
@@ -213,7 +214,7 @@
         const statusOption = this.$options
         this.statusData = statusOption.filters['dictData']('issue_status')
 
-        SsuIssueDetail(this.record).then((res) => {
+        IssueDetail(this.record).then((res) => {
           if (res.success) {
             this.$message.success('获取详情成功')
             this.confirmLoading = false
@@ -285,7 +286,7 @@
             }
 
             this.record.issueId = this.record.id
-            OperationPage(this.record).then((res) => {
+            IssueOperationPage(this.record).then((res) => {
               if (res.success) {
                 this.operationRecords = res.data.rows
               } else {
@@ -329,20 +330,38 @@
             this.record.solveTime = this.solveTimeDateString
             values.validateTime = this.validateTimeDateString
             this.record.validateTime = this.validateTimeDateString
-            SsuIssueEdit(this.record).then((res) => {
+            IssueEdit(this.record).then((res) => {
               if (res.success) {
-
-                if(this.fileObj) {
+                if (this.fileObj) {
                   const formData = new FormData()
                   formData.append('file', this.fileObj)
-                  formData.append('issueId', this.record.issueId)
-                  // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
-                  formData.append('attachmentType', '0')
-                  SsuIssueUploadFile(formData).then((res) => {
+                  sysFileInfoUpload(formData).then((res) => {
                     if (res.success) {
                       this.$message.success('上传成功')
-                      this.fileObj = ''
                       // this.$refs.table.refresh()
+
+                      // 后端将附件Id和问题Id关联
+                      var attachmentId = res.data
+                      var fileName = this.fileObj.fileName
+                      // 0：正常附件 1：问题详情富文本 2：原因分析富文本 3：解决措施富文本 4：验证情况富文本
+                      var attachmentType = 0
+
+                      var data = {
+                        attachment: {
+                          attachmentId: attachmentId,
+                          fileName: fileName,
+                          attachmentType: attachmentType
+                        },
+                        issueId: this.record.issueId
+                      }
+
+                      IssueAttachmentSaveId(data).then((res) => {
+                        if (!res.success) {
+                          this.$message.error('附件信息保存失败：' + res.message)
+                        } else {
+                          this.fileObj = ''
+                        }
+                      })
                     } else {
                       this.$message.error('上传失败：' + res.message)
                     }

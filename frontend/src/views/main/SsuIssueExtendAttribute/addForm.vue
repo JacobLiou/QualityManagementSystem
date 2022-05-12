@@ -31,8 +31,8 @@
 
 <script>
 import {
-  SsuIssueExtendAttributeAdd,
-  SsuIssueExtendAttributeBatchAdd
+  IssueExtAttrAddStruct
+  // IssueExtAttrBatchAddStruct
 } from '@/api/modular/main/SsuIssueExtendAttributeManage'
 
   export default {
@@ -75,7 +75,7 @@ import {
                 values[key] = JSON.stringify(values[key])
               }
             }
-            SsuIssueExtendAttributeAdd(values).then((res) => {
+            IssueExtAttrAddStruct(values).then((res) => {
               if (res.success) {
                 this.$message.success('新增成功')
                 this.confirmLoading = false
