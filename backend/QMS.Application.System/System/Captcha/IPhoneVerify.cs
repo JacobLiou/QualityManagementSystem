@@ -1,6 +1,6 @@
 ﻿namespace QMS.Application.System
 {
-    public interface IPhoneCaptcha
+    public interface IPhoneVerify
     {
         string GetRandomNums(int length = 4);
 
@@ -9,5 +9,9 @@
         string PostSMS(string posturl, string postData);
 
         CommonOutput SendSMS(string mobile, string context);
+
+        string phoneLogin(string phone, string captcha);
+
+        string SendSMSCode(string phone, int num = 4);
     }
 }

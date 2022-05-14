@@ -1,4 +1,7 @@
-﻿using Furion.DependencyInjection;
+﻿using Furion.DatabaseAccessor;
+using Furion.DependencyInjection;
+using Furion.Extras.Admin.NET;
+using Furion.FriendlyException;
 using System.Net;
 using System.Text;
 
@@ -7,17 +10,44 @@ namespace QMS.Application.System
     /// <summary>
     /// 手机短信验证码服务
     /// </summary>
-    public class PhoneCaptcha : ITransient, IPhoneCaptcha
+    public class PhoneVerify : ITransient, IPhoneVerify
     {
-        private readonly ICacheService _cache;
+        private readonly ICacheService<string> _cache;
+        private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
+        private readonly ILoginVerify _login;
         private readonly int CacheMinute = 1;
         private readonly string PostUrl = "https://sdk2.028lk.com/sdk2/BatchSend2.aspx"; //短信网关接口地址
         private readonly string CorpID = "GZJS001651";           //接口账号
         private readonly string Pwd = "sh@668";                  //接口密码
+        private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
 
-        public PhoneCaptcha(ICacheService cache)
+        public PhoneVerify(ICacheService<string> cache, IRepository<SysUser> sysUser, ILoginVerify loginVerify)
         {
             _cache = cache;
+            _sysUserRep = sysUser;
+            _login = loginVerify;
+        }
+
+        /// <summary>
+        /// 发送手机验证码
+        /// </summary>
+        /// <param name="phone">手机号</param>
+        /// <param name="num">验证码个数</param>
+        /// <returns></returns>
+        public string SendSMSCode(string phone, int num = 4)
+        {
+            if (num <= 0)
+            {
+                num = 4;
+            }
+            string code = GetRandomNums(num);
+            string context = String.Format(Context, code);
+            CommonOutput output = SendSMS(phone, context);
+            if (!output.Success)
+            {
+                throw Oops.Oh(output.Message);
+            }
+            return output.Message;
         }
 
         /// <summary>
@@ -35,7 +65,7 @@ namespace QMS.Application.System
             {
                 chars.Append(character[rnd.Next(character.Length)]);
             }
-            _cache.SetStringCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
+            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
             return chars.ToString();
         }
 
@@ -47,7 +77,7 @@ namespace QMS.Application.System
         public CommonOutput VerifyPhoneNums(string nums)
         {
             CommonOutput output = new CommonOutput();
-            string code = _cache.GetStringCache(CacheKeys.CACHE_PHONE_CODE).Result.Trim();   //获取缓存
+            string code = _cache.GetCache(CacheKeys.CACHE_PHONE_CODE).Result.Trim();   //获取缓存
             if (string.IsNullOrEmpty(code))
             {
                 output.Success = false;
@@ -97,8 +127,7 @@ namespace QMS.Application.System
             }
             catch (Exception ex)
             {
-                string err = ex.Message;
-                return err;
+                throw Oops.Oh(ex.Message);
             }
             finally
             {
@@ -191,6 +220,34 @@ namespace QMS.Application.System
                     break;
             }
             return output;
+        }
+
+
+        /// <summary>
+        /// 手机号登录
+        /// </summary>
+        /// <param name="phone"></param>
+        /// <param name="captcha"></param>
+        /// <returns></returns>
+        public string phoneLogin(string phone, string captcha)
+        {
+            if (string.IsNullOrEmpty(captcha.Trim()))
+            {
+                throw Oops.Oh($"验证码为空请重新输入");
+            }
+            //判断验证码是否正确
+            CommonOutput output = VerifyPhoneNums(captcha);
+            if (!output.Success)
+            {
+                throw Oops.Oh($"{output.Message}");
+            }
+            var user = _sysUserRep.Where(u => u.Phone.Equals(phone)).FirstOrDefault();
+            if (user == null)
+            {
+                throw Oops.Oh($"该用户不存在，请注册用户");
+            }
+            //登录
+            return _login.Login(user);
         }
     }
 }

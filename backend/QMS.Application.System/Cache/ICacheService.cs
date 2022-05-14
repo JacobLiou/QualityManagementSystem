@@ -1,15 +1,15 @@
 ﻿namespace QMS.Application.System
 {
-    public interface ICacheService
+    public interface ICacheService<T>
     {
-        Task<string> GetStringCache(string cacheKey);
+        Task<T> GetCache(string cacheKey);
 
-        Task SetStringCache(string cacheKey, string value, int hours, int minutes, int seconds);
+        Task SetCache(string cacheKey, T value, int hours, int minutes, int seconds);
 
-        Task SetStringCacheByHours(string cacheKey, string value, int hours);
+        Task SetCacheByHours(string cacheKey, T value, int hours);
 
-        Task SetStringCacheByMinutes(string cacheKey, string value, int minutes);
+        Task SetCacheByMinutes(string cacheKey, T value, int minutes);
 
-        Task SetStringCacheBySecond(string cacheKey, string value, int seconds);
+        Task SetCacheBySecond(string cacheKey, T value, int seconds);
     }
 }

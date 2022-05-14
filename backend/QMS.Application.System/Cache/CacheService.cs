@@ -1,5 +1,6 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.JsonSerialization;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 自定义缓存服务类
     /// </summary>
-    public class CacheService : IDynamicApiController, ICacheService, ITransient
+    public class CacheService<T> : IDynamicApiController, ICacheService<T>, ITransient
     {
         private readonly IDistributedCache _cache;
 
@@ -22,43 +23,47 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 设置缓存
+        /// 设置缓存，泛型方法
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <param name="value"></param>
         /// <param name="hours"></param>
         /// <param name="minutes"></param>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public async Task SetStringCache(string cacheKey, string value, int hours, int minutes, int seconds)
+        public async Task SetCache(string cacheKey, T value, int hours, int minutes, int seconds)
         {
             TimeSpan time = new TimeSpan(hours, minutes, seconds);
             DistributedCacheEntryOptions option = new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = time };
-            await _cache.SetStringAsync(cacheKey, value, option);
+            var json = JSON.Serialize(value);
+            await _cache.SetStringAsync(cacheKey, json, option);
         }
 
         /// <summary>
         ///设置缓存时间（按小时）
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <param name="value"></param>
         /// <param name="hours"></param>
         /// <returns></returns>
-        public async Task SetStringCacheByHours(string cacheKey, string value, int hours)
+        public async Task SetCacheByHours(string cacheKey, T value, int hours)
         {
-            await SetStringCache(cacheKey, value, hours, 0, 0);
+            await SetCache(cacheKey, value, hours, 0, 0);
         }
 
         /// <summary>
-        ///设置缓存时间（按分钟）
+        /// 设置缓存时间（按分钟）
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="cacheKey"></param>
         /// <param name="value"></param>
         /// <param name="minutes"></param>
         /// <returns></returns>
-        public async Task SetStringCacheByMinutes(string cacheKey, string value, int minutes)
+        public async Task SetCacheByMinutes(string cacheKey, T value, int minutes)
         {
-            await SetStringCache(cacheKey, value, 0, minutes, 0);
+            await SetCache(cacheKey, value, 0, minutes, 0);
         }
 
         /// <summary>
@@ -68,19 +73,24 @@ namespace QMS.Application.System
         /// <param name="value"></param>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public async Task SetStringCacheBySecond(string cacheKey, string value, int seconds)
+        public async Task SetCacheBySecond(string cacheKey, T value, int seconds)
         {
-            await SetStringCache(cacheKey, value, 0, 0, seconds);
+            await SetCache(cacheKey, value, 0, 0, seconds);
         }
 
         /// <summary>
-        /// 获取缓存
+        /// 获取缓存-引用类型
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public async Task<string> GetStringCache(string cacheKey)
+        public async Task<T> GetCache(string cacheKey)
         {
-            return await _cache.GetStringAsync(cacheKey);
+            var value = await _cache.GetStringAsync(cacheKey);
+            if (value == null)
+            {
+                value = "";
+            }
+            return JSON.Deserialize<T>(value);
         }
     }
 }

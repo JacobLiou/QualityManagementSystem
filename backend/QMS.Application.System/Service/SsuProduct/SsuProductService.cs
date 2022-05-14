@@ -18,7 +18,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 产品服务
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuProduct", Order = 100)]
+    [ApiDescriptionSettings(Name = "SsuProduct", Order = 100)]
     public class SsuProductService : ISsuProductService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuProduct,MasterDbContextLocator> _ssuProductRep;
