@@ -6,7 +6,7 @@ namespace QMS.Application.System
     {
         Task<dynamic> GetWechatUserInfo([FromQuery] string token, [FromQuery] string userId);
 
-        string QYWechatLogin();
+        Task QYWechatLogin();
 
         Task QYWechatLoginCallback([FromQuery] string error_description = "");
 

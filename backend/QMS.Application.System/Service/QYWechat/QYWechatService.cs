@@ -19,26 +19,29 @@ namespace QMS.Application.System
     public class QYWechatService : IDynamicApiController, ITransient, IQYWechatService
     {
         private readonly HttpContext _httpContext;
-        private readonly QYWeChatOAuth _qyWechatOAuth;
+        private readonly IQYWeChatOAuth _qyWechatOAuth;
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
+        private readonly IRepository<SysOauthUser> _sysOauthUserRep; // 用户表仓储
         private readonly ISysEmpService _sysEmpService; // 系统员工服务
 
-        public QYWechatService(IHttpContextAccessor httpContextAccessor, QYWeChatOAuth qyWechatOAuth, IRepository<SysUser> repository, ISysEmpService sysEmpService)
+        public QYWechatService(IHttpContextAccessor httpContextAccessor, QYWeChatOAuth qyWechatOAuth, IRepository<SysUser> sysUser, IRepository<SysOauthUser> sysOauth, ISysEmpService sysEmpService)
         {
             _httpContext = httpContextAccessor.HttpContext;
             _qyWechatOAuth = qyWechatOAuth;
-            _sysUserRep = repository;
+            _sysUserRep = sysUser;
+            _sysOauthUserRep = sysOauth;
             _sysEmpService = sysEmpService;
         }
 
         /// <summary>
-        /// 获取企业微信跳转至授权界面二维码
+        /// 发起授权
         /// </summary>
         [HttpGet("system/qyWechat/login")]
-        public string QYWechatLogin()
+        public Task QYWechatLogin()
         {
-            return _qyWechatOAuth.GetAuthorizeUrl();
-            //_httpContext.Response.Redirect(_qyWechatOAuth.GetAuthorizeUrl());
+            //return _qyWechatOAuth.GetAuthorizeUrl();
+            _httpContext.Response.Redirect(_qyWechatOAuth.GetAuthorizeUrl());
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace QMS.Application.System
         /// <param name="code">企业微信登录扫码后从URL中获取的code值</param>
         /// <returns></returns>
         [HttpPost("system/qyWechat/loginAndRegister")]
-        public string QYWechatLoginRegister(string code)
+        public string QYWechatLoginRegister([FromQuery] string code)
         {
             //获取企业微信扫码用户详细信息
             QYTokenModel token = _qyWechatOAuth.GetAccessTokenAsync().Result;
@@ -85,11 +88,9 @@ namespace QMS.Application.System
             //判断用户是否已经存在
             var user = _sysUserRep.Where(u => u.Account.Equals(userInfo.Account) || u.Phone.Equals(userInfo.Phone) || u.Email.Equals(userInfo.Email)).FirstOrDefault();
 
-            if (user == null)
-            {
-                //用户不存在则
-                user = _qyWechatOAuth.QYWechatRegister(userInfo).Result;
-            }
+            //用户不存在则注册
+            user = _qyWechatOAuth.QYWechatRegister(userInfo, user).Result;
+
             //调用登录接口
             var accessToken = _qyWechatOAuth.QYWechatLogin(user);
             return accessToken;

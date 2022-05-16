@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OnceMi.AspNetCore.OSS;
+using QMS.Application.System.EventSubscriber;
 using Serilog;
 using Yitter.IdGenerator;
 
@@ -39,11 +40,13 @@ namespace QMS.Web.Core
             services.AddViewEngine();
             services.AddSignalR();
 
+
             // 注册EventBus服务
             services.AddEventBus(builder =>
             {
                 // 注册 Log 日志订阅者
                 builder.AddSubscriber<LogEventSubscriber>();
+                builder.AddSubscriber<NoticeEventSubscriber>();
             });
 
             if (App.Configuration["Cache:CacheType"] == "RedisCache")

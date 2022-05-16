@@ -1,4 +1,6 @@
-﻿namespace QMS.Application.System
+﻿using Furion.Extras.Admin.NET;
+
+namespace QMS.Application.System
 {
     public interface IQYWeChatOAuth
     {
@@ -11,5 +13,9 @@
         Task<QYUserInfoModel> GetQYUserInfoAsync(string accessToken, string userId);
 
         Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url);
+
+        Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser);
+
+        string QYWechatLogin(SysUser user);
     }
 }

@@ -42,9 +42,11 @@ namespace QMS.Application.System
         private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
         private readonly string Agentid = "1000017";
         private readonly string Status = "web_login@gyoss9";
+        private readonly long DefaultOrgId = 142307070910540;
+        private readonly string DefaultOrgName = "深圳首航";
 
         //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
-        private readonly string LoginUrl = "http://qms.sofarsolar.com:8001";
+        private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
 
         private readonly int CacheHour = 2;
 
@@ -142,27 +144,44 @@ namespace QMS.Application.System
         /// <summary>
         /// 企业微信注册
         /// </summary>
-        /// <param name="qYUserInfo"></param>
+        /// <param name="qYUserInfo">企业微信用户详细信息</param>
+        /// <param name="sysUser">用户信息</param>
         /// <returns></returns>
-        public async Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo)
+        public async Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser)
         {
             //新增用户表
-            var user = qYUserInfo.Adapt<SysUser>();
-            user.Password = MD5Encryption.Encrypt("123456");
-            user.Status = 0;
-            var newUser = await _sysUserRep.InsertNowAsync(user);
-            //新增oauthUser表
-            var oauthUser = qYUserInfo.Adapt<SysOauthUser>();
-            oauthUser.OpenId = newUser.Entity.Id.ToString();
-            oauthUser.Uuid = newUser.Entity.Account;
-            await _sysOauthUserRep.InsertNowAsync(oauthUser);
-            //新增职员表
-            var emp = qYUserInfo.Adapt<SysEmp>();
-            emp.Id = newUser.Entity.Id;
-            emp.OrgId = 142307070910540;        //深圳首航默认ID
-            emp.OrgName = "深圳首航";
-            await _sysEmpRep.InsertNowAsync(emp);
-            return newUser.Entity;
+            if (sysUser == null)
+            {
+                var user = qYUserInfo.Adapt<SysUser>();
+                user.Password = MD5Encryption.Encrypt("123456");
+                user.Status = 0;
+                var newUser = await _sysUserRep.InsertNowAsync(user);
+                sysUser = newUser.Entity;
+            }
+            //如果该用户已经在oauthUser表中存在对应的记录，则证明该用户已经绑定了企业微信，否则则新增
+            var oauthUser = _sysOauthUserRep.Where(u => u.OpenId.Equals(sysUser.Id));
+            if (oauthUser == null)
+            {
+                //新增oauthUser表
+                var NewOauthUser = qYUserInfo.Adapt<SysOauthUser>();
+
+                NewOauthUser.OpenId = sysUser.Id.ToString();
+                NewOauthUser.Uuid = sysUser.Account;
+
+                await _sysOauthUserRep.InsertNowAsync(NewOauthUser);
+            }
+            //如果职员表上不存在对应的记录则新增
+            var emp = _sysEmpRep.Where(u => u.Id.Equals(sysUser.Id));
+            if (emp == null)
+            {
+                //新增职员表
+                var NewEmp = qYUserInfo.Adapt<SysEmp>();
+                NewEmp.Id = sysUser.Id;
+                NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
+                NewEmp.OrgName = DefaultOrgName;
+                await _sysEmpRep.InsertNowAsync(NewEmp);
+            }
+            return sysUser;
         }
 
         /// <summary>
@@ -187,7 +206,12 @@ namespace QMS.Application.System
         /// <returns></returns>
         public async Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
         {
-            string tousers = string.Join("|", touser);
+            var tourIds = _sysOauthUserRep.Where(u => touser.Contains(u.OpenId)).FirstOrDefault();
+            if (tourIds == null)
+            {
+                throw Oops.Oh($"该用户不存在对应的企业微信ID");
+            }
+            string tousers = string.Join("|", tourIds.Uuid);
             var token = GetAccessTokenAsync().Result.AccessToken;
             QYWechatMessage message = new QYWechatMessage();
             message.Touser = tousers;

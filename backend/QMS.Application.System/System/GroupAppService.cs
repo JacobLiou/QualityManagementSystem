@@ -51,20 +51,6 @@ namespace QMS.Application.System
             return userGruop;
         }
 
-        [HttpPost("usergroup")]
-        public async Task<List<GroupUserOutput>> PostUserGroup(long groupId = 281695421571141)
-        {
-            var userGruop = _cache.GetObject<List<GroupUserOutput>>(CacheKeys.CachedUserGroup + groupId);
-            if (userGruop == null)
-            {
-                userGruop = _systemService.GetUserGroup(groupId);
-
-                DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
-                cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); //设置10分钟后过期
-                _cache.SetObject(CacheKeys.CachedUserGroup + groupId, userGruop, cacheOption);
-            }
-            return userGruop;
-        }
 
 
 
