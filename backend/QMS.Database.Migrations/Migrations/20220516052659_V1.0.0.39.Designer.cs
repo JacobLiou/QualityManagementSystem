@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220516052659_V1.0.0.39")]
+    partial class V10039
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,6 +26,10 @@ namespace QMS.Database.Migrations.Migrations
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
                         .HasComment("问题编号");
+
+                    b.Property<long?>("CC")
+                        .HasColumnType("bigint")
+                        .HasComment("被抄送人");
 
                     b.Property<string>("CCs")
                         .HasColumnType("longtext")

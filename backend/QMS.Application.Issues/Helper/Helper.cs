@@ -1,4 +1,5 @@
-﻿using Furion.DatabaseAccessor;
+﻿using Furion;
+using Furion.DatabaseAccessor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
@@ -108,6 +109,13 @@ namespace QMS.Application.Issues.Helper
             //Assert(time != null);
 
             return time?.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        #endregion
+
+        #region 第三方服务接口
+        public static ThirdPartyService GetThirdPartyService()
+        {
+            return App.GetService<ThirdPartyService>();
         }
         #endregion
     }

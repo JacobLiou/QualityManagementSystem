@@ -1,5 +1,5 @@
-﻿using Furion.Extras.Admin.NET;
-using Furion.Extras.Admin.NET.Service;
+﻿using Furion.Extras.Admin.NET.Service;
+using Furion.JsonSerialization;
 using QMS.Application.Issues.Service.Issue.Dto.Update;
 using QMS.Core.Entity;
 using System.ComponentModel.DataAnnotations;
@@ -9,60 +9,70 @@ namespace QMS.Application.Issues
     /// <summary>
     /// 问题记录输入参数
     /// </summary>
-    public class IssueInput : PageInputBase
+    public class IssueInput //: PageInputBase
     {
         /// <summary>
         /// 问题简述
         /// </summary>
+        [Required]
         public virtual string Title { get; set; }
 
         /// <summary>
         /// 项目编号
         /// </summary>
+        [Required]
         public virtual long ProjectId { get; set; }
 
         /// <summary>
         /// 产品编号
         /// </summary>
+        [Required]
         public virtual long ProductId { get; set; }
 
         /// <summary>
         /// 问题模块
         /// </summary>
-        public virtual QMS.Core.Enum.EnumModule Module { get; set; }
+        [Required]
+        public virtual Core.Enum.EnumModule Module { get; set; }
 
         /// <summary>
         /// 问题性质
         /// </summary>
-        public virtual QMS.Core.Enum.EnumConsequence Consequence { get; set; }
+        [Required]
+        public virtual Core.Enum.EnumConsequence Consequence { get; set; }
 
         /// <summary>
         /// 问题分类
         /// </summary>
-        public virtual QMS.Core.Enum.EnumIssueClassification IssueClassification { get; set; }
+        [Required]
+        public virtual Core.Enum.EnumIssueClassification IssueClassification { get; set; }
 
         /// <summary>
         /// 问题来源
         /// </summary>
-        public virtual QMS.Core.Enum.EnumIssueSource Source { get; set; }
+        [Required]
+        public virtual Core.Enum.EnumIssueSource Source { get; set; }
 
-        /// <summary>
-        /// 问题状态
-        /// </summary>
-        public virtual QMS.Core.Enum.EnumIssueStatus Status { get; set; }
+        ///// <summary>
+        ///// 问题状态
+        ///// 理论上不允许手动修改
+        ///// </summary>
+        //public virtual Core.Enum.EnumIssueStatus? Status { get; set; }
 
         /// <summary>
         /// 提出人
         /// </summary>
-        public virtual long CreatorId { get; set; }
+        public virtual long? CreatorId { get; set; }
 
         /// <summary>
         /// 提出日期
+        /// 理论上不允许手动改
         /// </summary>
-        public virtual DateTime CreateTime { get; set; }
+        public virtual DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 关闭日期
+        /// 理论上不允许手动改
         /// </summary>
         public virtual DateTime? CloseTime { get; set; }
 
@@ -78,36 +88,41 @@ namespace QMS.Application.Issues
 
         /// <summary>
         /// 分发人
+        /// 理论上不允许手动改
         /// </summary>
         public virtual long? Dispatcher { get; set; }
 
         /// <summary>
         /// 分发日期
+        /// 理论上不允许手动改
         /// </summary>
         public virtual DateTime? DispatchTime { get; set; }
 
         /// <summary>
         /// 预计完成日期
+        /// 理论上不允许手动改
         /// </summary>
         public virtual DateTime? ForecastSolveTime { get; set; }
 
         /// <summary>
-        /// 被抄送人
+        /// 被抄送人，可选多个
         /// </summary>
-        public virtual long? CC { get; set; }
+        public virtual List<long> CCList { get; set; } = new List<long>();
 
         /// <summary>
         /// 解决人
+        /// 理论上不允许手动改
         /// </summary>
         public virtual long? Executor { get; set; }
 
         /// <summary>
         /// 解决日期
+        /// 理论上不允许手动改
         /// </summary>
         public virtual DateTime? SolveTime { get; set; }
 
         /// <summary>
-        /// 验证人
+        /// 验证人，理论上提出人为验证人
         /// </summary>
         public virtual long? Verifier { get; set; }
 
@@ -124,19 +139,19 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 详情
         /// </summary>
-        public virtual string? Description { get; set; }
+        public virtual string Description { get; set; }
         /// <summary>
         /// 原因
         /// </summary>
-        public virtual string? Reason { get; set; }
+        public virtual string Reason { get; set; }
         /// <summary>
         /// 解决措施
         /// </summary>
-        public virtual string? Measures { get; set; }
+        public virtual string Measures { get; set; }
         /// <summary>
         /// 验证情况
         /// </summary>
-        public virtual string? Result { get; set; }
+        public virtual string Result { get; set; }
     }
 
     public class AddIssueInput : IssueInput
@@ -163,25 +178,25 @@ namespace QMS.Application.Issues
         /// 问题模块
         /// </summary>
         [Required(ErrorMessage = "问题模块不能为空")]
-        public override QMS.Core.Enum.EnumModule Module { get; set; }
+        public override Core.Enum.EnumModule Module { get; set; }
 
         /// <summary>
         /// 问题性质
         /// </summary>
         [Required(ErrorMessage = "问题性质不能为空")]
-        public override QMS.Core.Enum.EnumConsequence Consequence { get; set; }
+        public override Core.Enum.EnumConsequence Consequence { get; set; }
 
         /// <summary>
         /// 问题分类
         /// </summary>
         [Required(ErrorMessage = "问题分类不能为空")]
-        public override QMS.Core.Enum.EnumIssueClassification IssueClassification { get; set; }
+        public override Core.Enum.EnumIssueClassification IssueClassification { get; set; }
 
         /// <summary>
         /// 问题来源
         /// </summary>
         [Required(ErrorMessage = "问题来源不能为空")]
-        public override QMS.Core.Enum.EnumIssueSource Source { get; set; }
+        public override Core.Enum.EnumIssueSource Source { get; set; }
 
     }
 
@@ -206,16 +221,18 @@ namespace QMS.Application.Issues
             issue.Consequence = this.Consequence;
             issue.IssueClassification = this.IssueClassification;
             issue.Source = this.Source;
-            issue.Source = this.Source;
             issue.Discover = this.Discover;
             issue.DiscoverTime = this.DiscoverTime;
             issue.Dispatcher = this.Dispatcher;
             issue.ForecastSolveTime = this.ForecastSolveTime;
-            issue.CC = this.CC;
+            if (this.CCList != null)
+            {
+                issue.CCs = JSON.Serialize(this.CCList);
+            }
             issue.Executor = this.Executor;
             issue.SolveTime = this.SolveTime;
             issue.ValidateTime = this.ValidateTime;
-            issue.Verifier= this.Verifier;
+            issue.Verifier = this.Verifier;
             issue.VerifierPlace = this.VerifierPlace;
 
             return true;

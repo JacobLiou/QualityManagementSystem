@@ -124,7 +124,7 @@ namespace QMS.Application.Issues
                                      //.Where(u => u.UpdateId == input.UpdateId)
                                      //.Where(u => u.UpdateTime == input.UpdateTime)
                                      //.Where(u => u.Sort == input.Sort)
-                                     .OrderBy(PageInputOrder.OrderBuilder<IssueExtendAttributeInput>(input))
+                                     .OrderBy(PageInputOrder.OrderBuilder(input))
                                      .ProjectToType<IssueExtendAttributeOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
 
@@ -133,6 +133,9 @@ namespace QMS.Application.Issues
 
         public class MoudleModel
         {
+            /// <summary>
+            /// 模块
+            /// </summary>
             public EnumModule Module { get; set; }
         }
 
@@ -147,8 +150,8 @@ namespace QMS.Application.Issues
             Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
 
             return await _issueExtendAttributeRep.DetachedEntities
-                .Where<IssueExtendAttribute>(attr => attr.Module == input.Module)
-                .Select<IssueExtendAttribute, FieldStruct>(extend => new FieldStruct
+                .Where(attr => attr.Module == input.Module)
+                .Select(extend => new FieldStruct
                 {
                     Module = extend.Module,
                     FieldCode = extend.AttributeCode,
@@ -158,17 +161,22 @@ namespace QMS.Application.Issues
                 }).ToListAsync();
         }
 
+        /// <summary>
+        /// 批量字段
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         [HttpPost($"/issue/extAttr/batchAddStruct")]
         public async Task BatchAddFieldStruct(List<FieldStruct> input)
         {
             Helper.Helper.Assert(input != null && input.Count > 0, Oops.Oh(ErrorCode.xg1002));
 
             var list = this._issueExtendAttributeRep.DetachedEntities
-                .Where<IssueExtendAttribute>(attr => attr.Module == input.First().Module)
-                .Select<IssueExtendAttribute, string>(attr => attr.AttributeCode);
+                .Where(attr => attr.Module == input.First().Module)
+                .Select(attr => attr.AttributeCode);
 
 
-            var finalyList = input.Where<FieldStruct>(field => !list.Contains(field.FieldCode));
+            var finalyList = input.Where(field => !list.Contains(field.FieldCode));
 
             if (finalyList.Any())
             {
@@ -186,7 +194,7 @@ namespace QMS.Application.Issues
                 long updateId = Helper.Helper.GetCurrentUser();
                 DateTime now = DateTime.Now;
                 IEnumerable<IssueExtendAttribute> attributes =
-                    finalyList.Select<FieldStruct, IssueExtendAttribute>(
+                    finalyList.Select(
                         fieldStruct =>
                             new IssueExtendAttribute()
                             {
@@ -222,25 +230,29 @@ namespace QMS.Application.Issues
         /// <param name="file"></param>
         /// <returns></returns>
         [HttpPost("/issue/extAttr/import")]
-        public async Task ImportIssues(IFormFile file)
+        public async Task ImportExtAttr(IFormFile file)
         {
             Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), Oops.Oh(ErrorCode.xg1002));
 
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueExtAttrTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
-            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true);
+            IEnumerable<dynamic> collection = 
+                MiniExcel.Query(file.OpenReadStream(), true)
+                .TakeWhile(item => item.模块名 != null && item.字段代码 != null && item.字段名 != null && item.字段值类型 != null);
 
             List<string> codeList = await this._issueExtendAttributeRep.DetachedEntities
-                .Select<IssueExtendAttribute, string>(attr => attr.AttributeCode)
+                .Select(attr => attr.AttributeCode)
                 .ToListAsync();
 
-            List<FieldStruct> list = collection.Where<dynamic>(model => !codeList.Contains(model.字段代码)).Select<dynamic, FieldStruct>(item => new FieldStruct()
-            {
-                Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.模块名),
-                FieldCode = item.字段代码,
-                FieldName = item.字段名,
-                FiledDataType = item.字段值类型
-            }).ToList();
+            List<FieldStruct> list = 
+                collection.Where(model => !codeList.Contains(model.字段代码))
+                .Select(item => new FieldStruct()
+                {
+                    Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.模块名),
+                    FieldCode = item.字段代码,
+                    FieldName = item.字段名,
+                    FiledDataType = item.字段值类型
+                }).ToList();
 
             await this.BatchAddFieldStruct(list);
 
@@ -264,7 +276,13 @@ namespace QMS.Application.Issues
 
         public class BatchFieldValue
         {
+            /// <summary>
+            /// 问题编号
+            /// </summary>
             public long IssueId { get; set; }
+            /// <summary>
+            /// 字段值列表
+            /// </summary>
             public List<FieldValue> List { get; set; }
         }
 
@@ -275,7 +293,7 @@ namespace QMS.Application.Issues
             DateTime now = DateTime.Now;
 
             // 根据字段编号和问题Id插入数据
-            await this._issueExtendAttributeValueRep.Entities.AddRangeAsync(input.List.Select<FieldValue, IssueExtendAttributeValue>(attribute =>
+            await this._issueExtendAttributeValueRep.Entities.AddRangeAsync(input.List.Select(attribute =>
                  new IssueExtendAttributeValue()
                  {
                      Id = attribute.AttributeId,
@@ -292,8 +310,8 @@ namespace QMS.Application.Issues
             DateTime now = DateTime.Now;
 
             // 找到对应的字段编号
-            var array = this._issueExtendAttributeRep.DetachedEntities.Where<IssueExtendAttribute>(field =>
-               fieldValues.Any<FieldValue>(value => value.AttributeCode == field.AttributeCode)
+            var array = this._issueExtendAttributeRep.DetachedEntities.Where(field =>
+               fieldValues.Any(value => value.AttributeCode == field.AttributeCode)
            ).ToArray();
 
             Helper.Helper.Assert(array != null && array.Length > 0, "字段都不存在");
@@ -311,10 +329,10 @@ namespace QMS.Application.Issues
                 }
             }
 
-            var values = this._issueExtendAttributeValueRep.Entities.Where<IssueExtendAttributeValue>(
+            var values = this._issueExtendAttributeValueRep.Entities.Where(
                 value =>
                 value.IssueNum == IssueId
-                && array.Any<IssueExtendAttribute>(attribute => attribute.Id == value.Id)
+                && array.Any(attribute => attribute.Id == value.Id)
                 );
 
 

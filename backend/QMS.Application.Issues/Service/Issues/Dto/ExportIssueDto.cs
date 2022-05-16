@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Furion.JsonSerialization;
+using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs.Attributes;
 using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
@@ -20,9 +21,15 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("项目名称")]
         public string ProjectName { get; set; }
 
+        [ExcelIgnore]
+        public long ProjectId { get; set; }
+
         [ExcelColumnName("产品名称")]
         [Comment("产品名称")]
         public string ProductName { get; set; }
+
+        [ExcelIgnore]
+        public long ProductId { get; set; }
 
         [ExcelColumnName("问题模块")]
         [Comment("问题模块")]
@@ -44,7 +51,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("问题状态")]
         public string Status { get; set; }
 
-        [NotToTableColumnAttribute]
+        [NotToTableColumn]
         [ExcelIgnore]
         public EnumIssueStatus IssueStatus { get; set; }
 
@@ -52,7 +59,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("提出人")]
         public string Creator { get; set; }
 
-        [NotToTableColumnAttribute]
+        [NotToTableColumn]
         [ExcelIgnore]
         public long? CreatorId { get; set; }
 
@@ -76,7 +83,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("分发人")]
         public string Dispatcher { get; set; }
 
-        [NotToTableColumnAttribute]
+        [NotToTableColumn]
         [ExcelIgnore]
         public long? DispatcherId { get; set; }
 
@@ -96,7 +103,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("解决人")]
         public string Executor { get; set; }
 
-        [NotToTableColumnAttribute]
+        [NotToTableColumn]
         [ExcelIgnore]
         public long? ExecutorId { get; set; }
 
@@ -156,16 +163,16 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("扩展属性")]
         public string ExtendAttribute { get; set; }
 
-        public ExportIssueDto(QMS.Core.Entity.Issue issue, IssueDetail detail)
+        public ExportIssueDto(Core.Entity.Issue issue, IssueDetail detail)
         {
             this.Id = issue.Id;
 
             this.Title = issue.Title;
-            this.Module = issue.Module.GetEnumDescription<EnumModule>();
-            this.Consequence = issue.Consequence.GetEnumDescription<EnumConsequence>();
-            this.IssueClassification = issue.IssueClassification.GetEnumDescription<EnumIssueClassification>();
-            this.Source = issue.Source.GetEnumDescription<EnumIssueSource>();
-            this.Status = issue.Status.GetEnumDescription<EnumIssueStatus>();
+            this.Module = issue.Module.GetEnumDescription();
+            this.Consequence = issue.Consequence.GetEnumDescription();
+            this.IssueClassification = issue.IssueClassification.GetEnumDescription();
+            this.Source = issue.Source.GetEnumDescription();
+            this.Status = issue.Status.GetEnumDescription();
             this.CreateTime = issue.CreateTime.GetTimeString();
             this.DiscoverTime = issue.DiscoverTime.GetTimeString();
             this.DispatchTime = issue.DispatchTime.GetTimeString();
@@ -177,16 +184,21 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             this.Creator = issue.CreatorId.GetNameByEmpId();
             this.Dispatcher = issue.Dispatcher.GetNameByEmpId();
             this.ProjectName = issue.ProjectId.GetNameByProjectId();
+            this.ProjectId = issue.ProjectId;
             this.ProductName = issue.ProductId.GetNameByProductId();
+            this.ProductId = issue.ProductId;
             this.Discover = issue.Discover.GetNameByEmpId();
             this.Executor = issue.Executor.GetNameByEmpId();
             this.Verifier = issue.Verifier == null ? this.Creator : issue.Verifier.GetNameByEmpId();
             
 
             this.CloseTime = issue.CloseTime.GetTimeString();
-            this.CC = issue.CC.GetNameByEmpId();
+            if (!string.IsNullOrEmpty(issue.CCs))
+            {
+                List<long> cc = JSON.Deserialize<List<long>>(issue.CCs);
 
-
+                this.CC = JSON.Serialize(cc.Select<long, string>(id=>id.GetNameByEmpId()));
+            }
 
             this.Description = detail.Description;
             this.Batch = detail.Batch;

@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 问题状态
+    /// </summary>
     public enum EnumIssueStatus
     {
         [Description("已开启")]

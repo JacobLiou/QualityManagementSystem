@@ -26,7 +26,7 @@ namespace QMS.Application.Issues.Helper
             T obj = default(T);
 
             IEnumerable<PropertyInfo> propArr = typeof(T).GetProperties()
-                .Where<PropertyInfo>(p => !p.IsDefined(typeof(NotToModelPropertyAttribute)));
+                .Where(p => !p.IsDefined(typeof(NotToModelPropertyAttribute)));
 
             foreach (DataRow item in table.Rows)
             {
@@ -140,7 +140,7 @@ namespace QMS.Application.Issues.Helper
 
             // 没标记NotToTableColumn的才填入table
             PropertyInfo[] propArr = typeof(T).GetProperties()
-                .Where<PropertyInfo>(p => !p.IsDefined(typeof(NotToTableColumnAttribute))).ToArray();
+                .Where(p => !p.IsDefined(typeof(NotToTableColumnAttribute))).ToArray();
 
             foreach (var item in propArr)
             {
@@ -192,7 +192,7 @@ namespace QMS.Application.Issues.Helper
             modelClass.TableName = tableName;
 
 
-            modelClass.PropertyCollection = table.Columns.Cast<DataColumn>().Select<DataColumn, ColumnProperty>(
+            modelClass.PropertyCollection = table.Columns.Cast<DataColumn>().Select(
                 column => new ColumnProperty()
                 {
                     ColumnType = column.DataType.ToString(),
@@ -274,7 +274,7 @@ namespace QMS.Application.Issues.Helper
                                    + $"return $\"{this.ClassName}: "
                                    + "["
                                    + string.Join(", ",
-                                       this.PropertyCollection.Select<ColumnProperty, string>(
+                                       this.PropertyCollection.Select(
                                            column =>
                                                column.ConvertColumnToProperty + "={this." +
                                                column.ConvertColumnToProperty + "}"

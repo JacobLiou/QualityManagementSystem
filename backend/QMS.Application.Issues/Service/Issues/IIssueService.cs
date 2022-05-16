@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using QMS.Application.Issues.Service.Issue.Dto.Add;
 using QMS.Application.Issues.Service.Issue.Dto.Query;
 using QMS.Application.Issues.Service.Issue.Dto.Update;
-using static QMS.Application.Issues.IssueService;
+using QMS.Application.Issues.Service.Issues.Dto.Update;
 
 namespace QMS.Application.Issues
 {
     public interface IIssueService
     {
-        Task<long> Add(InIssue input);
+        Task<BaseId> Add(InIssue input);
         Task Delete(DeleteIssueInput input);
         Task<OutputDetailIssue> Get([FromQuery] BaseId input);
         //Task<List<IssueOutput>> List([FromQuery] IssueInput input);
@@ -22,7 +22,7 @@ namespace QMS.Application.Issues
 
         Task HangUp(InHangup input);
 
-        Task ReDispatch(InReDispatch input);
+        Task ReDispatch(List<InReDispatch> input);
 
         Task Dispatch(InDispatch input);
 
@@ -33,6 +33,6 @@ namespace QMS.Application.Issues
         /// <returns></returns>
         Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input);
 
-        Task<IActionResult> Export([FromQuery] BaseQueryModel input);
+        Task<IActionResult> Export([FromQuery] List<long> input);
     }
 }

@@ -39,8 +39,6 @@ namespace QMS.Application.Issues.Helper
 
         public static int GetIntFromEnumDescription(dynamic value)
         {
-            KeyValuePair<int, string> pair = new KeyValuePair<int, string>(-1, "Empty");
-
             Type[] types = new Type[]
             {
                 typeof(EnumModule),
@@ -106,7 +104,7 @@ namespace QMS.Application.Issues.Helper
         }
         #endregion
 
-        #region 获取列名集合
+        #region 缓存获取列名集合
         public static async Task<Dictionary<string, string>> GetUserColumns(IRepository<IssueColumnDisplay, IssuesDbContextLocator> columnDisplayRepository)
         {
             long userId = CurrentUserInfo.UserId;
