@@ -77,7 +77,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="code">企业微信登录扫码后从URL中获取的code值</param>
         /// <returns></returns>
-        [HttpPost("system/qyWechat/loginAndRegister")]
+        [HttpGet("system/qyWechat/loginAndRegister")]
         public string QYWechatLoginRegister([FromQuery] string code)
         {
             //获取企业微信扫码用户详细信息
