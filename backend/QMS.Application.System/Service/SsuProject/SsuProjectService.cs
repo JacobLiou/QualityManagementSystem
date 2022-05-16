@@ -98,6 +98,17 @@ namespace QMS.Application.System
         }
 
         /// <summary>
+        /// 问题管理服务调用
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuProject/list")]
+        public async Task<Dictionary<long, SsuProjectOutput>> List(IEnumerable<long> input)
+        {
+            return (await _ssuProjectRep.DetachedEntities.Where<SsuProject>(project=>input.Contains(project.Id)).ProjectToType<SsuProjectOutput>().ToDictionaryAsync(project=>project.Id));
+        }
+
+        /// <summary>
         /// 获取项目列表
         /// </summary>
         /// <param name="input"></param>
