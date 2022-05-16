@@ -99,6 +99,17 @@ namespace QMS.Application.System
         }
 
         /// <summary>
+        /// 问题管理服务调用
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuProduct/list")]
+        public async Task<Dictionary<long, SsuProductOutput>> List(IEnumerable<long> input)
+        {
+            return (await _ssuProductRep.DetachedEntities.Where<SsuProduct>(product => input.Contains(product.Id)).ProjectToType<SsuProductOutput>().ToDictionaryAsync(product => product.Id));
+        }
+
+        /// <summary>
         /// 获取产品列表
         /// </summary>
         /// <param name="input"></param>
