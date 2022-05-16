@@ -9,7 +9,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 系统服务接口
     /// </summary>
-    [ApiDescriptionSettings("基础数据服务", Name = "group", Order = 100)]
+    [ApiDescriptionSettings("问题管理Demo", Name = "group", Order = 100)]
     [Route("system/[controller]")]
     public class GroupAppService : IDynamicApiController
     {

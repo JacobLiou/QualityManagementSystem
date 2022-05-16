@@ -1,9 +1,8 @@
 ﻿namespace QMS.Application.System
 {
-    public interface IRegisterService
+    public interface ILoginService
     {
-        bool RegisterUser(RegisterInput input);
-
+        string PhoneLogin(string phone, string captcha);
         string SendSMSCode(string phone, int num = 4);
     }
 }

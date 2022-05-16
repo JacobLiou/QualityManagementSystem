@@ -18,27 +18,13 @@ namespace QMS.Application.System
     public class RegisterService : IDynamicApiController, ITransient, IRegisterService
     {
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
-        private readonly IPhoneCaptcha _captcha;
+        private readonly IPhoneVerify _phone;
         private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
 
-        public RegisterService(IRepository<SysUser> sysUser, IPhoneCaptcha phoneCaptcha)
+        public RegisterService(IRepository<SysUser> sysUser, IPhoneVerify PhoneVerify)
         {
             _sysUserRep = sysUser;
-            _captcha = phoneCaptcha;
-        }
-
-        /// <summary>
-        ///生成随机数验证码，默认为4位
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost("system/register/phoneCode")]
-        public string GenerateCode(int num = 4)
-        {
-            if (num <= 0)
-            {
-                num = 4;
-            }
-            return _captcha.GetRandomNums(num);
+            _phone = PhoneVerify;
         }
 
         /// <summary>
@@ -51,7 +37,7 @@ namespace QMS.Application.System
         {
             //判断验证码是否正确
             CommonOutput output = new CommonOutput();
-            output = _captcha.VerifyPhoneNums(input.Captcha);
+            output = _phone.VerifyPhoneNums(input.Captcha);
             if (output.Success == false)
             {
                 throw Oops.Oh(output.Message);
@@ -96,18 +82,7 @@ namespace QMS.Application.System
         [HttpPost]
         public string SendSMSCode(string phone, int num = 4)
         {
-            if (num <= 0)
-            {
-                num = 4;
-            }
-            string code = _captcha.GetRandomNums(num);
-            string context = String.Format(Context, code);
-            CommonOutput output = _captcha.SendSMS(phone, context);
-            if (!output.Success)
-            {
-                throw Oops.Oh(output.Message);
-            }
-            return output.Message;
+            return _phone.SendSMSCode(phone, num);
         }
     }
 }

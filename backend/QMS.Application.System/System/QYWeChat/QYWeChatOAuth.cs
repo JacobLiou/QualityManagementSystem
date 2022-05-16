@@ -1,17 +1,14 @@
-﻿using Furion;
-using Furion.DatabaseAccessor;
+﻿using Furion.DatabaseAccessor;
 using Furion.DataEncryption;
 using Furion.DependencyInjection;
 using Furion.EventBus;
 using Furion.Extras.Admin.NET;
-using Furion.Extras.Admin.NET.Options;
 using Furion.Extras.Admin.NET.Service;
 using Furion.FriendlyException;
+using Furion.JsonSerialization;
 using Furion.RemoteRequest.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 
 namespace QMS.Application.System
 {
@@ -20,11 +17,11 @@ namespace QMS.Application.System
     /// </summary>
     public class QYWeChatOAuth : IQYWeChatOAuth, ITransient
     {
-        private readonly ICacheService _cache;
+        private readonly ICacheService<string> _cache;
         private readonly IRepository<SysUser> _sysUserRep;  // 用户表仓储
         private readonly IRepository<SysOauthUser> _sysOauthUserRep;  // oauth用户表仓储
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IEventPublisher _eventPublisher;
+        private readonly IRepository<SysEmp> _sysEmpRep;  // 职员表仓储
+        private readonly ILoginVerify _login;
 
         //企业微信重定向至登录界面
         private readonly string RedirectUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect";
@@ -38,21 +35,27 @@ namespace QMS.Application.System
         //获取扫码用户信息
         private readonly string UserInfoUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/get";
 
+        //企业微信发送信息URL
+        private readonly string SendMessageUrl = " https://qyapi.weixin.qq.com/cgi-bin/message/send";
+
         private readonly string Appid = "ww44dc5ededfe4a954";
         private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
         private readonly string Agentid = "1000017";
         private readonly string Status = "web_login@gyoss9";
-        private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
+
+        //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
+        private readonly string LoginUrl = "http://qms.sofarsolar.com:8001";
+
         private readonly int CacheHour = 2;
 
-        public QYWeChatOAuth(ICacheService cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IHttpContextAccessor httpContextAccessor
-            , IEventPublisher eventPublisher)
+        public QYWeChatOAuth(ICacheService<string> cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
+            ILoginVerify loginVerify)
         {
             _cache = cache;
             _sysUserRep = user;
             _sysOauthUserRep = oauthUser;
-            _httpContextAccessor = httpContextAccessor;
-            _eventPublisher = eventPublisher;
+            _sysEmpRep = emp;
+            _login = loginVerify;
         }
 
         /// <summary>
@@ -78,11 +81,12 @@ namespace QMS.Application.System
         public async Task<QYTokenModel> GetAccessTokenAsync()
         {
             QYTokenModel accessTokenModel = new QYTokenModel();
-            if (!string.IsNullOrEmpty(_cache.GetStringCache(Appid).Result))
+            var result = _cache.GetCache(Appid).Result;
+            if (!string.IsNullOrEmpty(result))
             {
                 accessTokenModel.ErrMsg = "ok";
                 accessTokenModel.ErrorCode = 0;
-                accessTokenModel.AccessToken = _cache.GetStringCache(Appid).Result;
+                accessTokenModel.AccessToken = result;
                 return accessTokenModel;
             }
             var param = new Dictionary<string, string>()
@@ -93,7 +97,7 @@ namespace QMS.Application.System
             accessTokenModel = await $"{AccessTokenUrl}?{param.ToQueryString()}".GetAsAsync<QYTokenModel>();
             if (accessTokenModel.HasError())
                 throw Oops.Oh($"{ accessTokenModel.ErrMsg}");
-            await _cache.SetStringCacheByHours(Appid, accessTokenModel.AccessToken, CacheHour);
+            await _cache.SetCacheByHours(Appid, accessTokenModel.AccessToken, CacheHour);
             return accessTokenModel;
         }
 
@@ -142,13 +146,22 @@ namespace QMS.Application.System
         /// <returns></returns>
         public async Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo)
         {
+            //新增用户表
             var user = qYUserInfo.Adapt<SysUser>();
             user.Password = MD5Encryption.Encrypt("123456");
+            user.Status = 0;
             var newUser = await _sysUserRep.InsertNowAsync(user);
-
+            //新增oauthUser表
             var oauthUser = qYUserInfo.Adapt<SysOauthUser>();
             oauthUser.OpenId = newUser.Entity.Id.ToString();
+            oauthUser.Uuid = newUser.Entity.Account;
             await _sysOauthUserRep.InsertNowAsync(oauthUser);
+            //新增职员表
+            var emp = qYUserInfo.Adapt<SysEmp>();
+            emp.Id = newUser.Entity.Id;
+            emp.OrgId = 142307070910540;        //深圳首航默认ID
+            emp.OrgName = "深圳首航";
+            await _sysEmpRep.InsertNowAsync(emp);
             return newUser.Entity;
         }
 
@@ -159,46 +172,40 @@ namespace QMS.Application.System
         /// <returns></returns>
         public string QYWechatLogin(SysUser user)
         {
-            // 员工信息
-            //var empInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
+            return _login.Login(user);
+        }
 
-            // 生成Token令牌
-            //var accessToken = await _jwtBearerManager.CreateTokenAdmin(user);
-            var accessToken = JWTEncryption.Encrypt(new Dictionary<string, object>
+        /// <summary>
+        /// 企业微信发送文字卡片消息
+        /// </summary>
+        /// <param name="touser">接收消息用户列表</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title">标题</param>
+        /// <param name="description">内容描述</param>
+        /// <param name="url">url地址</param>
+        /// <returns></returns>
+        public async Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        {
+            string tousers = string.Join("|", touser);
+            var token = GetAccessTokenAsync().Result.AccessToken;
+            QYWechatMessage message = new QYWechatMessage();
+            message.Touser = tousers;
+            message.Toparty = toparty;
+            message.Totag = totag;
+            message.Msgtype = "textcard";
+            message.Textcard = new Dictionary<string, string>()
             {
-                {ClaimConst.CLAINM_USERID, user.Id},
-                {ClaimConst.TENANT_ID, user.TenantId},
-                {ClaimConst.CLAINM_ACCOUNT, user.Account},
-                {ClaimConst.CLAINM_NAME, user.Name},
-                {ClaimConst.CLAINM_SUPERADMIN, user.AdminType},
-                //{ClaimConst.CLAINM_ORGID, empInfo.OrgId},
-                //{ClaimConst.CLAINM_ORGNAME, empInfo.OrgName},
-            });
-
-            // 设置Swagger自动登录
-            _httpContextAccessor.HttpContext.SigninToSwagger(accessToken);
-
-            // 生成刷新Token令牌
-            var refreshToken =
-                JWTEncryption.GenerateRefreshToken(accessToken, App.GetOptions<RefreshTokenSettingOptions>().ExpiredTime);
-
-            // 设置刷新Token令牌
-            _httpContextAccessor.HttpContext.Response.Headers["x-access-token"] = refreshToken;
-
-            // 增加登录日志
-            _eventPublisher.PublishAsync(new ChannelEventSource("Create:VisLog",
-                new SysLogVis
-                {
-                    Name = user.Name,
-                    Success = YesOrNot.Y,
-                    Message = "登录成功",
-                    Ip = user.LastLoginIp,
-                    VisType = LoginType.LOGIN,
-                    VisTime = user.LastLoginTime,
-                    Account = user.Account
-                }));
-
-            return accessToken;
+                ["title"] = title,
+                ["description"] = description,
+                ["url"] = url,
+                ["btntxt"] = "更多"
+            };
+            message.Agentid = Convert.ToInt32(Agentid);
+            var messResule = await $"{SendMessageUrl}?access_token={token}".SetBody(JSON.Serialize(message)).PostAsAsync<QYWechatResult>();
+            if (messResule.Errcode != 0)
+                throw Oops.Oh($"{messResule.Errmsg}");
+            return $"发送信息成功,消息ID为{messResule.Msgid}";
         }
     }
 }

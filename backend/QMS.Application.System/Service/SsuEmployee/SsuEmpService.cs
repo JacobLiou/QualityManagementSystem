@@ -21,7 +21,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 人员组织架构
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuEmpOrg", Order = 100)]
+    [ApiDescriptionSettings(Name = "SsuEmpOrg", Order = 100)]
     public class SsuEmpService : ISsuEmpService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SysOrg> _sysOrgRep;  // 组织机构表仓储

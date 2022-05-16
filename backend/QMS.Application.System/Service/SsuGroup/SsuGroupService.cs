@@ -18,13 +18,13 @@ namespace QMS.Application.System
     /// <summary>
     /// 人员组服务
     /// </summary>
-    [ApiDescriptionSettings("自己的业务", Name = "SsuGroup", Order = 100)]
+    [ApiDescriptionSettings( Name = "SsuGroup", Order = 100)]
     public class SsuGroupService : ISsuGroupService, IDynamicApiController, ITransient
     {
-        private readonly IRepository<SsuGroup,MasterDbContextLocator> _ssuGroupRep;
+        private readonly IRepository<SsuGroup, MasterDbContextLocator> _ssuGroupRep;
 
         public SsuGroupService(
-            IRepository<SsuGroup,MasterDbContextLocator> ssuGroupRep
+            IRepository<SsuGroup, MasterDbContextLocator> ssuGroupRep
         )
         {
             _ssuGroupRep = ssuGroupRep;
@@ -83,7 +83,7 @@ namespace QMS.Application.System
             if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
             var ssuGroup = input.Adapt<SsuGroup>();
-            await _ssuGroupRep.UpdateAsync(ssuGroup,ignoreNullValues:true);
+            await _ssuGroupRep.UpdateAsync(ssuGroup, ignoreNullValues: true);
         }
 
         /// <summary>

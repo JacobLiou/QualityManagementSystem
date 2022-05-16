@@ -32,13 +32,13 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 企业微信登录授权
+        /// 获取企业微信跳转至授权界面二维码
         /// </summary>
         [HttpGet("system/qyWechat/login")]
-        public Task QYWechatLogin()
+        public string QYWechatLogin()
         {
-            _httpContext.Response.Redirect(_qyWechatOAuth.GetAuthorizeUrl());
-            return Task.CompletedTask;
+            return _qyWechatOAuth.GetAuthorizeUrl();
+            //_httpContext.Response.Redirect(_qyWechatOAuth.GetAuthorizeUrl());
         }
 
         /// <summary>
@@ -87,12 +87,28 @@ namespace QMS.Application.System
 
             if (user == null)
             {
-                //用户不存在则登录
+                //用户不存在则
                 user = _qyWechatOAuth.QYWechatRegister(userInfo).Result;
             }
             //调用登录接口
             var accessToken = _qyWechatOAuth.QYWechatLogin(user);
             return accessToken;
+        }
+
+        /// <summary>
+        /// 企业微信发送文本卡片消息
+        /// </summary>
+        /// <param name="touser">接收消息用户列表</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        [HttpPost("system/qyWechat/sendMessage")]
+        public string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        {
+            return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
         }
     }
 }
