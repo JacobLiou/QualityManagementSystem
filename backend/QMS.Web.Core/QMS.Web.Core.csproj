@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RedisEventSourceStorer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="QMS.Web.Core.xml" />
   </ItemGroup>
 

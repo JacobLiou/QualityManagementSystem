@@ -105,18 +105,19 @@ const vueConfig = {
     port: 81,
     proxy: {
       '/api': {
-        target: process.env.VUE_APP_API_BASE_URL,
+        // target: process.env.VUE_APP_API_BASE_URL,
+        target: 'http://172.16.16.33:8001',
         ws: false,
         changeOrigin: true,
         pathRewrite: {
           '^/api': '' // 需要rewrite的,
         }
       },
-      '/hubs': {
-        target: process.env.VUE_APP_SOCKET_BASE_URL,
-        ws: true,
-        changeOrigin: true
-      }
+      // '/hubs': {
+      //   target: process.env.VUE_APP_SOCKET_BASE_URL,
+      //   ws: true,
+      //   changeOrigin: true
+      // }
     }
   },
 

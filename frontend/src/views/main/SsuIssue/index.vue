@@ -390,6 +390,7 @@ sorter: true,
     },
     created () {
       if (this.hasPerm('SsuIssue:edit') || this.hasPerm('SsuIssue:delete')) {
+        // 测试
         this.columns.push({
           title: '操作',
           width: '360px',
