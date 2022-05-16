@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 样机
+    /// </summary>
     public enum EnumPrototype
     {
         [Description("样机")]

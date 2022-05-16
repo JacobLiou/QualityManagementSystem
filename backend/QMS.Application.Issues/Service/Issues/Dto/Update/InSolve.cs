@@ -1,4 +1,5 @@
-﻿using QMS.Core.Entity;
+﻿using QMS.Application.Issues.Helper;
+using QMS.Core.Entity;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -21,6 +22,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
         public bool SetIssue(Core.Entity.Issue issue)
         {
+            Helper.Helper.Assert(issue.Status > Core.Enum.EnumIssueStatus.Created && issue.Executor != null, Constants.ERROR_MSG_CHECK_SOLVE);
+
             bool changed = false;
 
             if (issue.Title != this.Title)

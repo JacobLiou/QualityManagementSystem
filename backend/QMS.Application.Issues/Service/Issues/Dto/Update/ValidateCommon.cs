@@ -1,4 +1,5 @@
 ﻿using Furion.Extras.Admin.NET;
+using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
@@ -34,6 +35,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
         public bool SetIssue(Core.Entity.Issue issue)
         {
+            Helper.Helper.Assert(issue.Status == Core.Enum.EnumIssueStatus.Solved && issue.Verifier != null, Constants.ERROR_MSG_CHECK_VALIDATE);
+
             bool changed = false;
 
             if (issue.Title != this.Title)

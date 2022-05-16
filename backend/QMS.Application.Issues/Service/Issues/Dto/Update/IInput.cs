@@ -7,12 +7,12 @@
         /// </summary>
         /// <param name="issue"></param>
         /// <returns>是否有更新</returns>
-        bool SetIssue(QMS.Core.Entity.Issue issue);
+        bool SetIssue(Core.Entity.Issue issue);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="issueDetail"></param>
         /// <returns>是否有更新</returns>
-        bool SetIssueDetail(QMS.Core.Entity.IssueDetail issueDetail);
+        bool SetIssueDetail(Core.Entity.IssueDetail issueDetail);
     }
 }

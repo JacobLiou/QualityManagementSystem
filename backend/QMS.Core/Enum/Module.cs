@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 模块
+    /// </summary>
     public enum EnumModule
     {
         [Description("研发")]

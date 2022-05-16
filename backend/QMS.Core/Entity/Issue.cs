@@ -103,8 +103,14 @@ namespace QMS.Core.Entity
         [Comment("预计完成日期")]
         public DateTime? ForecastSolveTime { get; set; }
 
+        //[Comment("被抄送人")]
+        //public long? CC { get; set; }
+
+        /// <summary>
+        /// List<long>.ToJson()
+        /// </summary>
         [Comment("被抄送人")]
-        public long? CC { get; set; }
+        public string CCs { get; set; }
 
 
         [Comment("解决人")]

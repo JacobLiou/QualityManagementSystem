@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 问题性质
+    /// </summary>
     public enum EnumConsequence
     {
         [Description("致命")]

@@ -17,7 +17,7 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 操作类型
         /// </summary>
-        public virtual QMS.Core.Enum.EnumIssueOperationType OperationTypeId { get; set; }
+        public virtual Core.Enum.EnumIssueOperationType OperationTypeId { get; set; }
         
         /// <summary>
         /// 内容

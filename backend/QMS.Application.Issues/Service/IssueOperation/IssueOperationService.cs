@@ -38,7 +38,7 @@ namespace QMS.Application.Issues
                                      //.Where(u => u.OperationTypeId == input.OperationTypeId)
                                      //.Where(!string.IsNullOrEmpty(input.Content), u => u.Content == input.Content)
                                      //.Where(u => u.OperationTime == input.OperationTime)
-                                     .OrderBy(PageInputOrder.OrderBuilder<IssueOperationInput>(input))
+                                     .OrderBy(PageInputOrder.OrderBuilder(input))
                                      .ProjectToType<IssueOperationOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
 

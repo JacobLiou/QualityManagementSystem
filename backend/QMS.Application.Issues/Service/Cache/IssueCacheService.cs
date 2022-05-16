@@ -22,7 +22,6 @@ namespace QMS.Application.Issues
         }
 
         [NonAction]
-        //[HttpGet("/issue/cache/columns")]
         public async Task<string> GetUserColumns(long userId)
         {
             var cacheKey = Constants.USER_COLUMNS + userId;
@@ -36,17 +35,8 @@ namespace QMS.Application.Issues
             var cacheKey = Constants.USER_COLUMNS + userId;
 
             DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
-            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
             await _cache.SetStringAsync(cacheKey, json, cacheOption);
         }
-
-        [NonAction]
-        public async Task RemoveUserColumns(long userId)
-        {
-            var cacheKey = Constants.USER_COLUMNS + userId;
-
-            await _cache.RemoveAsync(cacheKey);
-        }
-
     }
 }

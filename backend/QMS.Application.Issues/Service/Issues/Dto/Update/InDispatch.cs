@@ -1,26 +1,89 @@
-﻿using QMS.Core.Entity;
+﻿using Furion.JsonSerialization;
+using QMS.Application.Issues.Helper;
+using QMS.Application.Issues.Service.Issue.Dto.Update;
+using QMS.Core.Entity;
+using QMS.Core.Enum;
+using System.ComponentModel.DataAnnotations;
 
-namespace QMS.Application.Issues.Service.Issue.Dto.Update
+namespace QMS.Application.Issues.Service.Issues.Dto.Update
 {
-    public class InReDispatch : ReDispatchCommon
+    public class InDispatch : IInput
     {
         /// <summary>
-        /// 备注
+        /// 问题编号
         /// </summary>
-        public string Comment { get; set; }
+        [Required]
+        public long Id { get; set; }
+        /// <summary>
+        /// 问题简述
+        /// </summary>
+        [Required]
+        public string Title { get; set; }
+        /// <summary>
+        /// 预计完成时间
+        /// </summary>
+        [Required]
+        public DateTime ForecastSolveTime { get; set; }
+        /// <summary>
+        /// 问题性质
+        /// </summary>
+        [Required]
+        public EnumConsequence Consequence { get; set; }
+        /// <summary>
+        /// 问题分类
+        /// </summary>
+        [Required]
+        public EnumIssueClassification IssueClassification { get; set; }
+        /// <summary>
+        /// 执行人
+        /// </summary>
+        [Required]
+        public long Executor { get; set; }
+        /// <summary>
+        /// 抄送给
+        /// </summary>
+        public List<long> CCList { get; set; } = new List<long>();
 
-        public override bool SetIssueDetail(IssueDetail issueDetail)
+        /// <summary>
+        /// 用于新增和分发时保存动态生成的字段信息（动态生成对应控件时,字段结构可通过相应接口获得）
+        /// issueId：问题编号 long
+        /// attributeId：字段编号  long
+        /// attributeCode：字段代码 string
+        /// value：字段值 string
+        /// valueType：字段类型 string
+        /// [{"issueId":284932473958469,"attributeId":285613677277253,"attributeCode":"code","value":"数据","valueType":"string"}]
+        /// </summary>
+        public string ExtendAttribute { get; set; }
+
+        public bool SetIssue(Core.Entity.Issue issue)
         {
+            Helper.Helper.Assert(issue.Status == EnumIssueStatus.Created || issue.Status == EnumIssueStatus.HasHangUp, Constants.ERROR_MSG_CHECK_DISPATCH);
+
             bool changed = false;
 
-            if (issueDetail.Comment != this.Comment)
+            if (issue.Title != this.Title)
             {
-                issueDetail.Comment = this.Comment;
+                issue.Title = this.Title;
 
                 changed = true;
             }
 
+            issue.IssueClassification = this.IssueClassification;
+            issue.Consequence = this.Consequence;
+            issue.Executor = this.Executor;
+            if (this.CCList != null)
+            {
+                issue.CCs = JSON.Serialize(this.CCList);
+            }
+            issue.ForecastSolveTime = this.ForecastSolveTime;
+
             return changed;
+        }
+
+        public bool SetIssueDetail(IssueDetail issueDetail)
+        {
+
+            return true;
         }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 问题分类
+    /// </summary>
     public enum EnumIssueClassification
     {
         [Description("设计问题-硬件")]

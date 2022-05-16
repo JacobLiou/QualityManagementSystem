@@ -2,8 +2,14 @@
 
 namespace QMS.Core.Enum
 {
-    public enum TestClassification
+    /// <summary>
+    /// 测试类别
+    /// </summary>
+    public enum EnumTestClassification
     {
+        /// <summary>
+        /// 整机
+        /// </summary>
         [Description("整机")]
         Whole = 0,
         [Description("单板")]

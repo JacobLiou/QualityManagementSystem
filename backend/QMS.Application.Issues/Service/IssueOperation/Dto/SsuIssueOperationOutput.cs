@@ -18,7 +18,7 @@
         /// <summary>
         /// 操作类型
         /// </summary>
-        public QMS.Core.Enum.EnumIssueOperationType OperationTypeId { get; set; }
+        public Core.Enum.EnumIssueOperationType OperationTypeId { get; set; }
         
         /// <summary>
         /// 内容

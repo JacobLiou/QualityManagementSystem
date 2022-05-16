@@ -18,7 +18,7 @@ namespace QMS.Application.Issues.Helper
 
         public static void SaveCsv<T>(IEnumerable<T> modelList, string fullPath)
         {
-            SaveCsv(ModelHelper.ToTable<T>(modelList), fullPath);
+            SaveCsv(ModelHelper.ToTable(modelList), fullPath);
         }
 
         private static string SolveCSVColumn(string column)

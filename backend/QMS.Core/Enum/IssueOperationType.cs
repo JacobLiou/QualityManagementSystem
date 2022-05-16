@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 操作类型，用于操作记录
+    /// </summary>
     public enum EnumIssueOperationType
     {
         [Description("新增")]

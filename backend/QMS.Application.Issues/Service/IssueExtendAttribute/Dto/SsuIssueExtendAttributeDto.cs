@@ -13,7 +13,7 @@
         /// <summary>
         /// 模块编号
         /// </summary>
-        public QMS.Core.Enum.EnumModule Module { get; set; }
+        public Core.Enum.EnumModule Module { get; set; }
         
         /// <summary>
         /// 字段名

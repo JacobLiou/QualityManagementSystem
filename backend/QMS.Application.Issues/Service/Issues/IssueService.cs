@@ -3,6 +3,7 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
+using Furion.FriendlyException;
 using Furion.JsonSerialization;
 using Mapster;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +19,8 @@ using QMS.Application.Issues.Service.Issue.Dto;
 using QMS.Application.Issues.Service.Issue.Dto.Add;
 using QMS.Application.Issues.Service.Issue.Dto.Query;
 using QMS.Application.Issues.Service.Issue.Dto.Update;
+using QMS.Application.Issues.Service.Issues.Dto.Update;
+using QMS.Application.Issues.Service.ThirdPartyService.Dto;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -58,13 +61,12 @@ namespace QMS.Application.Issues
         }
 
         #region CRUD
-        private async Task AddAttributeValuesBatch(string ExtendAttribute)
+        private async Task AddAttributeValuesBatch(string extendAttribute)
         {
-            if (!string.IsNullOrEmpty(ExtendAttribute))
+            if (!string.IsNullOrEmpty(extendAttribute))
             {
-                List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
-
-                await this._issueAttrValueRep.Entities.AddRangeAsync(list.Select<FieldValue, IssueExtendAttributeValue>(model => new IssueExtendAttributeValue
+                var list = JSON.Deserialize<List<FieldValue>>(extendAttribute);
+                await this._issueAttrValueRep.Entities.AddRangeAsync(list.Select(model => new IssueExtendAttributeValue
                 {
                     Id = model.AttributeId,
                     IssueNum = model.IssueId,
@@ -81,9 +83,13 @@ namespace QMS.Application.Issues
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost("/issue/add")]
-        public async Task<long> Add(InIssue input)
+        public async Task<BaseId> Add(InIssue input)
         {
             var issue = input.Adapt<Issue>();
+            if (input.CCList != null && input.CCList.Count > 0)
+            {
+                issue.CCs = JSON.Serialize(input.CCList); 
+            }
             issue.SetCreate();
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
@@ -103,7 +109,7 @@ namespace QMS.Application.Issues
                 "新建问题"
             );
 
-            return detail.Id;
+            return new BaseId() { Id = detail.Id };
         }
 
 
@@ -182,12 +188,6 @@ namespace QMS.Application.Issues
         }
         #endregion
 
-        //[HttpGet("/issue/list")]
-        //public async Task<List<issueOutput>> List([FromQuery] issueInput input)
-        //{
-        //    return await _issueRep.DetachedEntities.ProjectToType<issueOutput>().ToListAsync();
-        //}
-
         #region 流程管理
         /// <summary>
         /// 执行者处理问题
@@ -197,10 +197,12 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/execute")]
         public async Task Execute(InSolve input)
         {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            common.DoSolve();
             input.SetIssue(common);
+            common.DoSolve();
             await this._issueRep.UpdateNowAsync(common, true);
 
 
@@ -225,11 +227,13 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/validate")]
         public async Task Validate(InValidate input)
         {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             bool pass = input.PassResult == YesOrNot.Y;
-            common.DoVerify(pass);
             input.SetIssue(common);
+            common.DoVerify(pass);
             await this._issueRep.UpdateNowAsync(common, true);
 
 
@@ -255,10 +259,12 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/hangup")]
         public async Task HangUp(InHangup input)
         {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            common.SetHangup();
             input.SetIssue(common);
+            common.SetHangup();
             await this._issueRep.UpdateNowAsync(common, true);
 
 
@@ -277,42 +283,81 @@ namespace QMS.Application.Issues
             );
         }
 
-        /// <summary>
-        /// 重分派
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        [HttpPost("/issue/redispatch")]
-        public async Task ReDispatch(InReDispatch input)
+        private async Task ReDispatch(InReDispatch input)
         {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            common.DoDispatch();
             input.SetIssue(common);
+            common.DoDispatch();
             await this._issueRep.UpdateNowAsync(common, true);
-
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             if (input.SetIssueDetail(issueDetail))
             {
                 await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
             }
+        }
 
+        /// <summary>
+        /// 转交
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/issue/redispatch")]
+        public async Task ReDispatch(List<InReDispatch> input)
+        {
+            Helper.Helper.Assert(input != null && input.Count > 0, "转交信息为空!");
+
+            foreach (var item in input)
+            {
+                await this.ReDispatch(item);
+            }
 
             await IssueLogger.Log(
                 this._issueOperateRep,
-                input.Id,
+                input[0].Id,
                 EnumIssueOperationType.ReDispatch,
-                $"【{common.Dispatcher.GetNameByEmpId()}】将【{common.CreatorId.GetNameByEmpId()}】提出的问题重分发给【{common.Executor.GetNameByEmpId()}】"
+                $"问题重分发给【{input[0].Executor.GetNameByEmpId()}】"
             );
         }
         #endregion
 
         #region 分页查询及导出
+        /// <summary>
+        /// 根据保存的项目id和产品id调用第三方服务获取对应的名称
+        /// </summary>
+        /// <param name="issues"></param>
+        private async Task<PageResult<OutputGeneralIssue>> UpdateProjectProductNames(PageResult<OutputGeneralIssue> issues)
+        {
+            // 根据保存的项目id和产品id调用第三方服务获取对应的名称
+            if (issues.TotalRows > 0)
+            {
+                Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Rows.Select<OutputGeneralIssue, long>(issue => issue.ProjectId));
+                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Rows.Select<OutputGeneralIssue, long>(issue => issue.ProductId));
+
+                foreach (var item in issues.Rows)
+                {
+                    if (projects != null & projects.ContainsKey(item.ProjectId))
+                    {
+                        item.ProjectName = projects[item.ProjectId].ProjectName;
+                    }
+
+                    if (products != null && products.ContainsKey(item.ProductId))
+                    {
+                        item.ProductName = products[item.ProductId].ProductName;
+                    }
+                }
+            }
+
+            return issues;
+        }
+
         private IQueryable<Issue> GetQueryable(BaseQueryModel input)
         {
             IQueryable<Issue> querable = this._issueRep.DetachedEntities
-                                     .Where(input.ProjectId > 0, u => u.ProjectId == input.ProjectId)
+                                     .Where(input.ProjectId != null, u => u.ProjectId == input.ProjectId)
                                      .Where(input.Module != null, u => u.Module == input.Module)
                                      .Where(input.Consequence != null, u => u.Consequence == input.Consequence)
                                      .Where(input.Status != null, u => u.Status == input.Status)
@@ -352,9 +397,9 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Hangup:
                     querable = querable.Where(item => item.Status == EnumIssueStatus.HasHangUp);
                     break;
-                case EnumQueryCondition.CC:
-                    querable = querable.Where(item => item.CC == Helper.Helper.GetCurrentUser());
-                    break;
+                    //case EnumQueryCondition.CC:
+                    //    querable = querable.Where(item => !string.IsNullOrEmpty(item.CCs) && item.CCs.IndexOf(Helper.Helper.GetCurrentUser().ToString()) > 0);
+                    //    break;
             }
 
             return querable;
@@ -369,16 +414,46 @@ namespace QMS.Application.Issues
         {
             IQueryable<Issue> querable = this.GetQueryable(input);
 
-            var issues = await querable.OrderBy(PageInputOrder.OrderBuilder<BaseQueryModel>(input))
-                                     .Select<Issue, OutputGeneralIssue>(issue => new OutputGeneralIssue(issue))
+
+            var issues = await querable.OrderBy(PageInputOrder.OrderBuilder(input))
+                                     .Select(issue => new OutputGeneralIssue(issue))
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
+
+            return await this.UpdateProjectProductNames(issues);
+        }
+
+        /// <summary>
+        /// 根据保存的项目id和产品id调用第三方服务获取对应的名称
+        /// </summary>
+        /// <param name="issues"></param>
+        private async Task<List<ExportIssueDto>> UpdateProjectProductNames(List<ExportIssueDto> issues)
+        {
+            // 根据保存的项目id和产品id调用第三方服务获取对应的名称
+            if (issues.Count > 0)
+            {
+                Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProjectId));
+                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProductId));
+
+                foreach (var item in issues)
+                {
+                    if (projects != null & projects.ContainsKey(item.ProjectId))
+                    {
+                        item.ProjectName = projects[item.ProjectId].ProjectName;
+                    }
+
+                    if (products != null && products.ContainsKey(item.ProductId))
+                    {
+                        item.ProductName = products[item.ProductId].ProductName;
+                    }
+                }
+            }
 
             return issues;
         }
 
         private IQueryable<ExportIssueDto> GetExportQuerable(BaseQueryModel input)
         {
-            return this.GetQueryable(input).Join<Issue, IssueDetail, long, ExportIssueDto>(
+            return this.GetQueryable(input).Join(
                                         this._issueDetailRep.DetachedEntities,
                                         issue => issue.Id,
                                         detailIssue => detailIssue.Id,
@@ -419,17 +494,26 @@ namespace QMS.Application.Issues
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost("/issue/export")]
-        public async Task<IActionResult> Export(BaseQueryModel input)
+        public async Task<IActionResult> Export(List<long> input)
         {
-            IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
+            Helper.Helper.Assert(input != null && input.Count > 0, Oops.Oh(ErrorCode.xg1002));
 
-            this.AddFilter(input, querable);
+            // 导出查询到的数据
+            //IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
 
-            PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize);
+            //this.AddFilter(input, querable);
 
-            Helper.Helper.Assert(list != null && list.Rows.Count > 0, "不存在任何问题记录!");
+            //PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize);
 
-            return await Helper.Helper.ExportExcel(list.Rows);
+            // 导出前端选中的数据
+
+            List<ExportIssueDto> list = this._issueRep.DetachedEntities.Where<Issue>(issue => input.Contains(issue.Id)).Join(this._issueDetailRep.DetachedEntities, issue => issue.Id,
+                                        detailIssue => detailIssue.Id,
+                                        (issue, detail) => new ExportIssueDto(issue, detail)).ToList();
+
+            List<ExportIssueDto> colls = await this.UpdateProjectProductNames(list);
+
+            return await Helper.Helper.ExportExcel(colls);
         }
         #endregion
 
@@ -441,7 +525,7 @@ namespace QMS.Application.Issues
         [HttpGet("/issue/template")]
         public async Task<IActionResult> Template()
         {
-            var item = this._issueRep.Where(model => model.Title != null).Take<Issue>(1).ProjectToType<InIssue>();
+            var item = this._issueRep.Where(model => model.Title != null).Take(1).ProjectToType<InIssue>();
             return await Helper.Helper.ExportExcel(item, "IssueTemplate");
         }
 
@@ -457,7 +541,8 @@ namespace QMS.Application.Issues
 
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
-            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true);
+            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true)
+                .TakeWhile(item => item.标题 != null && item.问题模块 != null && item.问题性质 != null && item.问题分类 != null && item.问题来源 != null);
 
             long userId = CurrentUserInfo.UserId;
 
@@ -477,9 +562,9 @@ namespace QMS.Application.Issues
                     Discover = Convert.ToInt64(item.发现人编号),
                     DiscoverTime = Convert.ToDateTime(item.发现日期),
                     Status = EnumIssueStatus.Created,
-                    CreatorId = item.提出人编号 == null ? userId : Convert.ToInt64(item.提出人编号),
-                    CreateTime = Convert.ToDateTime(item.提出日期),
-                    CC = Convert.ToInt64(item.被抄送人编号)
+                    //CreatorId = item.提出人编号 == null ? userId : Convert.ToInt64(item.提出人编号),
+                    //CreateTime = Convert.ToDateTime(item.提出日期),
+                    //CC = Convert.ToInt64(item.被抄送人编号)
                 };
 
                 await this.Add(issue);
@@ -490,7 +575,10 @@ namespace QMS.Application.Issues
         #region 问题相关附件的信息保存和获取
         public class AttachmentIssue
         {
-            public AttachmentModel Attachment { get; set; }
+            public List<AttachmentModel> Attachments { get; set; }
+            /// <summary>
+            /// 问题编号
+            /// </summary>
             public long IssueId { get; set; }
         }
         /// <summary>
@@ -502,7 +590,7 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/attachment/saveId")]
         public async Task SaveAttachment(AttachmentIssue input)
         {
-            Helper.Helper.Assert(input.Attachment != null && input.IssueId != 0, "附件信息或问题编号为空!无法保存");
+            Helper.Helper.Assert(input.Attachments != null && input.Attachments.Count > 0 && input.IssueId != 0, "附件信息或问题编号为空!无法保存");
 
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.IssueId);
 
@@ -512,19 +600,13 @@ namespace QMS.Application.Issues
                 list = JsonConvert.DeserializeObject<List<AttachmentModel>>(detail.Attachments);
             }
 
-            list.Add(new AttachmentModel()
-            {
-                //IssueId = issueId,
-                AttachmentId = input.Attachment.AttachmentId,
-                FileName = input.Attachment.FileName,
-                AttachmentType = input.Attachment.AttachmentType
-            });
+            list.AddRange(input.Attachments.Where(model => !list.Select<AttachmentModel, long>(attach => attach.AttachmentId).Contains(model.AttachmentId)));
 
             detail.Attachments = JsonConvert.SerializeObject(list);
 
             await this._issueDetailRep.UpdateIncludeAsync(detail, new string[] { nameof(detail.Attachments) }, true);
 
-            await IssueLogger.Log(this._issueOperateRep, input.IssueId, EnumIssueOperationType.Upload, input.Attachment.FileName);
+            await IssueLogger.Log(this._issueOperateRep, input.IssueId, EnumIssueOperationType.Upload, JSON.Serialize(input.Attachments));
         }
 
         /// <summary>
@@ -550,48 +632,6 @@ namespace QMS.Application.Issues
         #endregion
 
         #region 分发操作
-        public class InDispatch : IInput
-        {
-            public long Id { get; set; }
-            public string Title { get; set; }
-            public DateTime ForecastSolveTime { get; set; }
-            public EnumConsequence Consequence { get; set; }
-            public EnumIssueClassification IssueClassification { get; set; }
-            /// <summary>
-            /// 执行人
-            /// </summary>
-            public long Executor { get; set; }
-            public long? CC { get; set; }
-
-            public string ExtendAttribute { get; set; }
-
-            public bool SetIssue(Issue issue)
-            {
-                bool changed = false;
-
-                if (issue.Title != this.Title)
-                {
-                    issue.Title = this.Title;
-
-                    changed = true;
-                }
-
-                issue.IssueClassification = this.IssueClassification;
-                issue.Consequence = this.Consequence;
-                issue.Executor = this.Executor;
-                issue.CC = this.CC;
-                issue.ForecastSolveTime = this.ForecastSolveTime;
-
-                return changed;
-            }
-
-            public bool SetIssueDetail(IssueDetail issueDetail)
-            {
-
-                return true;
-            }
-        }
-
         /// <summary>
         /// 分派
         /// </summary>
@@ -601,8 +641,8 @@ namespace QMS.Application.Issues
         public async Task Dispatch(InDispatch input)
         {
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
-            issue.DoDispatch();
             input.SetIssue(issue);
+            issue.DoDispatch();
             await this._issueRep.UpdateNowAsync(issue);
 
 
@@ -625,7 +665,7 @@ namespace QMS.Application.Issues
             {
                 List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
 
-                this._issueAttrValueRep.Entities.UpdateRange(list.Select<FieldValue, IssueExtendAttributeValue>(model => new IssueExtendAttributeValue
+                this._issueAttrValueRep.Entities.UpdateRange(list.Select(model => new IssueExtendAttributeValue
                 {
                     Id = model.AttributeId,
                     IssueNum = model.IssueId,
@@ -641,7 +681,7 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 获取问题列表列名
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="input">{"id":"序号","title":"标题"}</param>
         /// <returns></returns>
         [HttpGet("/issue/column/display")]
         public async Task<Dictionary<string, string>> GetColumnDisplay()
@@ -649,12 +689,17 @@ namespace QMS.Application.Issues
             return await Helper.Helper.GetUserColumns(this._issueColumnDisplayRep);
         }
 
+        /// <summary>
+        /// 设置列
+        /// </summary>
+        /// <param name="input">{"id":"序号","title":"标题"}</param>
+        /// <returns></returns>
         [HttpPost("/issue/column/update")]
-        public async Task UpdateColumnDisplay(Dictionary<string, string> collection)
+        public async Task UpdateColumnDisplay(Dictionary<string, string> input)
         {
-            Helper.Helper.Assert(collection != null, "参数为空");
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
 
-            await Helper.Helper.SetUserColumns(this._issueColumnDisplayRep, JSON.Serialize(collection));
+            await Helper.Helper.SetUserColumns(this._issueColumnDisplayRep, JSON.Serialize(input));
         }
         #endregion
     }
