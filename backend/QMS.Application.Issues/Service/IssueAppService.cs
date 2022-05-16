@@ -14,7 +14,7 @@ namespace QMS.Application.Issues
   /// 系统服务接口
   /// </summary>
     [ApiDescriptionSettings("问题管理Demo", Name = "Issue", Order = 100)]
-
+    [Route("issue/[controller]")]
     public class IssueAppService : IDynamicApiController
     {
         private readonly IHttpProxy _http;
@@ -49,13 +49,13 @@ namespace QMS.Application.Issues
             Log.Information(notice.ToString());
         }
 
-        [HttpGet("/Issue/TestUserGroup")]
+        [HttpGet("testUserGroup")]
         public async Task<List<GroupUserOutput>> GetUserGroup()
         {
             return await this.GroupUserOutputs();
         }
 
-        public async Task<List<GroupUserOutput>> GroupUserOutputs()
+        private async Task<List<GroupUserOutput>> GroupUserOutputs()
         {
             var request = _contextAccessor.HttpContext.Request;
             var authHeader = request.Headers["Authorization"];
