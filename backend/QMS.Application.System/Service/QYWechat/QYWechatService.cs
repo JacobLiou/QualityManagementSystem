@@ -45,6 +45,16 @@ namespace QMS.Application.System
         }
 
         /// <summary>
+        /// 获取企业微信扫码登录URL
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("system/qyWechat/qywechatloginurl")]
+        public string QYWechatLoginUrl()
+        {
+            return _qyWechatOAuth.GetAuthorizeUrl();
+        }
+
+        /// <summary>
         /// 企业微信登录授权回调
         /// </summary>
         /// <param name="error_description"></param>
