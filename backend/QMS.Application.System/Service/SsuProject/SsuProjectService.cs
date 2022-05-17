@@ -9,6 +9,7 @@ using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QMS.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -26,15 +27,19 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
+        private readonly ICacheService<SsuProjectOutput> _cacheService;
+        private readonly int CacheMinute = 30;
 
         public SsuProjectService(
-            IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser, ISysEmpService sysEmpService
+            IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
+            ISysEmpService sysEmpService, ICacheService<SsuProjectOutput> cacheService
         )
         {
             _ssuProjectRep = ssuProjectRep;
             _ssuProjectUser = ssuProjectUser;
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
+            _cacheService = cacheService;
         }
 
         /// <summary>
@@ -121,7 +126,7 @@ namespace QMS.Application.System
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuProject/list")]
-        public async Task<List<SsuProjectOutput>> List([FromQuery] SsuProjectInput input)
+        public async Task<List<SsuProjectOutput>> List()
         {
             return await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
         }
@@ -135,10 +140,10 @@ namespace QMS.Application.System
         public async Task<List<UserOutput>> GetProjectUser(long projectId)
         {
             List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuProjectUser.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            var userIds = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
             if (userIds != null)
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id));
+                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
                 if (userList != null)
                 {
                     foreach (SysUser user in userList)
@@ -162,7 +167,7 @@ namespace QMS.Application.System
         public async Task InsertProjectGroup(long projectId, long[] userIds)
         {
             List<SsuProjectUser> list = new List<SsuProjectUser>();
-            var resultList = _ssuProjectUser.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            var resultList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
             foreach (long employeeId in userIds)
             {
                 if (!resultList.Contains(employeeId))
@@ -178,6 +183,37 @@ namespace QMS.Application.System
             {
                 await _ssuProjectUser.InsertAsync(list);
             }
+        }
+
+        /// <summary>
+        /// 根据项目ID列表获取项目详细信息列表
+        /// </summary>
+        /// <param name="projectIds"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuProject/getprojectlist")]
+        public async Task<List<SsuProjectOutput>> GetProjectList(long[] projectIds)
+        {
+            List<SsuProjectOutput> list = new List<SsuProjectOutput>();
+            //针对每个项目ID都做一次缓存，所以此处采用循环的方式
+            foreach (long id in projectIds)
+            {
+                var cacheProject = _cacheService.GetCache(CoreCommonConst.PROJECTID + id);
+                if (cacheProject != null)
+                {
+                    list.Add(cacheProject.Result);
+                }
+                else
+                {
+                    var project = await _ssuProjectRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
+                    if (project != null)
+                    {
+                        var projectOutput = project.Adapt<SsuProjectOutput>();
+                        list.Add(projectOutput);
+                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + id, projectOutput, CacheMinute);
+                    }
+                }
+            }
+            return list;
         }
     }
 }

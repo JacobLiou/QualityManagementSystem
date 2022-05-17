@@ -10,7 +10,9 @@ namespace QMS.Application.System
 
         Task QYWechatLoginCallback([FromQuery] string error_description = "");
 
-        string QYWechatLoginRegister(string code);
+        Task QYWechatLoginRegister(string code);
+
+        string QYWechatGetLoginToken(string code);
 
         string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url);
     }
