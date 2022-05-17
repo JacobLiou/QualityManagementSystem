@@ -45,6 +45,16 @@ namespace QMS.Application.System
         }
 
         /// <summary>
+        /// 获取企业微信扫码登录URL
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("system/qyWechat/qywechatloginurl")]
+        public string QYWechatLoginUrl()
+        {
+            return _qyWechatOAuth.GetAuthorizeUrl();
+        }
+
+        /// <summary>
         /// 企业微信登录授权回调
         /// </summary>
         /// <param name="error_description"></param>
@@ -77,7 +87,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="code">企业微信登录扫码后从URL中获取的code值</param>
         /// <returns></returns>
-        [HttpPost("system/qyWechat/loginAndRegister")]
+        [HttpGet("system/qyWechat/loginAndRegister")]
         public string QYWechatLoginRegister([FromQuery] string code)
         {
             //获取企业微信扫码用户详细信息

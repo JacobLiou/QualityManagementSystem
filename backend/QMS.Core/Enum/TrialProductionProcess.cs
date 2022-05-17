@@ -3,9 +3,9 @@
 namespace QMS.Core.Enum
 {
     /// <summary>
-    /// 工序
+    /// 试产-工序
     /// </summary>
-    public enum EnumProcess
+    public enum EnumTrialProductionProcess
     {
         [Description("SMT-锡膏印刷")]
         SMT_锡膏印刷 = 0,

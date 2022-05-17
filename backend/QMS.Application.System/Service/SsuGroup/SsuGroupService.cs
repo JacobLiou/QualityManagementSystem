@@ -18,16 +18,18 @@ namespace QMS.Application.System
     /// <summary>
     /// 人员组服务
     /// </summary>
-    [ApiDescriptionSettings( Name = "SsuGroup", Order = 100)]
+    [ApiDescriptionSettings(Name = "SsuGroup", Order = 100)]
     public class SsuGroupService : ISsuGroupService, IDynamicApiController, ITransient
     {
         private readonly IRepository<SsuGroup, MasterDbContextLocator> _ssuGroupRep;
+        private readonly IRepository<SsuGroupUser> _ssuGroupUser;
 
         public SsuGroupService(
-            IRepository<SsuGroup, MasterDbContextLocator> ssuGroupRep
+            IRepository<SsuGroup, MasterDbContextLocator> ssuGroupRep, IRepository<SsuGroupUser> ssuGroupUser
         )
         {
             _ssuGroupRep = ssuGroupRep;
+            _ssuGroupUser = ssuGroupUser;
         }
 
         /// <summary>
@@ -106,6 +108,33 @@ namespace QMS.Application.System
         public async Task<List<SsuGroupOutput>> List([FromQuery] SsuGroupInput input)
         {
             return await _ssuGroupRep.DetachedEntities.ProjectToType<SsuGroupOutput>().ToListAsync();
+        }
+
+        /// <summary>
+        ///新增人员列表到人员组
+        /// </summary>
+        /// <param name="groupId">人员组ID</param>
+        /// <param name="userIds">人员列表ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuGroup/insertusergroup")]
+        public async Task InsertUserGroup(long groupId, long[] userIds)
+        {
+            List<SsuGroupUser> list = new List<SsuGroupUser>();
+            var resultList = _ssuGroupUser.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
+            foreach (long employeeId in userIds)
+            {
+                if (!resultList.Contains(employeeId))
+                {
+                    SsuGroupUser groupUser = new SsuGroupUser();
+                    groupUser.GroupId = groupId;
+                    groupUser.EmployeeId = employeeId;
+                    list.Add(groupUser);
+                }
+            }
+            if (list != null && list.Count > 0)
+            {
+                await _ssuGroupUser.InsertAsync(list);
+            }
         }
     }
 }

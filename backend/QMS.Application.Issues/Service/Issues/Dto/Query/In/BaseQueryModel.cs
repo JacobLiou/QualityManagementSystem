@@ -78,7 +78,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// <summary>
         /// 工序
         /// </summary>
-        public EnumProcess? Process { get; set; }
+        public EnumTrialProductionProcess? Process { get; set; }
 
         /// <summary>
         /// 测试类别

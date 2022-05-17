@@ -1,19 +1,19 @@
 <template>
   <div class="main">
-    <a-form
-      id="formLogin"
-      class="user-layout-login"
-      ref="formLogin"
-      :form="form"
-      @submit="handleSubmit"
-    >
+    <a-form id="formLogin" class="user-layout-login" ref="formLogin" :form="form" @submit="handleSubmit">
       <a-tabs
         :activeKey="customActiveKey"
         :tabBarStyle="{ textAlign: 'center', borderBottom: 'unset' }"
         @change="handleTabClick"
       >
         <a-tab-pane key="tab1" tab="账号密码登录">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
+          <a-alert
+            v-if="isLoginError"
+            type="error"
+            showIcon
+            style="margin-bottom: 24px"
+            :message="this.accountLoginErrMsg"
+          />
 
           <a-form-item>
             <a-input
@@ -21,10 +21,15 @@
               type="text"
               placeholder="账号"
               v-decorator="[
-                'account',{ initialValue:'', rules: [{ required: true, message: '请输入账号' }, { validator: handleUsernameOrEmail }], validateTrigger: 'change'}
+                'account',
+                {
+                  initialValue: '',
+                  rules: [{ required: true, message: '请输入账号' }, { validator: handleUsernameOrEmail }],
+                  validateTrigger: 'change',
+                },
               ]"
             >
-              <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <a-icon slot="prefix" type="user" :style="{ color: 'rgba(0,0,0,.25)' }" />
             </a-input>
           </a-form-item>
 
@@ -36,26 +41,51 @@
               placeholder="密码"
               v-decorator="[
                 'password',
-                { initialValue:'', rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur'}
+                { initialValue: '', rules: [{ required: true, message: '请输入密码' }], validateTrigger: 'blur' },
               ]"
             >
-              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+              <a-icon slot="prefix" type="lock" :style="{ color: 'rgba(0,0,0,.25)' }" />
             </a-input>
           </a-form-item>
         </a-tab-pane>
         <a-tab-pane key="tab2" tab="手机号登录">
-          <a-alert v-if="isLoginError" type="error" showIcon style="margin-bottom: 24px;" :message="this.accountLoginErrMsg" />
+          <a-alert
+            v-if="isLoginError"
+            type="error"
+            showIcon
+            style="margin-bottom: 24px"
+            :message="this.accountLoginErrMsg"
+          />
           <a-form-item>
-            <a-input size="large" type="text" placeholder="手机号" v-decorator="['mobile', {rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }], validateTrigger: 'change'}]">
-              <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+            <a-input
+              size="large"
+              type="text"
+              placeholder="手机号"
+              v-decorator="[
+                'mobile',
+                {
+                  rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }],
+                  validateTrigger: 'change',
+                },
+              ]"
+            >
+              <a-icon slot="prefix" type="mobile" :style="{ color: 'rgba(0,0,0,.25)' }" />
             </a-input>
           </a-form-item>
 
           <a-row :gutter="16">
             <a-col class="gutter-row" :span="16">
               <a-form-item>
-                <a-input size="large" type="text" placeholder="验证码" v-decorator="['captcha', {rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur'}]">
-                  <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }"/>
+                <a-input
+                  size="large"
+                  type="text"
+                  placeholder="验证码"
+                  v-decorator="[
+                    'captcha',
+                    { rules: [{ required: true, message: '请输入验证码' }], validateTrigger: 'blur' },
+                  ]"
+                >
+                  <a-icon slot="prefix" type="mail" :style="{ color: 'rgba(0,0,0,.25)' }" />
                 </a-input>
               </a-form-item>
             </a-col>
@@ -65,7 +95,7 @@
                 tabindex="-1"
                 :disabled="state.smsSendBtn"
                 @click.stop.prevent="getCaptcha"
-                v-text="!state.smsSendBtn && '获取验证码' || (state.time+' s')"
+                v-text="(!state.smsSendBtn && '获取验证码') || state.time + ' s'"
               ></a-button>
             </a-col>
           </a-row>
@@ -74,11 +104,9 @@
 
       <a-form-item>
         <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">记住我</a-checkbox>
-        <router-link
-          :to="{ name: 'recover', params: { user: 'aaa'} }"
-          class="forge-password"
-          style="float: right;"
-        >忘记密码</router-link>
+        <router-link :to="{ name: 'recover', params: { user: 'aaa' } }" class="forge-password" style="float: right"
+          >忘记密码</router-link
+        >
       </a-form-item>
 
       <a-form-item>
@@ -91,7 +119,7 @@
         ></Verify>
       </a-form-item>
 
-      <a-form-item style="margin-top:24px">
+      <a-form-item style="margin-top: 24px">
         <a-button
           size="large"
           type="primary"
@@ -99,15 +127,16 @@
           class="login-button"
           :loading="state.loginBtn"
           :disabled="state.loginBtn"
-        >确定</a-button>
+          >确定</a-button
+        >
       </a-form-item>
 
       <div class="user-login-other">
         <span>其他登录方式</span>
 
-        <a>
+        <span @click="handleWeChat">
           <a-icon class="item-icon" type="wechat"></a-icon>
-        </a>
+        </span>
         <router-link class="register" :to="{ name: 'register' }">注册账户</router-link>
       </div>
     </a-form>
@@ -125,15 +154,15 @@
 import Vue from 'vue'
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
-import { getSmsCaptcha, getCaptchaOpen } from '@/api/modular/system/loginManage'
+import { getSmsCaptcha, getCaptchaOpen, qiWeChatLoginUrl } from '@/api/modular/system/loginManage'
 import Verify from '@/components/verifition/Verify'
 
 export default {
   components: {
     TwoStepCaptcha,
-    Verify
+    Verify,
   },
-  data () {
+  data() {
     return {
       customActiveKey: 'tab1',
       loginBtn: false,
@@ -148,28 +177,40 @@ export default {
         loginBtn: false,
         // login type: 0 email, 1 username, 2 telephone
         loginType: 0,
-        smsSendBtn: false
+        smsSendBtn: false,
       },
       accountLoginErrMsg: '',
       tenantOpen: false,
       captchaOpen: false, // 是否开启验证码
       tenantsList: [],
-      loginParams: [] // 登录参数
-
+      loginParams: [], // 登录参数
     }
   },
-  created () {
+  created() {
     this.getCaptchaOpen()
   },
-  mounted () {
+  mounted() {
     this.getLocalStorageData()
   },
   methods: {
     ...mapActions(['Login', 'Logout', 'dictTypeData']),
+
+    // 微信登录
+    handleWeChat() {
+      qiWeChatLoginUrl()
+        .then((res) => {
+          if (res.success) {
+            window.location = res.data
+          }
+        })
+        .catch(() => {
+          this.$message.error('企业微信登录失败')
+        })
+    },
     /**
      * 获取验证码开关
      */
-    getCaptchaOpen () {
+    getCaptchaOpen() {
       getCaptchaOpen().then((res) => {
         if (res.success) {
           this.captchaOpen = res.data
@@ -177,7 +218,7 @@ export default {
       })
     },
     // handler
-    handleUsernameOrEmail (rule, value, callback) {
+    handleUsernameOrEmail(rule, value, callback) {
       const { state } = this
       const regex = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+((\.[a-zA-Z0-9_-]{2,3}){1,2})$/
       if (regex.test(value)) {
@@ -187,18 +228,18 @@ export default {
       }
       callback()
     },
-    handleTabClick (key) {
+    handleTabClick(key) {
       this.isLoginError = false
       this.customActiveKey = key
       // this.form.resetFields()
     },
-    handleSubmit (e) {
+    handleSubmit(e) {
       e.preventDefault()
       const {
         form: { validateFields },
         state,
         customActiveKey,
-        Login
+        Login,
       } = this
 
       state.loginBtn = true
@@ -224,7 +265,7 @@ export default {
           }
           Login(loginParams)
             .then((res) => this.loginSuccess(res))
-            .catch(err => this.requestFailed(JSON.stringify(err)))
+            .catch((err) => this.requestFailed(JSON.stringify(err)))
             .finally(() => {
               state.loginBtn = false
             })
@@ -240,15 +281,19 @@ export default {
      */
     verifySuccess(params) {
       this.loginParams.code = params.captchaVerification
-      this.Login(this.loginParams).then((res) => this.loginSuccess(res))
-        .catch(err => this.requestFailed(JSON.stringify(err)))
+      this.Login(this.loginParams)
+        .then((res) => this.loginSuccess(res))
+        .catch((err) => this.requestFailed(JSON.stringify(err)))
         .finally(() => {
           this.state.loginBtn = false
         })
     },
-    getCaptcha (e) {
+    getCaptcha(e) {
       e.preventDefault()
-      const { form: { validateFields }, state } = this
+      const {
+        form: { validateFields },
+        state,
+      } = this
 
       validateFields(['mobile'], { force: true }, (err, values) => {
         if (!err) {
@@ -263,68 +308,68 @@ export default {
           }, 1000)
 
           const hide = this.$message.loading('验证码发送中..', 0)
-          getSmsCaptcha({ mobile: values.mobile }).then(res => {
-            setTimeout(hide, 2500)
-            this.$notification['success']({
-              message: '提示',
-              description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-              duration: 8
+          getSmsCaptcha({ mobile: values.mobile })
+            .then((res) => {
+              setTimeout(hide, 2500)
+              this.$notification['success']({
+                message: '提示',
+                description: '验证码获取成功，您的验证码为：' + res.result.captcha,
+                duration: 8,
+              })
             })
-          }).catch(err => {
-            setTimeout(hide, 1)
-            clearInterval(interval)
-            state.time = 60
-            state.smsSendBtn = false
-            this.requestFailed(err)
-          })
+            .catch((err) => {
+              setTimeout(hide, 1)
+              clearInterval(interval)
+              state.time = 60
+              state.smsSendBtn = false
+              this.requestFailed(err)
+            })
         }
       })
     },
-    stepCaptchaSuccess () {
+    stepCaptchaSuccess() {
       this.loginSuccess()
     },
-    stepCaptchaCancel () {
+    stepCaptchaCancel() {
       this.Logout().then(() => {
         this.loginBtn = false
         this.stepCaptchaVisible = false
       })
     },
-    loginSuccess (res) {
+    loginSuccess(res) {
       this.setLocalStorageData()
       this.$router.push({ path: '/' })
       this.isLoginError = false
       // 加载字典所有字典到缓存中
-      this.dictTypeData().then((res) => { })
+      this.dictTypeData().then((res) => {})
     },
-    requestFailed (err) {
+    requestFailed(err) {
       this.accountLoginErrMsg = err
       this.isLoginError = true
     },
     /**
      * 从 localStorage 中读取信息
      */
-    getLocalStorageData () {
+    getLocalStorageData() {
       const account = Vue.ls.get('LOGIN_ACCOUNT')
       if (account) {
-        this.form.setFieldsValue(
-          {
-            account: account,
-            rememberMe: true
-          }
-        )
+        this.form.setFieldsValue({
+          account: account,
+          rememberMe: true,
+        })
       }
     },
     /**
      * 将信息写入 localStorage
      */
-    setLocalStorageData () {
+    setLocalStorageData() {
       if (this.form.getFieldValue('rememberMe')) {
         Vue.ls.set('LOGIN_ACCOUNT', this.form.getFieldValue('account'))
       } else {
         Vue.ls.remove('LOGIN_ACCOUNT')
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

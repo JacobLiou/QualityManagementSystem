@@ -88,7 +88,7 @@ namespace QMS.Application.Issues
             var issue = input.Adapt<Issue>();
             if (input.CCList != null && input.CCList.Count > 0)
             {
-                issue.CCs = JSON.Serialize(input.CCList); 
+                issue.CCs = JSON.Serialize(input.CCList);
             }
             issue.SetCreate();
 
@@ -372,7 +372,10 @@ namespace QMS.Application.Issues
                                      .Where(input.DispatchTimeFrom != null, u => u.DispatchTime >= input.DispatchTimeFrom)
                                      .Where(input.DispatchTimeTo != null, u => u.DispatchTime <= input.DispatchTimeTo)
                                      .Where(input.SolveTimeFrom != null, u => u.SolveTime >= input.SolveTimeFrom)
-                                     .Where(input.SolveTimeTo != null, u => u.SolveTime <= input.SolveTimeTo);
+                                     .Where(input.SolveTimeTo != null, u => u.SolveTime <= input.SolveTimeTo)
+
+                                     .Where(input.IssueClassification != null, u => u.IssueClassification == input.IssueClassification)
+                                     ;
 
             switch (input.QueryCondition)
             {

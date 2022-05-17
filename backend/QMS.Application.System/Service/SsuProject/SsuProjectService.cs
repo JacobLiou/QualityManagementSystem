@@ -4,6 +4,7 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Entity.Common;
+using Furion.Extras.Admin.NET.Service;
 using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
@@ -21,13 +22,19 @@ namespace QMS.Application.System
     [ApiDescriptionSettings(Name = "SsuProject", Order = 100)]
     public class SsuProjectService : ISsuProjectService, IDynamicApiController, ITransient
     {
-        private readonly IRepository<SsuProject,MasterDbContextLocator> _ssuProjectRep;
+        private readonly IRepository<SsuProject, MasterDbContextLocator> _ssuProjectRep;
+        private readonly IRepository<SsuProjectUser> _ssuProjectUser;
+        private readonly IRepository<SysUser> _ssuSysuser;
+        private readonly ISysEmpService _sysEmpService;
 
         public SsuProjectService(
-            IRepository<SsuProject,MasterDbContextLocator> ssuProjectRep
+            IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser, ISysEmpService sysEmpService
         )
         {
             _ssuProjectRep = ssuProjectRep;
+            _ssuProjectUser = ssuProjectUser;
+            _ssuSysuser = ssuSysuser;
+            _sysEmpService = sysEmpService;
         }
 
         /// <summary>
@@ -83,7 +90,7 @@ namespace QMS.Application.System
             if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
             var ssuProject = input.Adapt<SsuProject>();
-            await _ssuProjectRep.UpdateAsync(ssuProject,ignoreNullValues:true);
+            await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: true);
         }
 
         /// <summary>
@@ -105,7 +112,7 @@ namespace QMS.Application.System
         [HttpPost("/SsuProject/list")]
         public async Task<Dictionary<long, SsuProjectOutput>> List(IEnumerable<long> input)
         {
-            return (await _ssuProjectRep.DetachedEntities.Where<SsuProject>(project=>input.Contains(project.Id)).ProjectToType<SsuProjectOutput>().ToDictionaryAsync(project=>project.Id));
+            return (await _ssuProjectRep.DetachedEntities.Where<SsuProject>(project => input.Contains(project.Id)).ProjectToType<SsuProjectOutput>().ToDictionaryAsync(project => project.Id));
         }
 
         /// <summary>
@@ -117,7 +124,60 @@ namespace QMS.Application.System
         public async Task<List<SsuProjectOutput>> List([FromQuery] SsuProjectInput input)
         {
             return await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
-        }    
+        }
 
+        /// <summary>
+        /// 根据项目ID获取对应的项目人员
+        /// </summary>
+        /// <param name="projectId">项目ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuProject/getprojectuser")]
+        public async Task<List<UserOutput>> GetProjectUser(long projectId)
+        {
+            List<UserOutput> list = new List<UserOutput>();
+            var userIds = _ssuProjectUser.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            if (userIds != null)
+            {
+                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id));
+                if (userList != null)
+                {
+                    foreach (SysUser user in userList)
+                    {
+                        UserOutput output = user.Adapt<UserOutput>();
+                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
+                        list.Add(output);
+                    }
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
+        ///新增人员列表到项目组
+        /// </summary>
+        /// <param name="projectId">项目组ID</param>
+        /// <param name="userIds">人员列表ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuProject/insertprojectgroup")]
+        public async Task InsertProjectGroup(long projectId, long[] userIds)
+        {
+            List<SsuProjectUser> list = new List<SsuProjectUser>();
+            var resultList = _ssuProjectUser.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            foreach (long employeeId in userIds)
+            {
+                if (!resultList.Contains(employeeId))
+                {
+                    SsuProjectUser projectUser = new SsuProjectUser();
+                    projectUser.ProjectId = projectId;
+                    projectUser.EmployeeId = employeeId;
+                    list.Add(projectUser);
+                }
+            }
+
+            if (list != null && list.Count > 0)
+            {
+                await _ssuProjectUser.InsertAsync(list);
+            }
+        }
     }
 }
