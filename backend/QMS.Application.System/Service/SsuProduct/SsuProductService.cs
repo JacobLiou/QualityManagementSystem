@@ -4,6 +4,7 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Entity.Common;
+using Furion.Extras.Admin.NET.Service;
 using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
@@ -21,13 +22,19 @@ namespace QMS.Application.System
     [ApiDescriptionSettings(Name = "SsuProduct", Order = 100)]
     public class SsuProductService : ISsuProductService, IDynamicApiController, ITransient
     {
-        private readonly IRepository<SsuProduct,MasterDbContextLocator> _ssuProductRep;
+        private readonly IRepository<SsuProduct, MasterDbContextLocator> _ssuProductRep;
+        private readonly IRepository<SsuProductUser> _ssuProductUserRep;
+        private readonly IRepository<SysUser> _ssuSysuser;
+        private readonly ISysEmpService _sysEmpService;
 
         public SsuProductService(
-            IRepository<SsuProduct,MasterDbContextLocator> ssuProductRep
+            IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser, ISysEmpService sysEmpService
         )
         {
             _ssuProductRep = ssuProductRep;
+            _ssuProductUserRep = ssuProductUserRep;
+            _ssuSysuser = ssuSysuser;
+            _sysEmpService = sysEmpService;
         }
 
         /// <summary>
@@ -84,7 +91,7 @@ namespace QMS.Application.System
             if (!isExist) throw Oops.Oh(ErrorCode.D3000);
 
             var ssuProduct = input.Adapt<SsuProduct>();
-            await _ssuProductRep.UpdateAsync(ssuProduct,ignoreNullValues:true);
+            await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
         }
 
         /// <summary>
@@ -118,7 +125,59 @@ namespace QMS.Application.System
         public async Task<List<SsuProductOutput>> List([FromQuery] SsuProductInput input)
         {
             return await _ssuProductRep.DetachedEntities.ProjectToType<SsuProductOutput>().ToListAsync();
-        }    
+        }
 
+        /// <summary>
+        ///根据产品ID获取产品对应的人员列表
+        /// </summary>
+        /// <param name="productId">产品ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuProduct/getproductusers")]
+        public async Task<List<UserOutput>> GetProductUsers(long productId)
+        {
+            List<UserOutput> list = new List<UserOutput>();
+            var userIds = _ssuProductUserRep.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            if (userIds != null)
+            {
+                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id));
+                if (userList != null)
+                {
+                    foreach (SysUser user in userList)
+                    {
+                        UserOutput output = user.Adapt<UserOutput>();
+                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
+                        list.Add(output);
+                    }
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
+        ///新增人员列表到产品组
+        /// </summary>
+        /// <param name="productId">产品组ID</param>
+        /// <param name="userIds">人员列表ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuProduct/insertproductgroup")]
+        public async Task InsertProductGroup(long productId, long[] userIds)
+        {
+            List<SsuProductUser> list = new List<SsuProductUser>();
+            var resultList = _ssuProductUserRep.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            foreach (long employeeId in userIds)
+            {
+                if (!resultList.Contains(employeeId))
+                {
+                    SsuProductUser projectUser = new SsuProductUser();
+                    projectUser.ProductId = productId;
+                    projectUser.EmployeeId = employeeId;
+                    list.Add(projectUser);
+                }
+            }
+            if (list != null && list.Count > 0)
+            {
+                await _ssuProductUserRep.InsertAsync(list);
+            }
+        }
     }
 }
