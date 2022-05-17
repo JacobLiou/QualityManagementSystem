@@ -24,7 +24,10 @@ const constantRouterComponents = {
   'NotificationSettings': () => import('@/views/system/account/settings/Notification'),
 
   // 默认首页
-  'Console': () => import('@/views/system/index/welcome')
+  'Console': () => import('@/views/system/index/welcome'),
+
+  // 问题管理测试
+  'problemTest': () => import('../views/main/SsuIssue/problemMan.vue')
 }
 
 // 前端未找到页面路由（固定不用改）、原来为 /404
@@ -135,7 +138,17 @@ const userAccount = [
       'show': false
     },
     'component': 'Console'
-  }
+  },
+
+  // 问题页面重构页面（未动态引入）
+  {
+    'name': 'problemManagement',
+    'path': '/problemManagement',
+    'pid': 0,
+    'id': 183183,
+    'meta': { title: '问题记录管理', icon: null, show: true, target: '', link: null },
+    'component': 'problemTest'
+  },
 
 ]
 

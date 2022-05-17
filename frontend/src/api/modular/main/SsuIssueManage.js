@@ -1,11 +1,31 @@
 ﻿import { axios } from '@/utils/request'
 
+
+// 获取问题列表
+export function SsuIssueColumnDis(parameter) {
+  return axios({
+    url: "/issue/column/display",
+    method: "get",
+    params: parameter
+  })
+}
+
+// 设置问题列表
+export function SsuIssueColumnUpdate(parameter) {
+  return axios({
+    url: "/issue/column/update",
+    method: "post",
+    data: parameter
+  })
+}
+
+
 /**
  * 查询问题详情
  *
  * @author licong
  */
-export function IssueDetail (parameter) {
+export function IssueDetail(parameter) {
   return axios({
     url: '/issue/detail',
     method: 'get',
@@ -18,7 +38,7 @@ export function IssueDetail (parameter) {
  *
  * @author licong
  */
-export function IssuePage (parameter) {
+export function IssuePage(parameter) {
   return axios({
     url: '/issue/page',
     method: 'get',
@@ -31,7 +51,7 @@ export function IssuePage (parameter) {
  *
  * @author licong
  */
-export function IssueList (parameter) {
+export function IssueList(parameter) {
   return axios({
     url: '/issue/list',
     method: 'get',
@@ -44,7 +64,7 @@ export function IssueList (parameter) {
  *
  * @author licong
  */
-export function IssueAdd (parameter) {
+export function IssueAdd(parameter) {
   return axios({
     url: '/issue/add',
     method: 'post',
@@ -57,7 +77,7 @@ export function IssueAdd (parameter) {
  *
  * @author licong
  */
-export function IssueEdit (parameter) {
+export function IssueEdit(parameter) {
   return axios({
     url: '/issue/edit',
     method: 'post',
@@ -70,7 +90,7 @@ export function IssueEdit (parameter) {
  *
  * @author licong
  */
-export function IssueExecute (parameter) {
+export function IssueExecute(parameter) {
   return axios({
     url: '/issue/execute',
     method: 'post',
@@ -83,7 +103,7 @@ export function IssueExecute (parameter) {
  *
  * @author licong
  */
-export function IssueValidate (parameter) {
+export function IssueValidate(parameter) {
   return axios({
     url: '/issue/validate',
     method: 'post',
@@ -96,7 +116,7 @@ export function IssueValidate (parameter) {
  *
  * @author licong
  */
-export function IssueHangup (parameter) {
+export function IssueHangup(parameter) {
   return axios({
     url: '/issue/hangup',
     method: 'post',
@@ -109,7 +129,7 @@ export function IssueHangup (parameter) {
  *
  * @author licong
  */
-export function IssueRedispatch (parameter) {
+export function IssueRedispatch(parameter) {
   return axios({
     url: '/issue/redispatch',
     method: 'post',
@@ -122,7 +142,7 @@ export function IssueRedispatch (parameter) {
  *
  * @author licong
  */
-export function IssueDispatch (parameter) {
+export function IssueDispatch(parameter) {
   return axios({
     url: '/issue/dispatch',
     method: 'post',
@@ -135,7 +155,7 @@ export function IssueDispatch (parameter) {
  *
  * @author licong
  */
-export function IssueExport (parameter) {
+export function IssueExport(parameter) {
   return axios({
     url: '/issue/export',
     method: 'post',
@@ -149,7 +169,7 @@ export function IssueExport (parameter) {
  *
  * @author licong
  */
-export function IssueTemplate (parameter) {
+export function IssueTemplate(parameter) {
   return axios({
     url: '/issue/template',
     method: 'get',
@@ -163,7 +183,7 @@ export function IssueTemplate (parameter) {
  *
  * @author licong
  */
-export function IssueImport (parameter) {
+export function IssueImport(parameter) {
   return axios({
     url: '/issue/import',
     method: 'post',
@@ -177,7 +197,7 @@ export function IssueImport (parameter) {
  *
  * @author licong
  */
-export function IssueAttachmentSaveId (parameter) {
+export function IssueAttachmentSaveId(parameter) {
   return axios({
     url: '/issue/attachment/saveId',
     method: 'post',
@@ -190,7 +210,7 @@ export function IssueAttachmentSaveId (parameter) {
  *
  * @author licong
  */
-export function IssueAttachmentInfoList (parameter) {
+export function IssueAttachmentInfoList(parameter) {
   return axios({
     url: '/issue/attachment/infoList',
     method: 'post',
@@ -203,7 +223,7 @@ export function IssueAttachmentInfoList (parameter) {
  *
  * @author licong
  */
-export function IssueDelete (parameter) {
+export function IssueDelete(parameter) {
   return axios({
     url: '/issue/delete',
     method: 'post',
@@ -216,7 +236,7 @@ export function IssueDelete (parameter) {
  *
  * @author licong
  */
-export function IssueOperationPage (parameter) {
+export function IssueOperationPage(parameter) {
   return axios({
     url: '/issue/operation/page',
     method: 'post',
@@ -224,7 +244,7 @@ export function IssueOperationPage (parameter) {
   })
 }
 
-export function Downloadfile (res) {
+export function Downloadfile(res) {
   var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' })
   var contentDisposition = res.headers['content-disposition']
   var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*')

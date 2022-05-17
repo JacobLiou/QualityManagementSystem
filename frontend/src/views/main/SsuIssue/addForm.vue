@@ -201,6 +201,7 @@ import {
         this.visible = true
         const moduleOption = this.$options
         this.moduleData = moduleOption.filters['dictData']('issue_module')
+        console.log(this.moduleData);
         const consequenceOption = this.$options
         this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
         const issueClassificationOption = this.$options
@@ -348,6 +349,7 @@ import {
         this.closeTimeDateString = dateString
       },
       onChangediscoverTime(date, dateString) {
+        console.log(date, dateString);
         this.discoverTimeDateString = dateString
       },
       onChangedispatchTime(date, dateString) {

@@ -21,6 +21,31 @@ export function login(parameter) {
 }
 
 /**
+ * @description: 获取企业微信登录扫描的url
+ * @return {*}
+ */
+export function qiWeChatLoginUrl() {
+  return axios({
+    url: '/system/qyWechat/qywechatloginurl',
+    method: "get"
+  })
+}
+
+
+/**
+ * @description: 微信登录
+ * @return {*}
+ */
+export function qyWechat() {
+  return axios(
+    {
+      url: "/system/qyWechat/login",
+      method: "get"
+    }
+  )
+}
+
+/**
  * 登出
  *
  * @author yubaoshan
