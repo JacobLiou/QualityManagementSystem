@@ -8,9 +8,13 @@ namespace QMS.Application.Issues.Helper
 
         public readonly static string DOWNLOAD_FILE = "http://localhost:5566/sysFileInfo/download";
 
-        public readonly static string PROJECT_URL = "http://localhost:5566/SsuProject/list";
+        public readonly static string PROJECTS_URL = "http://localhost:5566/SsuProject/list";
 
-        public readonly static string PRODUCT_URL = "http://localhost:5566/SsuProduct/list";
+        public readonly static string PRODUCTS_URL = "http://localhost:5566/SsuProduct/list";
+
+        public readonly static string USER_URL = "http://localhost:5566/sysUser/detail";
+
+        
 
         public const string USER_COLUMNS = "UserColumns_";
 

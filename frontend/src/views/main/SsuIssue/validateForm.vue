@@ -19,10 +19,16 @@
           <a-input placeholder="请输入批次" v-decorator="['batch', {rules: [{required: true, message: '请输入批次！'}]}]" />
         </a-form-item>
         <a-form-item label="验证情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入验证情况" v-decorator="['result',{rules: [{required:true, message: '请输入验证情况！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入验证情况"
+            v-decorator="['result', {rules: [{message: '请输入验证情况！'}]}]"></a-textarea>
         </a-form-item>
         <a-form-item label="验证地点" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace',{rules: [{required:true, message: '请输入验证地点！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入验证地点"
+            v-decorator="['verifierPlace', {rules: [{message: '请输入验证地点！'}]}]"></a-textarea>
         </a-form-item>
 
         <a-form-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="验证通过">
@@ -148,11 +154,11 @@ export default {
                     var attachmentType = 0
 
                     var data = {
-                      attachment: {
+                      attachment: [{
                         attachmentId: attachmentId,
                         fileName: fileName,
                         attachmentType: attachmentType
-                      },
+                      }],
                       issueId: this.record.issueId
                     }
 

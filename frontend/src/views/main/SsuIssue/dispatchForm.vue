@@ -30,7 +30,7 @@
         </a-form-item>
 
         <a-form-item label="预计完成日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择预计完成日期" v-decorator="['forecastSolveTime']" @change="onChangeforecastSolveTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择预计完成日期" v-decorator="['forecastSolveTime', {rules: [{ required: true, message: '请选择预计完成日期！' }]}]" @change="onChangeforecastSolveTime"/>
         </a-form-item>
 
         <a-form-item label="被抄送人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
@@ -96,11 +96,11 @@ export default {
           {
             id: record.id,
             title: record.title,
-            consequence: record.consequence,
-            issueClassification: record.issueClassification,
+            consequence: String(record.consequence),
+            issueClassification: String(record.issueClassification),
             executor: record.executor,
             forecastSolveTime: record.forecastSolveTime,
-            cC: record.copyTo
+            // cC: record.copyTo
           }
         )
       }, 100)
@@ -133,8 +133,6 @@ export default {
 
           values.forecastSolveTime = this.forecastSolveTimeDateString
           this.record.forecastSolveTime = this.forecastSolveTimeDateString
-
-          this.record.cCList = [66]
 
           IssueDispatch(this.record).then((res) => {
             if (res.success) {

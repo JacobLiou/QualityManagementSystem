@@ -14,22 +14,28 @@
         </a-form-item>
 
         <a-form-item label="解决日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime']" @change="onChangesolveTime"/>
+          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime', {rules: [{required: true, message: '请选择解决日期！'}]}]" @change="onChangesolveTime"/>
         </a-form-item>
 
         <a-form-item label="解决版本" :labelCol="labelCol" :wrapperCol="wrapperCol">
 <!--            <a-input placeholder="请输入问题简述" v-decorator="['solveVersion', {rules: [{required: true, message: '请输入解决版本！'}]}]" />-->
-          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion', {rules: [{required: true, message: '请选择解决版本！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择解决版本" v-decorator="['solveVersion']">
             <a-select-option v-for="(item,index) in solveVersionData" :key="index" :value="item.name">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
 
         <a-form-item label="原因分析" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入原因分析" v-decorator="['reason', {rules: [{required: true, message: '请输入原因分析！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入原因分析"
+            v-decorator="['reason', {rules: [{required: true, message: '请输入原因分析！'}]}]"></a-textarea>
         </a-form-item>
 
         <a-form-item label="解决措施" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入解决措施" v-decorator="['measures', {rules: [{required: true, message: '请输入解决措施！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入解决措施"
+            v-decorator="['measures', {rules: [{required: true,message: '请输入解决措施！'}]}]"></a-textarea>
         </a-form-item>
 
         <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
@@ -149,11 +155,11 @@ export default {
                     var attachmentType = 0
 
                     var data = {
-                      attachment: {
+                      attachment: [{
                         attachmentId: attachmentId,
                         fileName: fileName,
                         attachmentType: attachmentType
-                      },
+                      }],
                       issueId: this.record.issueId
                     }
 

@@ -16,7 +16,10 @@
           <a-input-number placeholder="请输入新的执行人" style="width: 100%" v-decorator="['executor',{rules: [{required: true, message: '请输入新的执行人！'}]}]" />
         </a-form-item>
         <a-form-item label="备注" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入备注" v-decorator="['comment',{rules: [{message: '请输入备注！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入备注"
+            v-decorator="['comment', {rules: [{message: '请输入备注！'}]}]"></a-textarea>
         </a-form-item>
       </a-form>
     </a-spin>

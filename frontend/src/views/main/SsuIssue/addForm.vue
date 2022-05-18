@@ -9,12 +9,6 @@
     @cancel="handleCancel">
     <a-spin :spinning="confirmLoading">
       <a-form :form="form">
-        <a-form-item label="问题简述" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入问题简述" v-decorator="['title', {rules: [{required: true, message: '请输入问题简述！'}]}]" />
-        </a-form-item>
-        <a-form-item label="问题详情" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入问题详情" v-decorator="['description', {rules: [{required: true, message: '请输入问题详情！'}]}]" />
-        </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
             <a-select :allowClear="true" placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
               <a-select-option v-for="(item,index) in projectData" :key="index" :value="item.id">{{ item.projectName }}</a-select-option>
@@ -30,19 +24,13 @@
             <a-select-option v-for="(item,index) in moduleData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item label="问题性质" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题性质" v-decorator="['consequence', {rules: [{ required: true, message: '请选择问题性质！' }]}]">
-            <a-select-option v-for="(item,index) in consequenceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
-          </a-select>
-        </a-form-item>
         <a-form-item label="问题分类" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-select style="width: 100%" placeholder="请选择问题分类" v-decorator="['issueClassification', {rules: [{ required: true, message: '请选择问题分类！' }]}]">
             <a-select-option v-for="(item,index) in issueClassificationData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item label="分发人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-<!--          <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher', {rules: [{required: true, message: '请输入指定的分发人！'}]}]" />-->
 
+        <a-form-item label="当前指派" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-tree-select
             v-decorator="['dispatcher', {rules: [{ required: true, message: '请选择指定的分发人' }]}]"
             style="width: 100%"
@@ -55,22 +43,23 @@
           </a-tree-select>
         </a-form-item>
 
-<!--        <a-form-item label="问题状态" :labelCol="labelCol" :wrapperCol="wrapperCol">-->
-<!--          <a-select style="width: 100%" placeholder="请选择问题状态" v-decorator="['status', {rules: [{ required: true, message: '请选择问题状态！' }]}]">-->
-<!--            <a-select-option v-for="(item,index) in statusData" :key="index" :value="item.code">{{ item.name }}</a-select-option>-->
-<!--          </a-select>-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="提出人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-input-number placeholder="请输入提出人" style="width: 100%" v-decorator="['creatorId']" />-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="提出日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择提出日期" v-decorator="['createTime']" @change="onChangecreateTime"/>-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="关闭日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择关闭日期" v-decorator="['closeTime']" @change="onChangecloseTime"/>-->
-<!--        </a-form-item>-->
+        <a-form-item label="问题性质" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <a-select style="width: 100%" placeholder="请选择问题性质" v-decorator="['consequence', {rules: [{ required: true, message: '请选择问题性质！' }]}]">
+            <a-select-option v-for="(item,index) in consequenceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="问题简述" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-input placeholder="请输入问题简述" v-decorator="['title', {rules: [{required: true, message: '请输入问题简述！'}]}]" />
+        </a-form-item>
+        <a-form-item label="问题详情" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-textarea
+            :rows="4"
+            placeholder="请输入问题详情"
+            v-decorator="['description', {rules: [{message: '请输入问题详情！'}]}]"></a-textarea>
+        </a-form-item>
+
         <a-form-item label="问题来源" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select style="width: 100%" placeholder="请选择问题来源" v-decorator="['source', {rules: [{ required: true, message: '请选择问题来源！' }]}]">
+          <a-select style="width: 100%" placeholder="请选择问题来源" v-decorator="['source', {rules: [{ message: '请选择问题来源！' }]}]">
             <a-select-option v-for="(item,index) in sourceData" :key="index" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-item>
@@ -81,30 +70,9 @@
           <a-date-picker style="width: 100%" placeholder="请选择发现日期" v-decorator="['discoverTime']" @change="onChangediscoverTime"/>
         </a-form-item>
 
-<!--        <a-form-item label="分发日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择分发日期" v-decorator="['dispatchTime']" @change="onChangedispatchTime"/>-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="预计完成日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择预计完成日期" v-decorator="['forecastSolveTime']" @change="onChangeforecastSolveTime"/>-->
-<!--        </a-form-item>-->
         <a-form-item label="被抄送人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input-number placeholder="请输入被抄送人" style="width: 100%" v-decorator="['cC']" />
         </a-form-item>
-<!--        <a-form-item label="解决人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-input-number placeholder="请输入解决人" style="width: 100%" v-decorator="['executor']" />-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="解决日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择解决日期" v-decorator="['solveTime']" @change="onChangesolveTime"/>-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="验证人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-input-number placeholder="请输入验证人" style="width: 100%" v-decorator="['verifier']" />-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="验证地点" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace']" />-->
-<!--        </a-form-item>-->
-<!--        <a-form-item label="验证日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>-->
-<!--          <a-date-picker style="width: 100%" placeholder="请选择验证日期" v-decorator="['validateTime']" @change="onChangevalidateTime"/>-->
-<!--        </a-form-item>-->
 
         <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-upload
@@ -201,7 +169,6 @@ import {
         this.visible = true
         const moduleOption = this.$options
         this.moduleData = moduleOption.filters['dictData']('issue_module')
-        console.log(this.moduleData);
         const consequenceOption = this.$options
         this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
         const issueClassificationOption = this.$options
@@ -232,15 +199,15 @@ import {
               title: record.title,
               projectId: record.projectId,
               productId: record.productId,
-              module: record.module,
-              consequence: record.consequence,
-              issueClassification: record.issueClassification,
-              source: record.source,
+              module: String(record.module),
+              consequence: String(record.consequence),
+              issueClassification: String(record.issueClassification),
+              source: String(record.source),
               // status: record.status,
               // creatorId: record.creatorId,
               discover: record.discover,
               dispatcher: record.dispatcher,
-              cC: record.copyTo
+              // cC: record.copyTo
               // executor: record.executor,
               // verifier: record.verifier,
               // verifierPlace: record.verifierPlace
@@ -286,6 +253,8 @@ import {
             values.solveTime = this.solveTimeDateString
             values.validateTime = this.validateTimeDateString
 
+            values.cCList = [values.cC,values.cC]
+
             IssueAdd(values).then((res) => {
               if (res.success) {
                 var issueId = res.data
@@ -305,11 +274,11 @@ import {
                       var attachmentType = 0
 
                       var data = {
-                        attachment:{
+                        attachment:[{
                           attachmentId: attachmentId,
                           fileName: fileName,
                           attachmentType: attachmentType
-                        },
+                        }],
                         issueId: issueId
                       }
 
@@ -349,7 +318,6 @@ import {
         this.closeTimeDateString = dateString
       },
       onChangediscoverTime(date, dateString) {
-        console.log(date, dateString);
         this.discoverTimeDateString = dateString
       },
       onChangedispatchTime(date, dateString) {

@@ -81,8 +81,8 @@
           <a :class='{"active": queryBy == 6}' @click="query(6)">已关闭</a>
           <a-divider type="vertical"/>
           <a :class='{"active": queryBy == 7}' @click="query(7)">已挂起</a>
-<!--          <a-divider type="vertical"/>-->
-<!--          <a :class='{"active": queryBy == 8}' @click="query(8)">抄送给我</a>-->
+          <!--          <a-divider type="vertical"/>-->
+          <!--          <a :class='{"active": queryBy == 8}' @click="query(8)">抄送给我</a>-->
 
           <a-button type="primary" v-if="hasPerm('SsuIssue:export')" icon="export" @click="exportData">问题导出</a-button>
 
@@ -162,6 +162,18 @@
             </a-tooltip>
           </a>
           <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:hangup')" @click="$refs.recheckForm.edit(record)">
+            <a-tooltip title='复核' placement='top'>
+              <a-icon type='user' />
+            </a-tooltip>
+          </a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
+          <a v-if="hasPerm('SsuIssue:hangup')" @click="reOpen(record)">
+            <a-tooltip title='重开启' placement='top'>
+              <a-icon type='unlock' />
+            </a-tooltip>
+          </a>
+          <a-divider type="vertical" v-if="hasPerm('SsuIssue:edit') & hasPerm('SsuIssue:delete')"/>
           <a v-if="hasPerm('SsuIssue:edit')" @click="$refs.editForm.edit(record)">
             <a-tooltip title='编辑' placement='top'>
               <a-icon type='edit' />
@@ -183,354 +195,370 @@
       <validate-form ref="validateForm" @ok="handleOk" />
       <redispatch-form ref="redispatchForm" @ok="handleOk" />
       <hangup-form ref="hangupForm" @ok="handleOk" />
+
+      <recheck-form ref='recheckForm' @ok='handleOk'/>
     </a-card>
   </div>
 </template>
 <script>
-  import { STable } from '@/components'
-  import {
-    IssuePage,
-    IssueDelete,
-    IssueExport,
-    IssueTemplate,
-    IssueImport,
-    Downloadfile
-  } from '@/api/modular/main/SsuIssueManage'
-  import executeForm from './executeForm.vue'
-  import validateForm from './validateForm.vue'
-  import hangupForm from './hangupForm.vue'
-  import dispatchForm from './dispatchForm.vue'
-  import redispatchForm from './redispatchForm.vue'
+import { STable } from '@/components'
+import {
+  IssuePage,
+  IssueDelete,
+  IssueExport,
+  IssueTemplate,
+  IssueImport,
+  IssueReOpen,
+  Downloadfile
+} from '@/api/modular/main/SsuIssueManage'
+import executeForm from './executeForm.vue'
+import validateForm from './validateForm.vue'
+import hangupForm from './hangupForm.vue'
+import dispatchForm from './dispatchForm.vue'
+import redispatchForm from './redispatchForm.vue'
 
-  import addForm from './addForm.vue'
-  import editForm from './editForm.vue'
+import recheckForm from './recheckForm.vue'
 
-  import {
-    SsuProjectList
-  } from '@/api/modular/main/SsuProjectManage'
-  import { sysFileInfoDownload } from '@/api/modular/system/fileManage'
-  export default {
-    components: {
-      STable,
-      addForm,
-      editForm,
-      executeForm,
-      dispatchForm,
-      validateForm,
-      hangupForm,
-      redispatchForm
-    },
-    data () {
-      return {
-        queryBy: 0,
-        advanced: false, // 高级搜索 展开/关闭
-        queryParam: {},
-        columns: [
-          {
-            title: '序号',
-            align: 'center',
-            sorter: true,
-            dataIndex: 'id'
-            // visible: false
-          },
-          {
-            title: '标题',
-            align: 'center',
-            sorter: true,
-            dataIndex: 'title'
-          },
-          {
-            title: '项目名',
-            align: 'center',
-            sorter: true,
-            dataIndex: 'projectName'
-          },
-          {
-            title: '产品名',
-            align: 'center',
-            sorter: true,
-            dataIndex: 'productName'
-          },
-          {
-            title: '问题模块',
-            align: 'center',
-sorter: true,
-            dataIndex: 'module',
-            scopedSlots: { customRender: 'modulescopedSlots' }
-          },
-          {
-            title: '问题性质',
-            align: 'center',
-sorter: true,
-            dataIndex: 'consequence',
-            scopedSlots: { customRender: 'consequencescopedSlots' }
-          },
-          {
-            title: '问题分类',
-            align: 'center',
-sorter: true,
-            dataIndex: 'issueClassification',
-            scopedSlots: { customRender: 'issueClassificationscopedSlots' }
-          },
-          {
-            title: '问题来源',
-            align: 'center',
-sorter: true,
-            dataIndex: 'source',
-            scopedSlots: { customRender: 'sourcescopedSlots' }
-          },
-          {
-            title: '问题状态',
-            align: 'center',
-sorter: true,
-            dataIndex: 'status',
-            scopedSlots: { customRender: 'statusscopedSlots' }
-          },
-          {
-            title: '提出人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'creatorName'
-          },
-          {
-            title: '提出日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'createTime'
-          },
-          {
-            title: '关闭日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'closeTime'
-          },
-          {
-            title: '发现人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'discoverName'
-          },
-          {
-            title: '发现日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'discoverTime'
-          },
-          {
-            title: '分发人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'dispatcherName'
-          },
-          {
-            title: '分发日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'dispatchTime'
-          },
-          {
-            title: '预计完成日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'forecastSolveTime'
-          },
-          {
-            title: '被抄送人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'copyToName'
-          },
-          {
-            title: '解决人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'executorName'
-          },
-          {
-            title: '解决日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'solveTime'
-          },
-          {
-            title: '验证人',
-            align: 'center',
-sorter: true,
-            dataIndex: 'verifierName'
-          },
-          {
-            title: '验证地点',
-            align: 'center',
-sorter: true,
-            dataIndex: 'verifierPlace'
-          },
-          {
-            title: '验证日期',
-            align: 'center',
-sorter: true,
-            dataIndex: 'validateTime'
-          }
-        ],
-        tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
-        // 加载数据方法 必须为 Promise 对象
-        loadData: parameter => {
-          return IssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
-            return res.data
-          })
+import addForm from './addForm.vue'
+import editForm from './editForm.vue'
+
+import {
+  SsuProjectList
+} from '@/api/modular/main/SsuProjectManage'
+import { sysFileInfoDownload } from '@/api/modular/system/fileManage'
+export default {
+  components: {
+    STable,
+    addForm,
+    editForm,
+    executeForm,
+    dispatchForm,
+    validateForm,
+    hangupForm,
+    redispatchForm,
+    recheckForm
+  },
+  data () {
+    return {
+      queryBy: 0,
+      advanced: false, // 高级搜索 展开/关闭
+      queryParam: {},
+      columns: [
+        {
+          title: '序号',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'id'
+          // visible: false
         },
-        moduleData: [],
-        consequenceData: [],
-        statusData: [],
-        selectedRowKeys: [],
-        selectedRows: [],
-        defaultColumns: [],
-        projectData: [],
-        fileObj: ''
+        {
+          title: '标题',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'title'
+        },
+        {
+          title: '项目名',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'projectName'
+        },
+        {
+          title: '产品名',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'productName'
+        },
+        {
+          title: '问题模块',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'module',
+          scopedSlots: { customRender: 'modulescopedSlots' }
+        },
+        {
+          title: '问题性质',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'consequence',
+          scopedSlots: { customRender: 'consequencescopedSlots' }
+        },
+        {
+          title: '问题分类',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'issueClassification',
+          scopedSlots: { customRender: 'issueClassificationscopedSlots' }
+        },
+        {
+          title: '问题来源',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'source',
+          scopedSlots: { customRender: 'sourcescopedSlots' }
+        },
+        {
+          title: '问题状态',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'status',
+          scopedSlots: { customRender: 'statusscopedSlots' }
+        },
+        {
+          title: '提出人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'creatorName'
+        },
+        {
+          title: '提出日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'createTime'
+        },
+        {
+          title: '关闭日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'closeTime'
+        },
+        {
+          title: '发现人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'discoverName'
+        },
+        {
+          title: '发现日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'discoverTime'
+        },
+        {
+          title: '分发人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'dispatcherName'
+        },
+        {
+          title: '分发日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'dispatchTime'
+        },
+        {
+          title: '预计完成日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'forecastSolveTime'
+        },
+        {
+          title: '被抄送人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'copyToName'
+        },
+        {
+          title: '解决人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'executorName'
+        },
+        {
+          title: '解决日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'solveTime'
+        },
+        {
+          title: '验证人',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'verifierName'
+        },
+        {
+          title: '验证地点',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'verifierPlace'
+        },
+        {
+          title: '验证日期',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'validateTime'
+        }
+      ],
+      tstyle: { 'padding-bottom': '0px', 'margin-bottom': '10px' },
+      // 加载数据方法 必须为 Promise 对象
+      loadData: parameter => {
+        return IssuePage(Object.assign(parameter, this.queryParam)).then((res) => {
+          return res.data
+        })
+      },
+      moduleData: [],
+      consequenceData: [],
+      statusData: [],
+      selectedRowKeys: [],
+      selectedRows: [],
+      defaultColumns: [],
+      projectData: [],
+      fileObj: ''
+    }
+  },
+  created () {
+    if (this.hasPerm('SsuIssue:edit') || this.hasPerm('SsuIssue:delete')) {
+      // 测试
+      this.columns.push({
+        title: '操作',
+        width: '360px',
+        dataIndex: 'action',
+        scopedSlots: { customRender: 'action' }
+      })
+    }
+
+    SsuProjectList().then((res) => {
+      if (res.success) {
+        this.projectData = res.data
+      } else {
+        this.$message.error('项目列表读取失败')
       }
-    },
-    created () {
-      if (this.hasPerm('SsuIssue:edit') || this.hasPerm('SsuIssue:delete')) {
-        // 测试
-        this.columns.push({
-          title: '操作',
-          width: '360px',
-          dataIndex: 'action',
-          scopedSlots: { customRender: 'action' }
+    }).finally((res) => {
+      this.confirmLoading = false
+    })
+
+    const moduleOption = this.$options
+    this.moduleData = moduleOption.filters['dictData']('issue_module')
+    const consequenceOption = this.$options
+    this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
+    const statusOption = this.$options
+    this.statusData = statusOption.filters['dictData']('issue_status')
+  },
+  methods: {
+    customRequest(data) {
+      this.fileObj = data.file
+
+      if (this.fileObj) {
+        const formData = new FormData()
+        formData.append('file', this.fileObj)
+        IssueImport(formData).then((res) => {
+          if (res.success) {
+            this.$message.success('导入成功')
+            this.fileObj = ''
+            this.$refs.table.refresh()
+          } else {
+            this.$message.error('导入失败：' + res.message)
+          }
         })
       }
-
-      SsuProjectList().then((res) => {
+    },
+    query(index) {
+      this.queryParam.QueryCondition = index
+      this.queryBy = index
+      this.$refs.table.refresh(true)
+    },
+    reOpen(record) {
+      IssueReOpen(record).then((res) => {
         if (res.success) {
-          this.projectData = res.data
+          this.$message.success('开启成功')
+          this.$refs.table.refresh()
         } else {
-          this.$message.error('项目列表读取失败')
+          this.$message.error('开启失败!' + res.message) // + res.message
         }
+      })
+    },
+    exportData() {
+      IssueExport(this.queryParam).then((res) => {
+        this.confirmLoading = false
+        Downloadfile(res)
+        // eslint-disable-next-line handle-callback-err
+      }).catch((err) => {
+        this.confirmLoading = false
+        this.$message.error('下载错误：获取文件流错误' + err)
       }).finally((res) => {
         this.confirmLoading = false
       })
-
-      const moduleOption = this.$options
-      this.moduleData = moduleOption.filters['dictData']('issue_module')
-      const consequenceOption = this.$options
-      this.consequenceData = consequenceOption.filters['dictData']('issue_consequence')
-      const statusOption = this.$options
-      this.statusData = statusOption.filters['dictData']('issue_status')
     },
-    methods: {
-      customRequest(data) {
-        this.fileObj = data.file
+    templateFile() {
+      IssueTemplate().then((res) => {
+        this.confirmLoading = false
+        Downloadfile(res)
+        // eslint-disable-next-line handle-callback-err
+      }).catch((err) => {
+        this.confirmLoading = false
+        this.$message.error('下载错误：获取文件流错误' + err)
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+    },
+    downloadFile() {
+      // this.model.issueId = 286390745276485
+      // this.model.attachmentId = 285680457277509
 
-        if (this.fileObj) {
-          const formData = new FormData()
-          formData.append('file', this.fileObj)
-          IssueImport(formData).then((res) => {
-            if (res.success) {
-              this.$message.success('导入成功')
-              this.fileObj = ''
-              this.$refs.table.refresh()
-            } else {
-              this.$message.error('导入失败：' + res.message)
-            }
-          })
-        }
-      },
-      query(index) {
-        this.queryParam.QueryCondition = index
-        this.queryBy = index
-        this.$refs.table.refresh(true)
-      },
-      exportData() {
-        IssueExport(this.queryParam).then((res) => {
-          this.confirmLoading = false
-          Downloadfile(res)
-          // eslint-disable-next-line handle-callback-err
-        }).catch((err) => {
-          this.confirmLoading = false
-          this.$message.error('下载错误：获取文件流错误' + err)
-        }).finally((res) => {
-          this.confirmLoading = false
-        })
-      },
-      templateFile() {
-        IssueTemplate().then((res) => {
-          this.confirmLoading = false
-          Downloadfile(res)
-          // eslint-disable-next-line handle-callback-err
-        }).catch((err) => {
-          this.confirmLoading = false
-          this.$message.error('下载错误：获取文件流错误' + err)
-        }).finally((res) => {
-          this.confirmLoading = false
-        })
-      },
-      downloadFile() {
-        // this.model.issueId = 286390745276485
-        // this.model.attachmentId = 285680457277509
-
-        var model = {
-          Id: 277503259144261
-        }
-
-        sysFileInfoDownload(model).then((res) => {
-          this.confirmLoading = false
-          Downloadfile(res)
-          // eslint-disable-next-line handle-callback-err
-        }).catch((err) => {
-          this.confirmLoading = false
-          this.$message.error('下载错误：获取文件流错误' + err)
-        }).finally((res) => {
-          this.confirmLoading = false
-        })
-      },
-      /**
-       * 查询参数组装
-       */
-      switchingDate () {
-        const obj = JSON.parse(JSON.stringify(this.queryParam))
-        return obj
-      },
-      Delete (record) {
-        IssueDelete(record).then((res) => {
-          if (res.success) {
-            this.$message.success('删除成功')
-            this.$refs.table.refresh()
-          } else {
-            this.$message.error('删除失败') // + res.message
-          }
-        })
-      },
-      toggleAdvanced () {
-        this.advanced = !this.advanced
-      },
-      handleOk () {
-        this.$refs.table.refresh()
-      },
-      onSelectChange (selectedRowKeys, selectedRows) {
-        this.selectedRowKeys = selectedRowKeys
-        this.selectedRows = selectedRows
+      var model = {
+        Id: 277503259144261
       }
+
+      sysFileInfoDownload(model).then((res) => {
+        this.confirmLoading = false
+        Downloadfile(res)
+        // eslint-disable-next-line handle-callback-err
+      }).catch((err) => {
+        this.confirmLoading = false
+        this.$message.error('下载错误：获取文件流错误' + err)
+      }).finally((res) => {
+        this.confirmLoading = false
+      })
+    },
+    /**
+     * 查询参数组装
+     */
+    switchingDate () {
+      const obj = JSON.parse(JSON.stringify(this.queryParam))
+      return obj
+    },
+    Delete (record) {
+      IssueDelete(record).then((res) => {
+        if (res.success) {
+          this.$message.success('删除成功')
+          this.$refs.table.refresh()
+        } else {
+          this.$message.error('删除失败'+ res.message) // + res.message
+        }
+      })
+    },
+    toggleAdvanced () {
+      this.advanced = !this.advanced
+    },
+    handleOk () {
+      this.$refs.table.refresh()
+    },
+    onSelectChange (selectedRowKeys, selectedRows) {
+      this.selectedRowKeys = selectedRowKeys
+      this.selectedRows = selectedRows
     }
   }
+}
 </script>
 <style lang="less">
-  .s-table-tool-left {
-    margin-bottom: 18px;
-  }
-  button {
-    margin-right: 8px;
-  }
+.s-table-tool-left {
+  margin-bottom: 18px;
+}
+button {
+  margin-right: 8px;
+}
 
-  .s-table-tool-left > a {
-    padding: 5px;
-  }
+.s-table-tool-left > a {
+  padding: 5px;
+}
 
-  .s-table-tool-left > a.active {
-    background: #dddddd;
-    border-radius: 5px;
-  }
+.s-table-tool-left > a.active {
+  background: #dddddd;
+  border-radius: 5px;
+}
 
-  .ant-btn-primary {
-    margin: 0px 10px;
-  }
+.ant-btn-primary {
+  margin: 0px 10px;
+}
 
 </style>
