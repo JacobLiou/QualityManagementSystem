@@ -67,6 +67,8 @@ namespace QMS.Core.Entity
             {
                 this.Verifier = this.CreatorId;
             }
+
+            this.CurrentAssignment = this.Dispatcher;
         }
 
 
@@ -98,6 +100,20 @@ namespace QMS.Core.Entity
             this.Dispatcher = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.Dispatched;
+
+            this.CurrentAssignment = this.Executor;
+        }
+
+        public void DoReCheck(bool pass)
+        {
+            this.Status = pass ? EnumIssueStatus.Solved : EnumIssueStatus.Dispatched;
+
+            this.CurrentAssignment = pass ? this.CreatorId : this.Executor;
+        }
+
+        public void DoReOpen()
+        {
+            this.Status = EnumIssueStatus.Created;
         }
 
         [Comment("预计完成日期")]
@@ -125,6 +141,8 @@ namespace QMS.Core.Entity
             this.Executor = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.Solved;
+
+            this.CurrentAssignment = this.Dispatcher;
         }
 
         [Comment("验证人")]
@@ -143,6 +161,10 @@ namespace QMS.Core.Entity
             this.ValidateTime = DateTime.Now;
 
             this.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
+
+            this.ValidationStatus = pass ? 2 : 1;
+
+            this.CurrentAssignment = pass ? this.CreatorId : this.Dispatcher;
 
             if (pass)
             {
@@ -173,6 +195,18 @@ namespace QMS.Core.Entity
                 .WithOne(i => i.Issue)
                 .HasForeignKey<IssueDetail>(i => i.Id);
         }
+
+        /// <summary>
+        /// 0: 没有走到验证  1: 验证不通过 2: 验证通过
+        /// </summary>
+        [Comment("回归验证状态")]
+        public int ValidationStatus { get; set; }
+
+        /// <summary>
+        /// 当前指派给
+        /// </summary>
+        [Comment("当前指派给")]
+        public long? CurrentAssignment { get; set; }
 
         [NotMapped]
         public ICollection<IssueOperation> SsuIssueOperations { get; set; }

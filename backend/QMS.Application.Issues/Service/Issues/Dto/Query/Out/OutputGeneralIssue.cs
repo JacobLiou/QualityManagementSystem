@@ -144,6 +144,22 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// </summary>
         public DateTime? ValidateTime { get; set; }
 
+        /// <summary>
+        /// 回归验证状态
+        /// 0: 没有走到验证  1: 验证不通过 2: 验证通过
+        /// </summary>
+        public int ValidationStatus { get; set; }
+
+        /// <summary>
+        /// 当前指派人ID
+        /// </summary>
+        public long? CurrentAssignId { get; set; }
+        /// <summary>
+        /// 当前指派人名称
+        /// </summary>
+        public string CurrentAssignName { get; set; }
+
+
         public OutputGeneralIssue(Core.Entity.Issue model)
         {
             this.Id = model.Id;
@@ -182,7 +198,12 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
             this.Verifier = model.Verifier;
             this.VerifierName = model.Verifier == null ? this.CreatorName : model.Verifier.GetNameByEmpId();
 
+            this.CurrentAssignId = model.CurrentAssignment;
+            this.CurrentAssignName = model.CurrentAssignment.GetNameByEmpId();
+
             this.CloseTime = model.CloseTime;
+
+            this.ValidationStatus = model.ValidationStatus;
 
             if (!string.IsNullOrEmpty(model.CCs))
             {

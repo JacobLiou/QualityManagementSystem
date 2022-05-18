@@ -67,8 +67,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// </summary>
         [ExcelColumnName("问题来源")]
         [ExcelColumnWidth(20)]
-        [Required]
-        public virtual Core.Enum.EnumIssueSource Source { get; set; }
+        public virtual Core.Enum.EnumIssueSource? Source { get; set; }
 
         /// <summary>
         /// 发现人

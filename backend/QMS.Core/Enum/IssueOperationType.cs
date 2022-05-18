@@ -32,6 +32,12 @@ namespace QMS.Core.Enum
         ReDispatch,
 
         [Description("上传文件")]
-        Upload
+        Upload,
+
+        [Description("重开启")]
+        ReOpen,
+
+        [Description("复核")]
+        ReCheck,
     }
 }

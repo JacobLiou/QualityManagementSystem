@@ -76,9 +76,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public EnumIssueClassification? IssueClassification { get; set; }
 
         /// <summary>
-        /// 工序
+        /// 试产工序
         /// </summary>
-        public EnumProcess? Process { get; set; }
+        public EnumTrialProductionProcess? TrialProductionProcess { get; set; }
 
         /// <summary>
         /// 测试类别
@@ -92,8 +92,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         General,
         [Description("由我创建")]
         Creator,
-        [Description("由我分发")]
-        Dispatcher,
+        /// <summary>
+        /// 当前流程在我这里：我可以是分发者、管理者、验证者
+        /// </summary>
+        [Description("指派给我")]
+        AssignToMe,
         [Description("由我解决")]
         Executor,
         [Description("已处理")]

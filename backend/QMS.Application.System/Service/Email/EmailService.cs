@@ -24,10 +24,24 @@ namespace QMS.Application.System
         /// <param name="mailTitle">发送邮件标题</param>
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
-        [HttpPost("system/email/SendMessage")]
-        public bool SendMessage(string[] mailTo, string mailTitle, string mailContent)
+        [HttpPost("system/email/SendMessageAddres")]
+        public async Task<bool> SendMessage(string[] mailTo, string mailTitle, string mailContent)
         {
-            return _email.SendEmail(mailTo, mailTitle, mailContent);
+            return await _email.SendEmail(mailTo, mailTitle, mailContent);
+        }
+
+
+        /// <summary>
+        ///发送邮件接口
+        /// </summary>
+        /// <param name="mailTo">用户userID</param>
+        /// <param name="mailTitle">发送邮件标题</param>
+        /// <param name="mailContent">发送邮件内容</param>
+        /// <returns></returns>
+        [HttpPost("system/email/SendMessageUserId")]
+        public async Task<bool> SendMessage(long[] mailTo, string mailTitle, string mailContent)
+        {
+            return await _email.SendEmail(mailTo, mailTitle, mailContent);
         }
     }
 }

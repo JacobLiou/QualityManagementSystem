@@ -11,21 +11,21 @@
     <a-card>
       <a-row :gutter="[36, 12]" align="middle" type="flex">
         <a-col :xxl="3" :xl="4" :md="6" :xs="12">
-          <a-select v-model="queryParam.projectId" style="width: 100%" placeholder="项目编号">
+          <a-select :allowClear="true" v-model="queryParam.projectId" style="width: 100%" placeholder="项目编号">
             <a-select-option v-for="(item, index) in projectData" :key="index" :value="item.id">{{
               item.projectName
             }}</a-select-option>
           </a-select>
         </a-col>
         <a-col :xxl="2" :xl="3" :md="6" :xs="12">
-          <a-select v-model="queryParam.module" style="width: 100%" placeholder="模块">
+          <a-select :allowClear="true" v-model="queryParam.module" style="width: 100%" placeholder="模块">
             <a-select-option v-for="(item, index) in moduleData" :key="index" :value="item.code">{{
               item.name
             }}</a-select-option>
           </a-select>
         </a-col>
         <a-col :xxl="2" :xl="3" :md="6" :xs="12">
-          <a-select style="width: 100%" v-model="queryParam.consequence" placeholder="性质">
+          <a-select :allowClear="true" style="width: 100%" v-model="queryParam.consequence" placeholder="性质">
             <a-select-option v-for="(item, index) in consequenceData" :key="index" :value="item.code">{{
               item.name
             }}</a-select-option>

@@ -31,6 +31,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         /// </summary>
         //public DateTime? ValidateTime { get; set; }
 
+        /// <summary>
+        /// 验证结果，1：通过 0：不通过，即未解决
+        /// </summary>
         public YesOrNot PassResult { get; set; }
 
         public bool SetIssue(Core.Entity.Issue issue)

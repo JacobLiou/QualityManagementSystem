@@ -24,6 +24,6 @@ namespace QMS.Application.Issues.Field
         /// <summary>
         /// 字段数据类型
         /// </summary>
-        public string FiledDataType { get; set; }
+        public string FieldDataType { get; set; }
     }
 }

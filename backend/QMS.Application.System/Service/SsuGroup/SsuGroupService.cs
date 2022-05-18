@@ -4,6 +4,7 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Entity.Common;
+using Furion.Extras.Admin.NET.Service;
 using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,17 @@ namespace QMS.Application.System
     {
         private readonly IRepository<SsuGroup, MasterDbContextLocator> _ssuGroupRep;
         private readonly IRepository<SsuGroupUser> _ssuGroupUser;
+        private readonly IRepository<SysUser> _ssuSysuser;
+        private readonly ISysEmpService _sysEmpService;
 
         public SsuGroupService(
-            IRepository<SsuGroup, MasterDbContextLocator> ssuGroupRep, IRepository<SsuGroupUser> ssuGroupUser
+            IRepository<SsuGroup, MasterDbContextLocator> ssuGroupRep, IRepository<SsuGroupUser> ssuGroupUser, IRepository<SysUser> ssuSysuser, ISysEmpService sysEmpService
         )
         {
             _ssuGroupRep = ssuGroupRep;
             _ssuGroupUser = ssuGroupUser;
+            _ssuSysuser = ssuSysuser;
+            _sysEmpService = sysEmpService;
         }
 
         /// <summary>
@@ -105,9 +110,35 @@ namespace QMS.Application.System
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuGroup/list")]
-        public async Task<List<SsuGroupOutput>> List([FromQuery] SsuGroupInput input)
+        public async Task<List<SsuGroupOutput>> List()
         {
             return await _ssuGroupRep.DetachedEntities.ProjectToType<SsuGroupOutput>().ToListAsync();
+        }
+
+        /// <summary>
+        ///根据人员组ID获取对应的人员列表
+        /// </summary>
+        /// <param name="groupId">人员组ID</param>
+        /// <returns></returns>
+        [HttpPost("/SsuGroup/getgroupusers")]
+        public async Task<List<UserOutput>> GetGroupUsers(long groupId)
+        {
+            List<UserOutput> list = new List<UserOutput>();
+            var userIds = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
+            if (userIds != null)
+            {
+                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
+                if (userList != null)
+                {
+                    foreach (SysUser user in userList)
+                    {
+                        UserOutput output = user.Adapt<UserOutput>();
+                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
+                        list.Add(output);
+                    }
+                }
+            }
+            return list;
         }
 
         /// <summary>
@@ -120,7 +151,7 @@ namespace QMS.Application.System
         public async Task InsertUserGroup(long groupId, long[] userIds)
         {
             List<SsuGroupUser> list = new List<SsuGroupUser>();
-            var resultList = _ssuGroupUser.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
+            var resultList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
             foreach (long employeeId in userIds)
             {
                 if (!resultList.Contains(employeeId))

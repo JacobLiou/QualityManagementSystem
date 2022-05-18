@@ -3,7 +3,7 @@
 namespace QMS.Core.Enum
 {
     /// <summary>
-    /// 测试类别
+    /// 测试模块-测试类别
     /// </summary>
     public enum EnumTestClassification
     {

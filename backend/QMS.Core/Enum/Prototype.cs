@@ -3,7 +3,7 @@
 namespace QMS.Core.Enum
 {
     /// <summary>
-    /// 样机
+    /// 测试模块-样机
     /// </summary>
     public enum EnumPrototype
     {

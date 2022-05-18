@@ -156,7 +156,7 @@ namespace QMS.Application.Issues
                     Module = extend.Module,
                     FieldCode = extend.AttributeCode,
                     FieldName = extend.AttibuteName,
-                    FiledDataType = extend.ValueType,
+                    FieldDataType = extend.ValueType,
                     FieldId = extend.Id
                 }).ToListAsync();
         }
@@ -201,7 +201,7 @@ namespace QMS.Application.Issues
                                 AttibuteName = fieldStruct.FieldName,
                                 Module = fieldStruct.Module,
                                 AttributeCode = fieldStruct.FieldCode,
-                                ValueType = fieldStruct.FiledDataType,
+                                ValueType = fieldStruct.FieldDataType,
                                 CreateTime = now,
                                 CreatorId = updateId,
                                 UpdateId = updateId,
@@ -251,7 +251,7 @@ namespace QMS.Application.Issues
                     Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.模块名),
                     FieldCode = item.字段代码,
                     FieldName = item.字段名,
-                    FiledDataType = item.字段值类型
+                    FieldDataType = item.字段值类型
                 }).ToList();
 
             await this.BatchAddFieldStruct(list);
@@ -296,7 +296,7 @@ namespace QMS.Application.Issues
             await this._issueExtendAttributeValueRep.Entities.AddRangeAsync(input.List.Select(attribute =>
                  new IssueExtendAttributeValue()
                  {
-                     Id = attribute.AttributeId,
+                     Id = attribute.FieldId,
                      IssueNum = input.IssueId,
                      AttibuteValue = attribute.Value
                  })
@@ -311,7 +311,7 @@ namespace QMS.Application.Issues
 
             // 找到对应的字段编号
             var array = this._issueExtendAttributeRep.DetachedEntities.Where(field =>
-               fieldValues.Any(value => value.AttributeCode == field.AttributeCode)
+               fieldValues.Any(value => value.FieldCode == field.AttributeCode)
            ).ToArray();
 
             Helper.Helper.Assert(array != null && array.Length > 0, "字段都不存在");
@@ -322,7 +322,7 @@ namespace QMS.Application.Issues
             {
                 foreach (var field in fieldValues)
                 {
-                    if (field.AttributeCode == item.AttributeCode)
+                    if (field.FieldCode == item.AttributeCode)
                     {
                         dic.Add(item.Id, field.Value);
                     }

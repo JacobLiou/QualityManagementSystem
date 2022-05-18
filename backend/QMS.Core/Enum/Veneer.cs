@@ -2,6 +2,9 @@
 
 namespace QMS.Core.Enum
 {
+    /// <summary>
+    /// 试产模块-整机单板名称
+    /// </summary>
     public enum EnumVeneer
     {
         [Description("整机")]

@@ -7586,6 +7586,55 @@ namespace QMS.Database.Migrations.Migrations
                         });
                 });
 
+            modelBuilder.Entity("QMS.Core.SysVersion", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint")
+                        .HasComment("Id主键");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .HasColumnType("datetime(6)")
+                        .HasComment("创建时间");
+
+                    b.Property<long?>("CreatedUserId")
+                        .HasColumnType("bigint")
+                        .HasComment("创建者Id");
+
+                    b.Property<string>("CreatedUserName")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasComment("创建者名称");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasComment("软删除标记");
+
+                    b.Property<DateTime?>("UpdatedTime")
+                        .HasColumnType("datetime(6)")
+                        .HasComment("更新时间");
+
+                    b.Property<long?>("UpdatedUserId")
+                        .HasColumnType("bigint")
+                        .HasComment("修改者Id");
+
+                    b.Property<string>("UpdatedUserName")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasComment("修改者名称");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasComment("版本号");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("sys_version");
+
+                    b.HasComment("版本表");
+                });
+
             modelBuilder.Entity("Furion.Extras.Admin.NET.Entity.Common.SsuGroupUser", b =>
                 {
                     b.HasOne("Furion.Extras.Admin.NET.SysEmp", "Employee")

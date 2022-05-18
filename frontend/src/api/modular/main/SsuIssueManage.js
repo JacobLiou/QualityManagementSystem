@@ -47,19 +47,6 @@ export function IssuePage(parameter) {
 }
 
 /**
- * 问题记录列表
- *
- * @author licong
- */
-export function IssueList(parameter) {
-  return axios({
-    url: '/issue/list',
-    method: 'get',
-    params: parameter
-  })
-}
-
-/**
  * 添加问题记录
  *
  * @author licong
@@ -93,6 +80,32 @@ export function IssueEdit(parameter) {
 export function IssueExecute(parameter) {
   return axios({
     url: '/issue/execute',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 重开启问题
+ *
+ * @author licong
+ */
+export function IssueReOpen (parameter) {
+  return axios({
+    url: '/issue/reopen',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 复核问题
+ *
+ * @author licong
+ */
+export function IssueReCheck (parameter) {
+  return axios({
+    url: '/issue/recheck',
     method: 'post',
     data: parameter
   })

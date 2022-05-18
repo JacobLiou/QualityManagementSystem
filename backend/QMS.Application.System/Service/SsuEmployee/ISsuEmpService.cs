@@ -18,8 +18,11 @@ namespace QMS.Application.System
         Task<List<OrgOutput>> GetOrgList([FromQuery] OrgListInput input);
 
         Task<dynamic> GetOrgTree();
+
         Task<List<long>> GetAllDataScopeIdList();
 
         Task<List<long>> GetUserDataScopeIdList();
+
+        Task<List<UserOutput>> GetUserList(long[] userIds);
     }
 }

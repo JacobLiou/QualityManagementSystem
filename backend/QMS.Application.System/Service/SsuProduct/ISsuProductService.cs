@@ -14,7 +14,7 @@ namespace QMS.Application.System
 
         Task<SsuProductOutput> Get([FromQuery] QueryeSsuProductInput input);
 
-        Task<List<SsuProductOutput>> List([FromQuery] SsuProductInput input);
+        Task<List<SsuProductOutput>> List();
 
         Task<PageResult<SsuProductOutput>> Page([FromQuery] SsuProductInput input);
 
@@ -23,5 +23,7 @@ namespace QMS.Application.System
         Task<List<UserOutput>> GetProductUsers(long productId);
 
         Task InsertProductGroup(long productId, long[] userIds);
+
+        Task<List<SsuProductOutput>> GetProductList(long[] productIds);
     }
 }

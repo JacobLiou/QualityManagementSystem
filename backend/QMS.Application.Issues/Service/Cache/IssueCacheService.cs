@@ -3,6 +3,7 @@ using Furion.DynamicApiController;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using QMS.Application.Issues.Helper;
+using QMS.Core;
 
 namespace QMS.Application.Issues
 {
@@ -37,6 +38,42 @@ namespace QMS.Application.Issues
             DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
             cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
             await _cache.SetStringAsync(cacheKey, json, cacheOption);
+        }
+
+        [NonAction]
+        public async Task<string> GetFieldsStruct()
+        {
+            var cacheKey = Constants.FIELD_STRUCT;
+
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
+        }
+
+        [NonAction]
+        public async Task<string> GetUserName(long userId)
+        {
+            var cacheKey = CoreCommonConst.USERID + userId;
+
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
+        }
+
+        [NonAction]
+        public async Task SetUserName(long userId, string name)
+        {
+            var cacheKey = CoreCommonConst.USERID + userId;
+
+            await _cache.SetStringAsync(cacheKey, name);
+        }
+
+        [NonAction]
+        public async Task SetFieldsStruct(string fieldStructDicStr)
+        {
+            var cacheKey = Constants.FIELD_STRUCT;
+
+            DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
+            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(120));
+            await _cache.SetStringAsync(cacheKey, fieldStructDicStr, cacheOption);
         }
     }
 }

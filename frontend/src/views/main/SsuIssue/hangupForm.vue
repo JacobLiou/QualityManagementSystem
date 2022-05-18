@@ -17,10 +17,10 @@
           />
         </a-form-item>
         <a-form-item label="挂起情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input
+          <a-textarea
+            :rows="4"
             placeholder="请输入挂起情况"
-            v-decorator="['hangupReason', { rules: [{ required: true, message: '请输入挂起情况！' }] }]"
-          />
+            v-decorator="['hangupReason', {rules: [{required: true,message: '请输入挂起情况！'}]}]"></a-textarea>
         </a-form-item>
       </a-form>
     </a-spin>

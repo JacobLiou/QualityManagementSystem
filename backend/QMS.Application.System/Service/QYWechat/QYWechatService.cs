@@ -23,6 +23,7 @@ namespace QMS.Application.System
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
         private readonly IRepository<SysOauthUser> _sysOauthUserRep; // 用户表仓储
         private readonly ISysEmpService _sysEmpService; // 系统员工服务
+        private readonly string LoginUrl = "http://qms.sofarsolar.com:8002/user/login";
 
         public QYWechatService(IHttpContextAccessor httpContextAccessor, QYWeChatOAuth qyWechatOAuth, IRepository<SysUser> sysUser, IRepository<SysOauthUser> sysOauth, ISysEmpService sysEmpService)
         {
@@ -81,14 +82,28 @@ namespace QMS.Application.System
             return await _qyWechatOAuth.GetQYUserInfoAsync(token, userId);
         }
 
-
         /// <summary>
         /// 企业微信根据返回值登录
         /// </summary>
         /// <param name="code">企业微信登录扫码后从URL中获取的code值</param>
         /// <returns></returns>
         [HttpGet("system/qyWechat/loginAndRegister")]
-        public string QYWechatLoginRegister([FromQuery] string code)
+        public Task QYWechatLoginRegister([FromQuery] string code)
+        {
+            var param = new Dictionary<string, string>()
+            {
+                ["access_token"] = this.QYWechatGetLoginToken(code)
+            };
+            _httpContext.Response.Redirect($"{LoginUrl}?{param.ToQueryString()}");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 企业微信登录用户后返回jwt token
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public string QYWechatGetLoginToken(string code)
         {
             //获取企业微信扫码用户详细信息
             QYTokenModel token = _qyWechatOAuth.GetAccessTokenAsync().Result;
@@ -96,10 +111,10 @@ namespace QMS.Application.System
             QYUserInfoModel userInfo = _qyWechatOAuth.GetQYUserInfoAsync(token.AccessToken, userId.UserId).Result;
 
             //判断用户是否已经存在
-            var user = _sysUserRep.Where(u => u.Account.Equals(userInfo.Account) || u.Phone.Equals(userInfo.Phone) || u.Email.Equals(userInfo.Email)).FirstOrDefault();
+            var user = _sysUserRep.DetachedEntities.Where(u => u.Account.Equals(userInfo.Account) || u.Phone.Equals(userInfo.Phone) || u.Email.Equals(userInfo.Email)).FirstOrDefault();
 
             //用户不存在则注册
-            user = _qyWechatOAuth.QYWechatRegister(userInfo, user).Result;
+            user = _qyWechatOAuth.QYWechatRegister(userInfo, user);
 
             //调用登录接口
             var accessToken = _qyWechatOAuth.QYWechatLogin(user);
@@ -116,8 +131,25 @@ namespace QMS.Application.System
         /// <param name="description"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        [HttpPost("system/qyWechat/sendMessage")]
+        [HttpPost("system/qyWechat/sendMessageQYWechatID")]
         public string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        {
+            return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
+        }
+
+
+        /// <summary>
+        /// 企业微信发送文本卡片消息
+        /// </summary>
+        /// <param name="touser">接收消息用户UserId列表</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        [HttpPost("system/qyWechat/sendMessageUserId")]
+        public string QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
         {
             return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
         }

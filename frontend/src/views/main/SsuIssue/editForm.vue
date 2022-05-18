@@ -13,7 +13,20 @@
           <a-input placeholder="请输入问题简述" v-decorator="['title', {rules: [{required: true, message: '请输入问题简述！'}]}]" />
         </a-form-item>
         <a-form-item label="问题详情" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入问题详情" v-decorator="['description', {rules: [{required: true, message: '请输入问题详情！'}]}]" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入问题详情"
+            v-decorator="['description', {rules: [{message: '请输入问题详情！'}]}]"></a-textarea>
+        </a-form-item>
+        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-upload
+            :customRequest="customRequest"
+            :multiple="true"
+            :showUploadList="true"
+            name="file"
+            v-if="hasPerm('sysUser:import')">
+            <a-button icon="upload">附件上传</a-button>
+          </a-upload>
         </a-form-item>
         <a-form-item label="项目编号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-select placeholder="请选择项目" style="width: 100%" v-decorator="['projectId', {rules: [{ required: true, message: '请选择项目！' }]}]">
@@ -68,6 +81,9 @@
         <a-form-item label="责任人" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-input-number placeholder="请输入分发人" style="width: 100%" v-decorator="['dispatcher']" />
         </a-form-item>
+        <a-form-item label="当前指派" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-input-number placeholder="请输入当前指派" style="width: 100%" v-decorator="['currentAssignId']" />
+        </a-form-item>
         <a-form-item label="分发日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-date-picker style="width: 100%" placeholder="请选择分发日期" v-decorator="['dispatchTime']" @change="onChangedispatchTime"/>
         </a-form-item>
@@ -87,31 +103,32 @@
           <a-input-number placeholder="请输入验证人" style="width: 100%" v-decorator="['verifier']" />
         </a-form-item>
         <a-form-item label="验证地点" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请输入验证地点" v-decorator="['verifierPlace']" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入验证地点"
+            v-decorator="['verifierPlace', {rules: [{message: '请输入验证地点！'}]}]"></a-textarea>
         </a-form-item>
         <a-form-item label="验证日期" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
           <a-date-picker style="width: 100%" placeholder="请选择验证日期" v-decorator="['validateTime']" @change="onChangevalidateTime"/>
         </a-form-item>
 
-        <a-form-item label="原因" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请选择原因" v-decorator="['reason']" />
+        <a-form-item label="原因分析" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
+          <a-textarea
+            :rows="4"
+            placeholder="请输入原因分析"
+            v-decorator="['reason', {rules: [{message: '请输入原因分析！'}]}]"></a-textarea>
         </a-form-item>
         <a-form-item label="解决措施" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请选择解决措施" v-decorator="['measures']" />
+          <a-textarea
+            :rows="4"
+            placeholder="请输入解决措施"
+            v-decorator="['measures', {rules: [{message: '请输入解决措施！'}]}]"></a-textarea>
         </a-form-item>
         <a-form-item label="验证情况" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input placeholder="请选择验证情况" v-decorator="['result']" />
-        </a-form-item>
-
-        <a-form-item label="附件上传" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-upload
-            :customRequest="customRequest"
-            :multiple="true"
-            :showUploadList="true"
-            name="file"
-            v-if="hasPerm('sysUser:import')">
-            <a-button icon="upload">附件上传</a-button>
-          </a-upload>
+          <a-textarea
+            :rows="4"
+            placeholder="请输入验证情况"
+            v-decorator="['result', {rules: [{message: '请输入验证情况！'}]}]"></a-textarea>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -239,18 +256,20 @@
                   title: record.title,
                   projectId: record.projectId,
                   productId: record.productId,
-                  module: record.module,
-                  consequence: record.consequence,
-                  issueClassification: record.issueClassification,
-                  source: record.source,
+                  module: String(record.module),
+                  consequence: String(record.consequence),
+                  issueClassification: String(record.issueClassification),
+                  source: String(record.source),
                   // status: record.status,
                   // creatorId: record.creatorId,
                   discover: record.discover,
                   dispatcher: record.dispatcher,
-                  cC: record.copyTo,
+                  // cC: record.copyTo,
                   executor: record.executor,
                   verifier: record.verifier,
                   verifierPlace: record.verifierPlace,
+
+                  currentAssignId: record.currentAssignId,
 
                   description: record.description,
                   reason: record.reason,

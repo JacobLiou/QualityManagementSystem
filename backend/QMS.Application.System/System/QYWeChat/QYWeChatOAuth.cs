@@ -42,8 +42,8 @@ namespace QMS.Application.System
         private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
         private readonly string Agentid = "1000017";
         private readonly string Status = "web_login@gyoss9";
-        private readonly long DefaultOrgId = 142307070910540;
-        private readonly string DefaultOrgName = "深圳首航";
+        private readonly long DefaultOrgId = 142307070910547;
+        private readonly string DefaultOrgName = "首航新能源";
 
         //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
         private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
@@ -147,7 +147,7 @@ namespace QMS.Application.System
         /// <param name="qYUserInfo">企业微信用户详细信息</param>
         /// <param name="sysUser">用户信息</param>
         /// <returns></returns>
-        public async Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser)
+        public SysUser QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser)
         {
             //新增用户表
             if (sysUser == null)
@@ -155,23 +155,21 @@ namespace QMS.Application.System
                 var user = qYUserInfo.Adapt<SysUser>();
                 user.Password = MD5Encryption.Encrypt("123456");
                 user.Status = 0;
-                var newUser = await _sysUserRep.InsertNowAsync(user);
+                var newUser = _sysUserRep.InsertNow(user);
                 sysUser = newUser.Entity;
             }
             //如果该用户已经在oauthUser表中存在对应的记录，则证明该用户已经绑定了企业微信，否则则新增
-            var oauthUser = _sysOauthUserRep.Where(u => u.OpenId.Equals(sysUser.Id));
+            var oauthUser = _sysOauthUserRep.DetachedEntities.Where(u => u.OpenId.Equals(sysUser.Id)).FirstOrDefault();
             if (oauthUser == null)
             {
                 //新增oauthUser表
                 var NewOauthUser = qYUserInfo.Adapt<SysOauthUser>();
-
                 NewOauthUser.OpenId = sysUser.Id.ToString();
                 NewOauthUser.Uuid = sysUser.Account;
-
-                await _sysOauthUserRep.InsertNowAsync(NewOauthUser);
+                _sysOauthUserRep.InsertNow(NewOauthUser);
             }
             //如果职员表上不存在对应的记录则新增
-            var emp = _sysEmpRep.Where(u => u.Id.Equals(sysUser.Id));
+            var emp = _sysEmpRep.DetachedEntities.Where(u => u.Id.Equals(sysUser.Id)).FirstOrDefault();
             if (emp == null)
             {
                 //新增职员表
@@ -179,7 +177,7 @@ namespace QMS.Application.System
                 NewEmp.Id = sysUser.Id;
                 NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
                 NewEmp.OrgName = DefaultOrgName;
-                await _sysEmpRep.InsertNowAsync(NewEmp);
+                _sysEmpRep.InsertNow(NewEmp);
             }
             return sysUser;
         }
@@ -195,9 +193,9 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 企业微信发送文字卡片消息
+        /// 发送企业微信消息
         /// </summary>
-        /// <param name="touser">接收消息用户列表</param>
+        /// <param name="touser">接收消息用户UserID列表</param>
         /// <param name="toparty">接收消息部门</param>
         /// <param name="totag">消息标签</param>
         /// <param name="title">标题</param>
@@ -206,15 +204,31 @@ namespace QMS.Application.System
         /// <returns></returns>
         public async Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
         {
-            var tourIds = _sysOauthUserRep.Where(u => touser.Contains(u.OpenId)).FirstOrDefault();
-            if (tourIds == null)
+            //将用户ID转换成企业微信ID
+            var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).Select(u => u.Uuid).ToList();
+            if (tourIds == null || tourIds.Count == 0)
             {
                 throw Oops.Oh($"该用户不存在对应的企业微信ID");
             }
-            string tousers = string.Join("|", tourIds.Uuid);
+            string tousers = string.Join("|", tourIds);
+            return await QYWechatSendMessage(tousers, toparty, totag, title, description, url);
+        }
+
+        /// <summary>
+        /// 企业微信发送文字卡片消息
+        /// </summary>
+        /// <param name="touser">企业微信ID，多个ID通过 | 分割</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title">标题</param>
+        /// <param name="description">内容描述</param>
+        /// <param name="url">url地址</param>
+        /// <returns></returns>
+        public async Task<string> QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
+        {
             var token = GetAccessTokenAsync().Result.AccessToken;
             QYWechatMessage message = new QYWechatMessage();
-            message.Touser = tousers;
+            message.Touser = touser;
             message.Toparty = toparty;
             message.Totag = totag;
             message.Msgtype = "textcard";

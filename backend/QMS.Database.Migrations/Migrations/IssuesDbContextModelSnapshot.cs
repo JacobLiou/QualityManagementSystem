@@ -45,6 +45,10 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("bigint")
                         .HasComment("提出人");
 
+                    b.Property<long?>("CurrentAssignment")
+                        .HasColumnType("bigint")
+                        .HasComment("当前指派给");
+
                     b.Property<long?>("Discover")
                         .HasColumnType("bigint")
                         .HasComment("发现人");
@@ -114,6 +118,10 @@ namespace QMS.Database.Migrations.Migrations
                     b.Property<DateTime?>("ValidateTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("验证日期");
+
+                    b.Property<int>("ValidationStatus")
+                        .HasColumnType("int")
+                        .HasComment("回归验证状态");
 
                     b.Property<long?>("Verifier")
                         .HasColumnType("bigint")
@@ -189,6 +197,10 @@ namespace QMS.Database.Migrations.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("varchar(1000)")
                         .HasComment("解决措施");
+
+                    b.Property<string>("ReCheckResult")
+                        .HasColumnType("longtext")
+                        .HasComment("复核情况");
 
                     b.Property<string>("Reason")
                         .HasMaxLength(1000)

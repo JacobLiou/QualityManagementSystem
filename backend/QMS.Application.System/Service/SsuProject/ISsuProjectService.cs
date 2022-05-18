@@ -14,7 +14,7 @@ namespace QMS.Application.System
 
         Task<SsuProjectOutput> Get([FromQuery] QueryeSsuProjectInput input);
 
-        Task<List<SsuProjectOutput>> List([FromQuery] SsuProjectInput input);
+        Task<List<SsuProjectOutput>> List();
 
         Task<PageResult<SsuProjectOutput>> Page([FromQuery] SsuProjectInput input);
 
@@ -23,5 +23,7 @@ namespace QMS.Application.System
         Task<List<UserOutput>> GetProjectUser(long projectId);
 
         Task InsertProjectGroup(long projectId, long[] userIds);
+
+        Task<List<SsuProjectOutput>> GetProjectList(long[] projectIds);
     }
 }

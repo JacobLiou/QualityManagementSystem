@@ -1,5 +1,6 @@
 ﻿using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -8,11 +9,13 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         /// <summary>
         /// 原因分析
         /// </summary>
+        [Required]
         public string Reason { get; set; }
 
         /// <summary>
         /// 解决措施
         /// </summary>
+        [Required]
         public string Measures { get; set; }
 
         /// <summary>
@@ -39,6 +42,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         public bool SetIssueDetail(IssueDetail issueDetail)
         {
             bool changed = false;
+
+            Helper.Helper.Assert(this.Reason != null && this.Measures != null, "原因分析和解决措施不允许为空!");
 
             if (issueDetail.Reason != this.Reason)
             {

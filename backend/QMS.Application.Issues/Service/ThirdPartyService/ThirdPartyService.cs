@@ -1,5 +1,6 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.Extras.Admin.NET;
 using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ using QMS.Application.Issues.Service.ThirdPartyService.Dto;
 using QMS.Core;
 
 namespace QMS.Application.Issues
-{ 
+{
     [ApiDescriptionSettings("问题管理服务", Name = "ThirdParty", Order = 100)]
 
     public class ThirdPartyService : IDynamicApiController, IScoped
@@ -27,8 +28,8 @@ namespace QMS.Application.Issues
             var request = _contextAccessor.HttpContext.Request;
             var authHeader = request.Headers["Authorization"];
 
-            var response = 
-                await Constants.PROJECT_URL
+            var response =
+                await Constants.PROJECTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -46,7 +47,7 @@ namespace QMS.Application.Issues
             var authHeader = request.Headers["Authorization"];
 
             var response =
-                await Constants.PRODUCT_URL
+                await Constants.PRODUCTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -56,13 +57,39 @@ namespace QMS.Application.Issues
 
             return response.data;
         }
+
+        public class UserOutput
+        {
+            public virtual string Id { get; set; }
+
+            public virtual string Name { get; set; }
+        }
+
+        [NonAction]
+        public async Task<string> GetNameById(long userId)
+        {
+            var request = _contextAccessor.HttpContext.Request;
+            var authHeader = request.Headers["Authorization"];
+
+            var paramUserInfo = new Dictionary<string, string>()
+            {
+                ["id"] = userId.ToString()
+            };
+            var response = await $"{Constants.USER_URL}?{paramUserInfo.ToQueryString()}"
+                .SetHeaders(new
+            {
+                Authorization = authHeader
+            }).GetAsAsync<ThirdPartyApiModel<UserOutput>>();
+
+            return response.data.Name;
+        }
     }
 
     public class ThirdPartyApiModel<T>
-    {
-        public bool success { get; set; }
-        public int code { get; set; }
-        public T data { get; set; }
-        public string message { get; set; }
-    }
+{
+    public bool success { get; set; }
+    public int code { get; set; }
+    public T data { get; set; }
+    public string message { get; set; }
+}
 }

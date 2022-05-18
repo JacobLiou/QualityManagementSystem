@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 15:54:20
- * @LastEditTime: 2022-05-17 14:25:22
+ * @LastEditTime: 2022-05-18 21:04:12
  * @LastEditors: 林伟群
  * @Description: 高级筛选
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\QueryList.vue
@@ -43,7 +43,7 @@
     <a-row :gutter="[12, 12]" align="middle" type="flex">
       <a-col :xs="8"> <div class="title_style">问题分类</div> </a-col>
       <a-col :xs="16">
-        <a-select v-model="queryParam.IssueClassification" style="width: 100%" placeholder="请选择问题分类">
+        <a-select :allowClear="true" v-model="queryParam.IssueClassification" style="width: 100%" placeholder="请选择问题分类">
           <a-select-option v-for="(item, index) in classificationList" :key="index" :value="item.code">{{
             item.name
           }}</a-select-option>
@@ -53,7 +53,7 @@
     <a-row :gutter="[12, 12]" align="middle" type="flex">
       <a-col :xs="8"> <div class="title_style">工序</div> </a-col>
       <a-col :xs="16">
-        <a-select v-model="queryParam.Process" style="width: 100%" placeholder="请选择工序">
+        <a-select :allowClear="true" v-model="queryParam.Process" style="width: 100%" placeholder="请选择工序">
           <a-select-option v-for="(item, index) in processList" :key="index" :value="item.code">{{
             item.name
           }}</a-select-option>
@@ -63,7 +63,7 @@
     <a-row :gutter="[12, 12]" align="middle" type="flex">
       <a-col :xs="8"> <div class="title_style">测试类别</div> </a-col>
       <a-col :xs="16">
-        <a-select v-model="queryParam.TestClassification" style="width: 100%" placeholder="请选择测试类别">
+        <a-select :allowClear="true" v-model="queryParam.TestClassification" style="width: 100%" placeholder="请选择测试类别">
           <a-select-option v-for="(item, index) in testClassificationList" :key="index" :value="item.code">{{
             item.name
           }}</a-select-option>
@@ -175,7 +175,7 @@ export default {
   },
   created() {
     this.classificationList = this.$options.filters['dictData']('issue_classification')
-    this.processList = this.$options.filters['dictData']('production_process')
+    this.processList = this.$options.filters['dictData']('trail_production_process')
     this.testClassificationList = this.$options.filters['dictData']('test_classification')
   },
   methods: {

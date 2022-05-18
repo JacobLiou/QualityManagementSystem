@@ -5,6 +5,7 @@ using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text;
@@ -14,16 +15,21 @@ namespace QMS.Application.System
     /// <summary>
     /// 用户注册服务
     /// </summary>
+    [AllowAnonymous]
     [ApiDescriptionSettings(Name = "register")]
     public class RegisterService : IDynamicApiController, ITransient, IRegisterService
     {
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
+        private readonly IRepository<SysEmp> _sysEmpRep;  // 职员表仓储
         private readonly IPhoneVerify _phone;
         private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
+        private readonly long DefaultOrgId = 142307070910547;
+        private readonly string DefaultOrgName = "首航新能源";
 
-        public RegisterService(IRepository<SysUser> sysUser, IPhoneVerify PhoneVerify)
+        public RegisterService(IRepository<SysUser> sysUser, IRepository<SysEmp> sysEmpRep, IPhoneVerify PhoneVerify)
         {
             _sysUserRep = sysUser;
+            _sysEmpRep = sysEmpRep;
             _phone = PhoneVerify;
         }
 
@@ -62,13 +68,19 @@ namespace QMS.Application.System
 
             user = input.Adapt<SysUser>();
             user.Password = MD5Encryption.Encrypt(user.Password);
-            var newUser = _sysUserRep.InsertNowAsync(user).Result;
+            var newUser = _sysUserRep.InsertNow(user);
             if (newUser == null)
             {
                 throw Oops.Oh("注册失败,请重新尝试");
             }
             else
             {
+                //新增职员表
+                var NewEmp = new SysEmp();
+                NewEmp.Id = newUser.Entity.Id;
+                NewEmp.OrgId = DefaultOrgId;
+                NewEmp.OrgName = DefaultOrgName;
+                _sysEmpRep.InsertNow(NewEmp);
                 return true;
             }
         }

@@ -95,10 +95,10 @@ export default {
           queryName: '已挂起',
           key: 7,
         },
-        {
-          queryName: '抄送给我',
-          key: 8,
-        },
+        // {
+        //   queryName: '抄送给我',
+        //   key: 8,
+        // },
       ],
       query: 0, // 流程类型
       columns: [
