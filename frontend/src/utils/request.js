@@ -66,10 +66,12 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(response => {
   // LocalStorage 存储的 token 和 refreshToken，不设定过期时间，由服务端统一处理
   if (response.headers['access-token'] && response.headers['access-token'] !== 'invalid_token') {
+    console.log('ACCESS_TOKEN',response.headers['access-token']);
     Vue.ls.set(ACCESS_TOKEN, response.headers['access-token'] /*, 7 * 24 * 60 * 60 * 1000 */)
     store.commit('SET_TOKEN', response.headers['access-token'])
   }
   if (response.headers['x-access-token']) {
+    console.log('ACCESS_TOKEN',response.headers['x-access-token']);
     Vue.ls.set('X-Access-Token', response.headers['x-access-token'] /*, 7 * 24 * 60 * 60 * 1000 */)
   }
   if (response.request.responseType === 'blob') {

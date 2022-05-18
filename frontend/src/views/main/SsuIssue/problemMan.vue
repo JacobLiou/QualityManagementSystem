@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-17 10:44:56
+ * @LastEditTime: 2022-05-18 10:29:11
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemMan.vue
@@ -137,8 +137,10 @@ export default {
           dataIndex: 'module',
           width: '10em',
           customRender: (text) => {
-            const contentArray = ['研发', '研发', '试产', 'IQC', '量产', '售后']
-            return contentArray[text]
+            const contentArray = this.$options.filters['dictData']('issue_module')
+            const data = contentArray.find((item) => item.code == text)
+            // const contentArray = ['研发', '研发', '试产', 'IQC', '量产', '售后']
+            return data.name
           },
         },
         {
@@ -148,8 +150,10 @@ export default {
           dataIndex: 'consequence',
           width: '10em',
           customRender: (text) => {
-            const contentArray = ['致命', '严重', '一般', '提示']
-            return contentArray[text]
+            // const contentArray = ['致命', '严重', '一般', '提示']
+            const contentArray = this.$options.filters['dictData']('issue_consequence')
+            const data = contentArray.find((item) => item.code == text)
+            return data.name
           },
         },
         {
@@ -159,25 +163,27 @@ export default {
           dataIndex: 'issueClassification',
           width: '10em',
           customRender: (text) => {
-            const contentArray = [
-              '设计问题-硬件',
-              '设计问题-产品软件',
-              '设计问题-生产测试',
-              ' 设计问题-结构',
-              '设计问题-工艺',
-              '设计问题-BOM ',
-              '设计问题-器件',
-              '设计问题-包装',
-              '设计问题-治具',
-              '制程问题-SMT',
-              '制程问题-DIP ',
-              '制程问题-工艺',
-              '制程问题-设备',
-              '制程问题-装配',
-              '物料问题 ',
-              '其它问题  ',
-            ]
-            return contentArray[text]
+            // const contentArray = [
+            //   '设计问题-硬件',
+            //   '设计问题-产品软件',
+            //   '设计问题-生产测试',
+            //   ' 设计问题-结构',
+            //   '设计问题-工艺',
+            //   '设计问题-BOM ',
+            //   '设计问题-器件',
+            //   '设计问题-包装',
+            //   '设计问题-治具',
+            //   '制程问题-SMT',
+            //   '制程问题-DIP ',
+            //   '制程问题-工艺',
+            //   '制程问题-设备',
+            //   '制程问题-装配',
+            //   '物料问题 ',
+            //   '其它问题  ',
+            // ]
+            const contentArray = this.$options.filters['dictData']('issue_classification')
+            const data = contentArray.find((item) => item.code == text)
+            return data.name
           },
         },
         {
@@ -188,8 +194,10 @@ export default {
           scopedSlots: { customRender: 'sourcescopedSlots' },
           width: '10em',
           customRender: (text) => {
-            const contentArray = ['客户反馈 ', '工厂 ', '测试发现 ']
-            return contentArray[text]
+            // const contentArray = ['客户反馈 ', '工厂 ', '测试发现 ']
+            const contentArray = this.$options.filters['dictData']('issue_source')
+            const data = contentArray.find((item) => item.code == text)
+            return data.name
           },
         },
         {
@@ -199,8 +207,10 @@ export default {
           dataIndex: 'status',
           width: '10em',
           customRender: (text) => {
-            const contentArray = ['已开启', '已分派', '已处理', '未解决', '已关闭', '已挂起']
-            return contentArray[text]
+            // const contentArray = ['已开启', '已分派', '已处理', '未解决', '已关闭', '已挂起']
+            const contentArray = this.$options.filters['dictData']('issue_status')
+            const data = contentArray.find((item) => item.code == text)
+            return data.name
           },
         },
         {
@@ -317,9 +327,7 @@ export default {
   },
   created() {
     this.getColumnDis()
-    console.log(this.$options.filters['dictData']('issue_module'));
-     this.classificationList =  this.$options.filters['dictData']('process')
-    console.log( this.classificationList);
+    console.log(this.$store.state)
   },
   methods: {
     // 获取列表标题数据

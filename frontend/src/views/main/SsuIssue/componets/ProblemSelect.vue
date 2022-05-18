@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 10:36:55
- * @LastEditTime: 2022-05-17 11:41:09
+ * @LastEditTime: 2022-05-17 14:00:59
  * @LastEditors: 林伟群
  * @Description: 问题管理筛选组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSelect.vue
@@ -101,7 +101,6 @@ export default {
     },
 
     queryLsit(val) {
-      console.log(val);
       this.$emit('queryParamSelect', val)
     },
 

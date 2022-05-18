@@ -5,7 +5,7 @@
  *
  * @author lilulu
  */
-export function SsuGroupPage (parameter) {
+export function SsuGroupPage(parameter) {
   return axios({
     url: '/SsuGroup/page',
     method: 'get',
@@ -18,11 +18,22 @@ export function SsuGroupPage (parameter) {
  *
  * @author lilulu
  */
-export function SsuGroupList (parameter) {
+export function SsuGroupList(parameter) {
   return axios({
     url: '/SsuGroup/list',
     method: 'get',
     params: parameter
+  })
+}
+/**
+ * @description: 根据人员组id获取人员列表
+ * @return {*}
+ */
+export function SsuGroupusers(parameter) {
+  return axios({
+    url: '/SsuGroup/getgroupusers',
+    method: 'post',
+    data: parameter
   })
 }
 
@@ -31,7 +42,7 @@ export function SsuGroupList (parameter) {
  *
  * @author lilulu
  */
-export function SsuGroupAdd (parameter) {
+export function SsuGroupAdd(parameter) {
   return axios({
     url: '/SsuGroup/add',
     method: 'post',
@@ -44,7 +55,7 @@ export function SsuGroupAdd (parameter) {
  *
  * @author lilulu
  */
-export function SsuGroupEdit (parameter) {
+export function SsuGroupEdit(parameter) {
   return axios({
     url: '/SsuGroup/edit',
     method: 'post',
@@ -57,7 +68,7 @@ export function SsuGroupEdit (parameter) {
  *
  * @author lilulu
  */
-export function SsuGroupDelete (parameter) {
+export function SsuGroupDelete(parameter) {
   return axios({
     url: '/SsuGroup/delete',
     method: 'post',

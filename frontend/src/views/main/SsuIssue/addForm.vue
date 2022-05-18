@@ -232,7 +232,7 @@ import {
               title: record.title,
               projectId: record.projectId,
               productId: record.productId,
-              module: record.module,
+              module: String(record.module),
               consequence: record.consequence,
               issueClassification: record.issueClassification,
               source: record.source,
