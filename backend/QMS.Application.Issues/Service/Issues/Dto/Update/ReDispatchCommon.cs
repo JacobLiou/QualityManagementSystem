@@ -1,5 +1,6 @@
 ﻿using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -18,6 +19,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         /// <summary>
         /// 解决人
         /// </summary>
+        [Required]
         public long Executor { get; set; }
 
         //[Comment("预计完成日期")]

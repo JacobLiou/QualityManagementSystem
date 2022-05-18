@@ -261,13 +261,14 @@ namespace QMS.Application.Issues
 
             input.SetIssue(common);
             common.DoSolve();
-            await this._issueRep.UpdateNowAsync(common, true);
 
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             input.SetIssueDetail(issueDetail);
-            await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
 
+            await this._issueRep.UpdateNowAsync(common, true);
+
+            await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
 
             await IssueLogger.Log(
                 this._issueOperateRep,
@@ -323,7 +324,6 @@ namespace QMS.Application.Issues
 
             input.SetIssue(common);
             common.SetHangup();
-            await this._issueRep.UpdateNowAsync(common, true);
 
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
@@ -332,6 +332,7 @@ namespace QMS.Application.Issues
                 await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
             }
 
+            await this._issueRep.UpdateNowAsync(common, true);
 
             await IssueLogger.Log(
                 this._issueOperateRep,
