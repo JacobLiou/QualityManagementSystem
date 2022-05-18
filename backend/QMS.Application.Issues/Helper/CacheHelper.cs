@@ -94,14 +94,44 @@ namespace QMS.Application.Issues.Helper
                 return string.Empty;
             }
 
-            return "员工" + id?.ToString();
+            var cacheService = App.GetService<IssueCacheService>();
+
+            string name = cacheService.GetUserName((long)id).Result;
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                return name;
+            }
+
+            name = Helper.GetThirdPartyService().GetNameById((long)id).Result;
+
+            cacheService.SetUserName((long)id, name);
+
+            return name;
+
+            //return "员工" + id?.ToString();
         }
 
         public static string GetNameByEmpId(this long id)
         {
             //Assert(false);
 
-            return "员工" + id.ToString();
+            var cacheService = App.GetService<IssueCacheService>();
+
+            string name = cacheService.GetUserName((long)id).Result;
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                return name;
+            }
+
+            name = Helper.GetThirdPartyService().GetNameById((long)id).Result;
+
+            cacheService.SetUserName((long)id, name);
+
+            return name;
+
+            //return "员工" + id.ToString();
         }
         #endregion
 

@@ -399,7 +399,7 @@ namespace QMS.Application.Issues
 
                 foreach (var item in issues.Rows)
                 {
-                    if (projects != null & projects.ContainsKey(item.ProjectId))
+                    if (projects != null && projects.ContainsKey(item.ProjectId))
                     {
                         item.ProjectName = projects[item.ProjectId].ProjectName;
                     }

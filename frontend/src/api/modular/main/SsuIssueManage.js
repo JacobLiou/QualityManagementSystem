@@ -86,6 +86,32 @@ export function IssueExecute(parameter) {
 }
 
 /**
+ * 重开启问题
+ *
+ * @author licong
+ */
+export function IssueReOpen (parameter) {
+  return axios({
+    url: '/issue/reopen',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
+ * 复核问题
+ *
+ * @author licong
+ */
+export function IssueReCheck (parameter) {
+  return axios({
+    url: '/issue/recheck',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 验证问题
  *
  * @author licong
