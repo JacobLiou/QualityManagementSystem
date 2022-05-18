@@ -42,8 +42,8 @@ namespace QMS.Application.System
         private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
         private readonly string Agentid = "1000017";
         private readonly string Status = "web_login@gyoss9";
-        private readonly long DefaultOrgId = 142307070910540;
-        private readonly string DefaultOrgName = "深圳首航";
+        private readonly long DefaultOrgId = 142307070910547;
+        private readonly string DefaultOrgName = "首航新能源";
 
         //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
         private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
@@ -193,9 +193,9 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 企业微信发送文字卡片消息
+        /// 发送企业微信消息
         /// </summary>
-        /// <param name="touser">接收消息用户列表</param>
+        /// <param name="touser">接收消息用户UserID列表</param>
         /// <param name="toparty">接收消息部门</param>
         /// <param name="totag">消息标签</param>
         /// <param name="title">标题</param>
@@ -204,15 +204,31 @@ namespace QMS.Application.System
         /// <returns></returns>
         public async Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
         {
-            var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).FirstOrDefault();
-            if (tourIds == null)
+            //将用户ID转换成企业微信ID
+            var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).Select(u => u.Uuid).ToList();
+            if (tourIds == null || tourIds.Count == 0)
             {
                 throw Oops.Oh($"该用户不存在对应的企业微信ID");
             }
-            string tousers = string.Join("|", tourIds.Uuid);
+            string tousers = string.Join("|", tourIds);
+            return await QYWechatSendMessage(tousers, toparty, totag, title, description, url);
+        }
+
+        /// <summary>
+        /// 企业微信发送文字卡片消息
+        /// </summary>
+        /// <param name="touser">企业微信ID，多个ID通过 | 分割</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title">标题</param>
+        /// <param name="description">内容描述</param>
+        /// <param name="url">url地址</param>
+        /// <returns></returns>
+        public async Task<string> QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
+        {
             var token = GetAccessTokenAsync().Result.AccessToken;
             QYWechatMessage message = new QYWechatMessage();
-            message.Touser = tousers;
+            message.Touser = touser;
             message.Toparty = toparty;
             message.Totag = totag;
             message.Msgtype = "textcard";

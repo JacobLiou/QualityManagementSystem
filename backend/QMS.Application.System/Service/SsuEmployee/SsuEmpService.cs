@@ -29,14 +29,16 @@ namespace QMS.Application.System
         private readonly IRepository<SysEmp> _sysEmpRep;  // 组织机构表仓储
         private readonly ICacheService<UserOutput> _cacheService;
         private readonly IRepository<SysUser> _sysUser;
+        private readonly ISysEmpService _sysEmpService;
         private readonly int CacheMinute = 30;
 
-        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<UserOutput> cacheService, IRepository<SysUser> sysUser)
+        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<UserOutput> cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
         {
             _sysOrgRep = sysOrgRep;
             _sysEmpRep = sysEmpRep;
             _cacheService = cacheService;
             _sysUser = sysUser;
+            _sysEmpService = sysEmpService;
         }
 
         /// <summary>
@@ -215,6 +217,37 @@ namespace QMS.Application.System
         public async Task<List<long>> GetUserDataScopeIdList()
         {
             return await App.GetService<ISysUserService>().GetUserDataScopeIdList();
+        }
+
+        /// <summary>
+        /// 根据机构ID获取人员列表
+        /// </summary>
+        /// <param name="orgId"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuEmpOrg/getorguser")]
+        public async Task<List<UserOutput>> GetOrgUser(long orgId)
+        {
+            List<UserOutput> list = new List<UserOutput>();
+            //获取该组织机构下的所有机构
+            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains(orgId.ToString())).Select(u => u.Id).ToList();
+            //机构列表加入自身
+            orgIds.Add(orgId);
+            //获取机构对应的所有人员
+            var userIds = _sysEmpRep.DetachedEntities.Where(u => orgIds.Distinct().Contains(u.OrgId)).Select(u => u.Id).ToList();
+            if (userIds != null && userIds.Count > 0)
+            {
+                var userList = _sysUser.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    foreach (SysUser user in userList)
+                    {
+                        UserOutput output = user.Adapt<UserOutput>();
+                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
+                        list.Add(output);
+                    }
+                }
+            }
+            return list;
         }
 
         /// <summary>
