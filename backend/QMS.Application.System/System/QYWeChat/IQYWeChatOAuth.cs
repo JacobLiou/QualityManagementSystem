@@ -14,7 +14,7 @@ namespace QMS.Application.System
 
         Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url);
 
-        Task<SysUser> QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser);
+        SysUser QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser);
 
         string QYWechatLogin(SysUser user);
     }

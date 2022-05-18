@@ -9,6 +9,7 @@ using Furion.FriendlyException;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QMS.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -26,15 +27,19 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProductUser> _ssuProductUserRep;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
+        private readonly ICacheService<SsuProductOutput> _cacheService;
+        private readonly int CacheMinute = 30;
 
         public SsuProductService(
-            IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser, ISysEmpService sysEmpService
+            IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser,
+            ISysEmpService sysEmpService, ICacheService<SsuProductOutput> cacheService
         )
         {
             _ssuProductRep = ssuProductRep;
             _ssuProductUserRep = ssuProductUserRep;
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
+            _cacheService = cacheService;
         }
 
         /// <summary>
@@ -119,10 +124,9 @@ namespace QMS.Application.System
         /// <summary>
         /// 获取产品列表
         /// </summary>
-        /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuProduct/list")]
-        public async Task<List<SsuProductOutput>> List([FromQuery] SsuProductInput input)
+        public async Task<List<SsuProductOutput>> List()
         {
             return await _ssuProductRep.DetachedEntities.ProjectToType<SsuProductOutput>().ToListAsync();
         }
@@ -136,10 +140,10 @@ namespace QMS.Application.System
         public async Task<List<UserOutput>> GetProductUsers(long productId)
         {
             List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuProductUserRep.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            var userIds = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
             if (userIds != null)
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id));
+                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
                 if (userList != null)
                 {
                     foreach (SysUser user in userList)
@@ -163,7 +167,7 @@ namespace QMS.Application.System
         public async Task InsertProductGroup(long productId, long[] userIds)
         {
             List<SsuProductUser> list = new List<SsuProductUser>();
-            var resultList = _ssuProductUserRep.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            var resultList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
             foreach (long employeeId in userIds)
             {
                 if (!resultList.Contains(employeeId))
@@ -178,6 +182,37 @@ namespace QMS.Application.System
             {
                 await _ssuProductUserRep.InsertAsync(list);
             }
+        }
+
+        /// <summary>
+        /// 根据产品ID列表获取产品详细信息列表
+        /// </summary>
+        /// <param name="productIds"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuProduct/getproductlist")]
+        public async Task<List<SsuProductOutput>> GetProductList(long[] productIds)
+        {
+            List<SsuProductOutput> list = new List<SsuProductOutput>();
+            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
+            foreach (long id in productIds)
+            {
+                var cacheProduct = _cacheService.GetCache(CoreCommonConst.PRODUCTID + id);
+                if (cacheProduct != null)
+                {
+                    list.Add(cacheProduct.Result);
+                }
+                else
+                {
+                    var product = await _ssuProductRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
+                    if (product != null)
+                    {
+                        var productOutput = product.Adapt<SsuProductOutput>();
+                        list.Add(productOutput);
+                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + id, productOutput, CacheMinute);
+                    }
+                }
+            }
+            return list;
         }
     }
 }

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Furion.FriendlyException;
 using Furion.DatabaseAccessor.Extensions;
 using System.Linq.Dynamic.Core;
+using QMS.Core;
 
 namespace QMS.Application.System
 {
@@ -26,10 +27,16 @@ namespace QMS.Application.System
     {
         private readonly IRepository<SysOrg> _sysOrgRep;  // 组织机构表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 组织机构表仓储
-        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep)
+        private readonly ICacheService<UserOutput> _cacheService;
+        private readonly IRepository<SysUser> _sysUser;
+        private readonly int CacheMinute = 30;
+
+        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<UserOutput> cacheService, IRepository<SysUser> sysUser)
         {
             _sysOrgRep = sysOrgRep;
             _sysEmpRep = sysEmpRep;
+            _cacheService = cacheService;
+            _sysUser = sysUser;
         }
 
         /// <summary>
@@ -148,8 +155,8 @@ namespace QMS.Application.System
                     return dataScopeList;
                 dataScopeList = GetDataScopeList(dataScopes);
             }
-            var orgs = await 
-                
+            var orgs = await
+
                 _sysOrgRep.DetachedEntities.Where(dataScopeList.Count > 0, u => dataScopeList.Contains(u.Id))
                                                         .Where(u => u.Status == CommonStatus.ENABLE)
                                                         .OrderBy(u => u.Sort)
@@ -208,6 +215,38 @@ namespace QMS.Application.System
         public async Task<List<long>> GetUserDataScopeIdList()
         {
             return await App.GetService<ISysUserService>().GetUserDataScopeIdList();
+        }
+
+        /// <summary>
+        /// 根据人员ID列表获取人员详细信息列表
+        /// </summary>
+        /// <param name="userIds"></param>
+        /// <returns></returns>
+        [HttpPost("/SsuEmpOrg/getuserlist")]
+        public async Task<List<UserOutput>> GetUserList(long[] userIds)
+
+        {
+            List<UserOutput> list = new List<UserOutput>();
+            //针对每个人员ID都做一次缓存，所以此处采用循环的方式
+            foreach (long id in userIds)
+            {
+                var userCache = _cacheService.GetCache(CoreCommonConst.USERID + id);
+                if (userCache != null)
+                {
+                    list.Add(userCache.Result);
+                }
+                else
+                {
+                    var user = await _sysUser.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
+                    if (user != null)
+                    {
+                        var userOutput = user.Adapt<UserOutput>();
+                        list.Add(userOutput);
+                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + id, userOutput, CacheMinute);
+                    }
+                }
+            }
+            return list;
         }
     }
 }

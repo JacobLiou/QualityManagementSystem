@@ -77,16 +77,18 @@ namespace QMS.Application.System
         public CommonOutput VerifyPhoneNums(string nums)
         {
             CommonOutput output = new CommonOutput();
-            string code = _cache.GetCache(CacheKeys.CACHE_PHONE_CODE).Result.Trim();   //获取缓存
-            if (string.IsNullOrEmpty(code))
+            var code = _cache.GetCache(CacheKeys.CACHE_PHONE_CODE);     //获取缓存
+            if (code == null || code.Result == null || string.IsNullOrEmpty(code.Result))
             {
                 output.Success = false;
                 output.Message = "验证码已过期请重新生成";
+                return output;
             }
-            if (!code.Equals(nums))
+            if (!code.Result.Equals(nums))
             {
                 output.Success = false;
                 output.Message = "验证码错误，请重新输入";
+                return output;
             }
             output.Success = true;
             return output;

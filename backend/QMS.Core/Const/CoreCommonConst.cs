@@ -3,7 +3,7 @@
     /// <summary>
     /// 通用常量KEY
     /// </summary>
-    public class CommonConst
+    public class CoreCommonConst
     {
         /// <summary>
         ///用户缓存key

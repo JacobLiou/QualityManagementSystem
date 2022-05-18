@@ -5,6 +5,7 @@ using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text;
@@ -14,6 +15,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 用户注册服务
     /// </summary>
+    [AllowAnonymous]
     [ApiDescriptionSettings(Name = "register")]
     public class RegisterService : IDynamicApiController, ITransient, IRegisterService
     {
