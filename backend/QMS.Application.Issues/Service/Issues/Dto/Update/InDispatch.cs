@@ -46,12 +46,14 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
 
         /// <summary>
         /// 用于新增和分发时保存动态生成的字段信息（动态生成对应控件时,字段结构可通过相应接口获得）
+        /// module：模块 int
         /// issueId：问题编号 long
-        /// attributeId：字段编号  long
-        /// attributeCode：字段代码 string
+        /// fieldId：字段编号  long
+        /// fieldCode：字段代码 string
+        /// fieldName：字段代码的中文意思 string
         /// value：字段值 string
         /// valueType：字段类型 string
-        /// [{"issueId":284932473958469,"attributeId":285613677277253,"attributeCode":"code","value":"数据","valueType":"string"}]
+        /// [{"module": 0, "issueId":284932473958469,"fieldId":285613677277253,"fieldCode":"code", "fieldName":"中文代码", "value":"数据","fieldDataType":"string"}]
         /// </summary>
         public string ExtendAttribute { get; set; }
 

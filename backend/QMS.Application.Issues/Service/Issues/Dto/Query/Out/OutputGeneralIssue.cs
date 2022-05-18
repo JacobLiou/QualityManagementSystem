@@ -144,6 +144,12 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// </summary>
         public DateTime? ValidateTime { get; set; }
 
+        /// <summary>
+        /// 回归验证状态
+        /// 0: 没有走到验证  1: 验证不通过 2: 验证通过
+        /// </summary>
+        public int ValidationStatus { get; set; }
+
         public OutputGeneralIssue(Core.Entity.Issue model)
         {
             this.Id = model.Id;
@@ -183,6 +189,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
             this.VerifierName = model.Verifier == null ? this.CreatorName : model.Verifier.GetNameByEmpId();
 
             this.CloseTime = model.CloseTime;
+
+            this.ValidationStatus = model.ValidationStatus;
 
             if (!string.IsNullOrEmpty(model.CCs))
             {

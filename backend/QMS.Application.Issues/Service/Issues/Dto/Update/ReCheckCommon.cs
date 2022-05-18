@@ -4,7 +4,7 @@ using QMS.Core.Entity;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
-    public abstract class ValidateCommon : IInput
+    public abstract class ReCheckCommon : IInput
     {
         /// <summary>
         /// 问题编号
@@ -17,28 +17,14 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         public string Title { get; set; }
 
         /// <summary>
-        /// 验证人
-        /// </summary>
-        //public long? Verifier { get; set; }
-
-        /// <summary>
-        /// 验证地点
-        /// </summary>
-        public string VerifierPlace { get; set; }
-
-        /// <summary>
-        /// 验证日期
-        /// </summary>
-        //public DateTime? ValidateTime { get; set; }
-
-        /// <summary>
-        /// 验证结果，1：通过 0：不通过，即未解决
+        /// 复核结果，1：有效 0：无效
         /// </summary>
         public YesOrNot PassResult { get; set; }
 
+
         public bool SetIssue(Core.Entity.Issue issue)
         {
-            Helper.Helper.Assert(issue.Status == Core.Enum.EnumIssueStatus.Solved && issue.Verifier != null, Constants.ERROR_MSG_CHECK_VALIDATE);
+            Helper.Helper.Assert(issue.Status == Core.Enum.EnumIssueStatus.Solved, Constants.ERROR_MSG_CHECK_RECHECK);
 
             bool changed = false;
 
@@ -48,14 +34,6 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
                 changed = true;
             }
-
-            if (issue.VerifierPlace != this.VerifierPlace)
-            {
-                issue.VerifierPlace = this.VerifierPlace;
-
-                changed = true;
-            }
-
             return changed;
         }
 

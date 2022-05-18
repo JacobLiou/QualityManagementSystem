@@ -68,7 +68,7 @@ namespace QMS.Application.Issues
                 var list = JSON.Deserialize<List<FieldValue>>(extendAttribute);
                 await this._issueAttrValueRep.Entities.AddRangeAsync(list.Select(model => new IssueExtendAttributeValue
                 {
-                    Id = model.AttributeId,
+                    Id = model.FieldId,
                     IssueNum = model.IssueId,
                     AttibuteValue = model.Value
                 }));
@@ -90,6 +90,7 @@ namespace QMS.Application.Issues
             {
                 issue.CCs = JSON.Serialize(input.CCList);
             }
+            Helper.Helper.Assert(issue.Dispatcher != null, "创建问题时必须要指定分发者!");
             issue.SetCreate();
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
@@ -189,6 +190,63 @@ namespace QMS.Application.Issues
         #endregion
 
         #region 流程管理
+        /// <summary>
+        /// 挂起后重新开启问题
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/issue/reopen")]
+        public async Task ReOpen(BaseId input)
+        {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
+            Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(common.Status==EnumIssueStatus.HasHangUp, "必须为已挂起状态才能开启");
+
+            common.DoReOpen();
+            await this._issueRep.UpdateNowAsync(common, true);
+
+            await IssueLogger.Log(
+                this._issueOperateRep,
+                input.Id,
+                EnumIssueOperationType.ReOpen,
+                $"【{Helper.Helper.GetCurrentUser().GetNameByEmpId()}】重开启已挂起的问题"
+            );
+        }
+
+        /// <summary>
+        /// 分发人复核问题
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/issue/recheck")]
+        public async Task ReCheck(InReCheck input)
+        {
+            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+
+            Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            bool pass = input.PassResult == YesOrNot.Y;
+            input.SetIssue(common);
+            common.DoReCheck(pass);
+            await this._issueRep.UpdateNowAsync(common, true);
+
+            IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+            if (input.SetIssueDetail(issueDetail))
+            {
+                await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
+            }
+
+
+            await IssueLogger.Log(
+                this._issueOperateRep,
+                input.Id,
+                EnumIssueOperationType.ReCheck,
+                $"复核【{common.Executor.GetNameByEmpId()}】处理的问题,结果是【" + (pass ? "通过" : "不通过") + "】"
+                );
+        }
+
         /// <summary>
         /// 执行者处理问题
         /// </summary>
@@ -290,6 +348,7 @@ namespace QMS.Application.Issues
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             input.SetIssue(common);
+            Helper.Helper.Assert(common.Executor != null, "重分发时必须指定执行人");
             common.DoDispatch();
             await this._issueRep.UpdateNowAsync(common, true);
 
@@ -382,8 +441,8 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Creator:
                     querable = querable.Where(item => item.CreatorId == Helper.Helper.GetCurrentUser());
                     break;
-                case EnumQueryCondition.Dispatcher:
-                    querable = querable.Where(item => item.Dispatcher == Helper.Helper.GetCurrentUser());
+                case EnumQueryCondition.AssignToMe:
+                    querable = querable.Where(item => item.CurrentAssignment == Helper.Helper.GetCurrentUser());
                     break;
                 case EnumQueryCondition.Executor:
                     querable = querable.Where(item => item.Executor == Helper.Helper.GetCurrentUser());
@@ -407,6 +466,62 @@ namespace QMS.Application.Issues
 
             return querable;
         }
+
+        private IQueryable<OutputGeneralIssue> SelectToOutput(BaseQueryModel input, IQueryable<Issue> querable)
+        {
+            if (input.Module != null)
+            {
+                if (input.Module == EnumModule.TrialProduce || input.Module == EnumModule.Test)
+                {
+                    Dictionary<string, FieldStruct> dic = Helper.Helper.GetFieldsStruct(this._issueAttrRep).Result;
+
+                    if (input.Module == EnumModule.TrialProduce && input.TrialProductionProcess != null)
+                    {
+                        if (dic.ContainsKey(Constants.TRAIL_PRODUCTION))
+                        {
+                            long fieldId = dic[Constants.TRAIL_PRODUCTION].FieldId;
+                            int selectedIndex = (int)input.TrialProductionProcess;
+
+                            return querable.Join(
+                                this._issueAttrValueRep.DetachedEntities
+                                .Where<IssueExtendAttributeValue>(
+                                    model =>
+                                    model.AttibuteValue == selectedIndex.ToString()
+                                    && model.Id == fieldId
+                                ),
+                                issue => issue.Id,
+                                value => value.IssueNum,
+                                (issueModel, attrValModel) => new OutputGeneralIssue(issueModel)
+                            );
+                        }
+                    }
+
+                    if (input.Module == EnumModule.Test && input.TestClassification != null)
+                    {
+                        if (dic.ContainsKey(Constants.TEST_CALSSIFICATION))
+                        {
+                            long fieldId = dic[Constants.TEST_CALSSIFICATION].FieldId;
+                            int selectedIndex = (int)input.TestClassification;
+
+                            return querable.Join(
+                                this._issueAttrValueRep.DetachedEntities
+                                .Where<IssueExtendAttributeValue>(
+                                    model =>
+                                    model.AttibuteValue == selectedIndex.ToString()
+                                    && model.Id == fieldId
+                                ),
+                                issue => issue.Id,
+                                value => value.IssueNum,
+                                (issueModel, attrValModel) => new OutputGeneralIssue(issueModel)
+                            );
+                        }
+                    }
+                }
+            }
+
+            return querable.Select(issue => new OutputGeneralIssue(issue));
+        }
+
         /// <summary>
         /// 多种条件分页查询
         /// </summary>
@@ -415,12 +530,9 @@ namespace QMS.Application.Issues
         [HttpGet("/issue/page")]
         public async Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input)
         {
-            IQueryable<Issue> querable = this.GetQueryable(input);
+            IQueryable<Issue> querable = this.GetQueryable(input).OrderBy(PageInputOrder.OrderBuilder(input));
 
-
-            var issues = await querable.OrderBy(PageInputOrder.OrderBuilder(input))
-                                     .Select(issue => new OutputGeneralIssue(issue))
-                                     .ToADPagedListAsync(input.PageNo, input.PageSize);
+            var issues = await this.SelectToOutput(input, querable).ToADPagedListAsync(input.PageNo, input.PageSize);
 
             return await this.UpdateProjectProductNames(issues);
         }
@@ -470,7 +582,7 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Creator:
                     querable = querable.Where(item => item.CreatorId == Helper.Helper.GetCurrentUser());
                     break;
-                case EnumQueryCondition.Dispatcher:
+                case EnumQueryCondition.AssignToMe:
                     querable = querable.Where(item => item.DispatcherId == Helper.Helper.GetCurrentUser());
                     break;
                 case EnumQueryCondition.Executor:
@@ -645,6 +757,7 @@ namespace QMS.Application.Issues
         {
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
             input.SetIssue(issue);
+            Helper.Helper.Assert(issue.Executor != null, "分发时必须指定执行人");
             issue.DoDispatch();
             await this._issueRep.UpdateNowAsync(issue);
 
@@ -670,7 +783,7 @@ namespace QMS.Application.Issues
 
                 this._issueAttrValueRep.Entities.UpdateRange(list.Select(model => new IssueExtendAttributeValue
                 {
-                    Id = model.AttributeId,
+                    Id = model.FieldId,
                     IssueNum = model.IssueId,
                     AttibuteValue = model.Value
                 }));

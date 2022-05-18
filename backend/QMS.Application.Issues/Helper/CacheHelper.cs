@@ -2,6 +2,7 @@
 using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
 using Furion.JsonSerialization;
+using QMS.Application.Issues.Field;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -123,22 +124,20 @@ namespace QMS.Application.Issues.Helper
                 }
                 else
                 {
-                    string jsonStr = JSON.Serialize(Constants.USER_COLUMN_NAMES);
+                    cacheString = JSON.Serialize(Constants.USER_COLUMN_NAMES);
                     await columnDisplayRepository.InsertNowAsync(new IssueColumnDisplay
                     {
                         UserId = CurrentUserInfo.UserId,
-                        Columns = jsonStr
+                        Columns = cacheString
                     });
 
                     await columnDisplayRepository.Context.SaveChangesAsync();
 
-                    await cacheService.SetUserColumns(CurrentUserInfo.UserId, jsonStr);
+                    await cacheService.SetUserColumns(Helper.GetCurrentUser(), cacheString);
                 }
             }
 
-            string json = await cacheService.GetUserColumns(userId);
-
-            return JSON.Deserialize<Dictionary<string, string>>(json);
+            return JSON.Deserialize<Dictionary<string, string>>(cacheString);
         }
 
         public static async Task SetUserColumns(
@@ -155,6 +154,46 @@ namespace QMS.Application.Issues.Helper
             });
 
             await columnDisplayRepository.Context.SaveChangesAsync();
+        }
+        #endregion
+
+        #region 缓存扩展字段结构信息
+        public static async Task<Dictionary<string, FieldStruct>> GetFieldsStruct(IRepository<IssueExtendAttribute, IssuesDbContextLocator> issueExtAttrRepository)
+        {
+            var cacheService = App.GetService<IssueCacheService>();
+
+            Dictionary<string, FieldStruct> cacheDic = null;
+            var cacheString = await cacheService.GetFieldsStruct();
+
+            // 如果缓存没有，就尝试从数据取并放到缓存，最终取缓存
+            if (string.IsNullOrEmpty(cacheString))
+            {
+                lock (typeof(Helper))
+                {
+                    if (string.IsNullOrEmpty(cacheString))
+                    {
+                        cacheDic = issueExtAttrRepository.DetachedEntities.Select<IssueExtendAttribute, FieldStruct>(model => new FieldStruct()
+                        {
+                            FieldId = model.Id,
+                            FieldCode = model.AttributeCode,
+                            FieldName = model.AttibuteName,
+                            FieldDataType = model.ValueType,
+                            Module = model.Module
+                        }).ToDictionary<FieldStruct, string>(item => item.Module.ToString().ToLower() + "_" + item.FieldCode);
+
+                        cacheString = JSON.Serialize(cacheDic);
+
+                        cacheService.SetFieldsStruct(cacheString);
+                    }
+                }
+            }
+
+            if (cacheDic == null)
+            {
+                cacheDic = JSON.Deserialize<Dictionary<string, FieldStruct>>(cacheString);
+            }
+
+            return cacheDic;
         }
         #endregion
     }

@@ -42,6 +42,10 @@ namespace QMS.Core.Entity
         //[MaxLength(1000)]
         public string Result { get; set; }
 
+        [Comment("复核情况")]
+        //[MaxLength(1000)]
+        public string ReCheckResult { get; set; }
+
         [Comment("解决版本")]
         [MaxLength(200)]
         public string SolveVersion { get; set; }
