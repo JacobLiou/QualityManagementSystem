@@ -1,4 +1,6 @@
-﻿using Furion.DependencyInjection;
+﻿using Furion.DatabaseAccessor;
+using Furion.DependencyInjection;
+using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
 using System.ComponentModel;
 using System.Net;
@@ -12,10 +14,33 @@ namespace QMS.Application.System
     /// </summary>
     public class EmailApplpy : ITransient, IEmailApplpy
     {
+        private readonly IRepository<SysUser> _sysUserRep;  // 用户表仓储
         private readonly string StmpServer = "smtp.sofarsolar.com";                          //smtp服务器地址
         private readonly string MailAccount = "platformservice@sofarsolar.com";              //邮箱账号
         private readonly string Pwd = "yxs123456#";                                           //邮箱密码
         private readonly string NickName = "质量平台通知服务";                              //邮件发送名称
+
+        public EmailApplpy(IRepository<SysUser> sysUserRep)
+        {
+            _sysUserRep = sysUserRep;
+        }
+
+        /// <summary>
+        /// 发送邮件
+        /// </summary>
+        /// <param name="userId">用户ID列表</param>
+        /// <param name="mailTitle">邮件标题</param>
+        /// <param name="mailContent">邮件内容</param>
+        /// <returns></returns>
+        public async Task<bool> SendEmail(long[] userId, string mailTitle, string mailContent)
+        {
+            var mailTo = _sysUserRep.Where(u => userId.Contains(u.Id)).Select(u => u.Email).ToArray();
+            if (mailTo == null || mailTo.Length == 0)
+            {
+                throw Oops.Oh($"该用户不存在对应的邮箱");
+            }
+            return await SendEmail(mailTo, mailTitle, mailContent);
+        }
 
         /// <summary>
         /// 发送邮件
@@ -24,7 +49,7 @@ namespace QMS.Application.System
         /// <param name="mailTitle">发送邮件标题</param>
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
-        public bool SendEmail(string[] mailTo, string mailTitle, string mailContent)
+        public async Task<bool> SendEmail(string[] mailTo, string mailTitle, string mailContent)
         {
             try
             {
@@ -49,7 +74,7 @@ namespace QMS.Application.System
                     mailMessage.IsBodyHtml = true;                                          //是否为HTML格式
                     mailMessage.Priority = MailPriority.Normal;                             //优先级
                     //smtpClient.Send(mailMessage);
-                    smtpClient.SendMailAsync(mailMessage);                                  //发送邮件
+                    await smtpClient.SendMailAsync(mailMessage);                                  //发送邮件
                 }
                 return true;
             }

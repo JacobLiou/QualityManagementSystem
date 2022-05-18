@@ -131,8 +131,25 @@ namespace QMS.Application.System
         /// <param name="description"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        [HttpPost("system/qyWechat/sendMessage")]
+        [HttpPost("system/qyWechat/sendMessageQYWechatID")]
         public string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        {
+            return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
+        }
+
+
+        /// <summary>
+        /// 企业微信发送文本卡片消息
+        /// </summary>
+        /// <param name="touser">接收消息用户UserId列表</param>
+        /// <param name="toparty">接收消息部门</param>
+        /// <param name="totag">消息标签</param>
+        /// <param name="title"></param>
+        /// <param name="description"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        [HttpPost("system/qyWechat/sendMessageUserId")]
+        public string QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
         {
             return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
         }
