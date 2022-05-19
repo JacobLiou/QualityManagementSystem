@@ -8,7 +8,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const isProd = process.env.NODE_ENV === 'production'  // 生产环境
+// const isProd = process.env.NODE_ENV === 'production'  // 生产环境
 
 const assetsCDN = {
   // webpack build externals
@@ -113,11 +113,11 @@ const vueConfig = {
           '^/api': '' // 需要rewrite的,
         }
       },
-      // '/hubs': {
-      //   target: process.env.VUE_APP_SOCKET_BASE_URL,
-      //   ws: true,
-      //   changeOrigin: true
-      // }
+      '/hubs': {
+        target: process.env.VUE_APP_SOCKET_BASE_URL,
+        ws: true,
+        changeOrigin: true
+      }
     }
   },
 
