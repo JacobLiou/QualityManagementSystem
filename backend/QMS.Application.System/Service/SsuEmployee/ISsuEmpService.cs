@@ -23,6 +23,6 @@ namespace QMS.Application.System
 
         Task<List<long>> GetUserDataScopeIdList();
 
-        Task<List<UserOutput>> GetUserList(long[] userIds);
+        Task<Dictionary<long, SysUser>> GetUserList(long[] userIds);
     }
 }

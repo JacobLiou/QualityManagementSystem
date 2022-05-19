@@ -1,8 +1,7 @@
 ﻿using Furion.Extras.Admin.NET;
+using Furion.Extras.Admin.NET.Entity.Common;
 using Furion.Extras.Admin.NET.Service;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace QMS.Application.System
 {
@@ -24,6 +23,6 @@ namespace QMS.Application.System
 
         Task InsertProductGroup(long productId, long[] userIds);
 
-        Task<List<SsuProductOutput>> GetProductList(long[] productIds);
+        Task<Dictionary<long, SsuProduct>> GetProductList(long[] productIds);
     }
 }

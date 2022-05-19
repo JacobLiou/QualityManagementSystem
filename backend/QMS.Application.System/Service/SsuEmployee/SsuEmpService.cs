@@ -27,12 +27,12 @@ namespace QMS.Application.System
     {
         private readonly IRepository<SysOrg> _sysOrgRep;  // 组织机构表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 组织机构表仓储
-        private readonly ICacheService<UserOutput> _cacheService;
+        private readonly ICacheService<SysUser> _cacheService;
         private readonly IRepository<SysUser> _sysUser;
         private readonly ISysEmpService _sysEmpService;
         private readonly int CacheMinute = 30;
 
-        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<UserOutput> cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
+        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<SysUser> cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
         {
             _sysOrgRep = sysOrgRep;
             _sysEmpRep = sysEmpRep;
@@ -256,30 +256,25 @@ namespace QMS.Application.System
         /// <param name="userIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuEmpOrg/getuserlist")]
-        public async Task<List<UserOutput>> GetUserList(long[] userIds)
-
+        public async Task<Dictionary<long, SysUser>> GetUserList(long[] userIds)
         {
-            List<UserOutput> list = new List<UserOutput>();
-            //针对每个人员ID都做一次缓存，所以此处采用循环的方式
-            foreach (long id in userIds)
+            Dictionary<long, SysUser> Dcit = new Dictionary<long, SysUser>();
+            var products = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
+            foreach (SysUser obj in products.Values)
             {
-                var userCache = _cacheService.GetCache(CoreCommonConst.USERID + id);
-                if (userCache != null)
+                var cacheProduct = _cacheService.GetCache(CoreCommonConst.USERID + obj.Id);
+                if (cacheProduct != null)
                 {
-                    list.Add(userCache.Result);
+                    Dcit.Add(obj.Id, cacheProduct.Result);
                 }
                 else
                 {
-                    var user = await _sysUser.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
-                    if (user != null)
-                    {
-                        var userOutput = user.Adapt<UserOutput>();
-                        list.Add(userOutput);
-                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + id, userOutput, CacheMinute);
-                    }
+                    Dcit.Add(obj.Id, obj);
+                    await _cacheService.SetCacheByMinutes(CoreCommonConst.USERID + obj.Id, obj, CacheMinute);
                 }
             }
-            return list;
+            return Dcit;
         }
     }
 }

@@ -27,12 +27,12 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly ICacheService<SsuProjectOutput> _cacheService;
+        private readonly ICacheService<SsuProject> _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProjectService(
             IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService<SsuProjectOutput> cacheService
+            ISysEmpService sysEmpService, ICacheService<SsuProject> cacheService
         )
         {
             _ssuProjectRep = ssuProjectRep;
@@ -96,6 +96,7 @@ namespace QMS.Application.System
 
             var ssuProject = input.Adapt<SsuProject>();
             await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: true);
+            await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheMinute);
         }
 
         /// <summary>
@@ -191,29 +192,25 @@ namespace QMS.Application.System
         /// <param name="projectIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuProject/getprojectlist")]
-        public async Task<List<SsuProjectOutput>> GetProjectList(long[] projectIds)
+        public async Task<Dictionary<long, SsuProject>> GetProjectList(long[] projectIds)
         {
-            List<SsuProjectOutput> list = new List<SsuProjectOutput>();
-            //针对每个项目ID都做一次缓存，所以此处采用循环的方式
-            foreach (long id in projectIds)
+            Dictionary<long, SsuProject> Dcit = new Dictionary<long, SsuProject>();
+            var products = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
+            foreach (SsuProject obj in products.Values)
             {
-                var cacheProject = _cacheService.GetCache(CoreCommonConst.PROJECTID + id);
-                if (cacheProject != null)
+                var cacheProduct = _cacheService.GetCache(CoreCommonConst.PROJECTID + obj.Id);
+                if (cacheProduct != null)
                 {
-                    list.Add(cacheProject.Result);
+                    Dcit.Add(obj.Id, cacheProduct.Result);
                 }
                 else
                 {
-                    var project = await _ssuProjectRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
-                    if (project != null)
-                    {
-                        var projectOutput = project.Adapt<SsuProjectOutput>();
-                        list.Add(projectOutput);
-                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + id, projectOutput, CacheMinute);
-                    }
+                    Dcit.Add(obj.Id, obj);
+                    await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + obj.Id, obj, CacheMinute);
                 }
             }
-            return list;
+            return Dcit;
         }
     }
 }
