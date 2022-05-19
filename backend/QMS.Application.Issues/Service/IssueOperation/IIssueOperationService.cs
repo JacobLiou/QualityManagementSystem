@@ -1,5 +1,5 @@
 ﻿using Furion.Extras.Admin.NET;
-using Microsoft.AspNetCore.Mvc;
+using static QMS.Application.Issues.IssueOperationService;
 
 namespace QMS.Application.Issues
 {
@@ -9,7 +9,7 @@ namespace QMS.Application.Issues
         //Task Delete(DeleteIssueOperationInput input);
         //Task<IssueOperationOutput> Get([FromQuery] QueryeIssueOperationInput input);
         //Task<List<IssueOperationOutput>> List([FromQuery] IssueOperationInput input);
-        Task<PageResult<IssueOperationOutput>> Page([FromQuery] IssueOperationInput input);
+        Task<PageResult<IssueOperationOutput>> Page(IssueIdModel input);
         //Task Update(UpdateIssueOperationInput input);
     }
 }

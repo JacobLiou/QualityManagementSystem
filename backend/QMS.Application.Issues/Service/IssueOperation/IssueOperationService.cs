@@ -4,6 +4,7 @@ using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QMS.Core;
 using QMS.Core.Entity;
 using System.Linq.Dynamic.Core;
@@ -16,10 +17,10 @@ namespace QMS.Application.Issues
     [ApiDescriptionSettings("问题管理服务", Name = "IssueOperation", Order = 100)]
     public class IssueOperationService : IIssueOperationService, IDynamicApiController, ITransient
     {
-        private readonly IRepository<IssueOperation,IssuesDbContextLocator> _issueOperationRep;
+        private readonly IRepository<IssueOperation, IssuesDbContextLocator> _issueOperationRep;
 
         public IssueOperationService(
-            IRepository<IssueOperation,IssuesDbContextLocator> issueOperationRep
+            IRepository<IssueOperation, IssuesDbContextLocator> issueOperationRep
         )
         {
             _issueOperationRep = issueOperationRep;
@@ -30,19 +31,46 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
+        //[HttpPost("/issue/operation/page")]
+        //public async Task<PageResult<IssueOperationOutput>> Page(IssueOperationInput input)
+        //{
+        //    var issueOperations = await _issueOperationRep.DetachedEntities
+        //                             .Where(u => u.IssueId == input.IssueId)
+        //                             //.Where(u => u.OperationTypeId == input.OperationTypeId)
+        //                             //.Where(!string.IsNullOrEmpty(input.Content), u => u.Content == input.Content)
+        //                             //.Where(u => u.OperationTime == input.OperationTime)
+        //                             .OrderBy(PageInputOrder.OrderBuilder(input))
+        //                             .ProjectToType<IssueOperationOutput>()
+        //                             .ToADPagedListAsync(input.PageNo, input.PageSize);
+
+        //    return issueOperations;
+        //}
+
+        public class IssueIdModel
+        {
+            public long IssueId { get; set; }
+        }
+
+        /// <summary>
+        /// 查询问题操作记录
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         [HttpPost("/issue/operation/page")]
-        public async Task<PageResult<IssueOperationOutput>> Page(IssueOperationInput input)
+        public async Task<PageResult<IssueOperationOutput>> Page(IssueIdModel input)
         {
             var issueOperations = await _issueOperationRep.DetachedEntities
                                      .Where(u => u.IssueId == input.IssueId)
-                                     //.Where(u => u.OperationTypeId == input.OperationTypeId)
-                                     //.Where(!string.IsNullOrEmpty(input.Content), u => u.Content == input.Content)
-                                     //.Where(u => u.OperationTime == input.OperationTime)
-                                     .OrderBy(PageInputOrder.OrderBuilder(input))
-                                     .ProjectToType<IssueOperationOutput>()
-                                     .ToADPagedListAsync(input.PageNo, input.PageSize);
+                                     .ProjectToType<IssueOperationOutput>().ToListAsync();
 
-            return issueOperations;
+            return new PageResult<IssueOperationOutput>
+            {
+                PageNo = 1,
+                PageSize = issueOperations.Count,
+                TotalRows = issueOperations.Count,
+                Rows = issueOperations,
+                TotalPage = 1,
+            };
         }
 
         ///// <summary>

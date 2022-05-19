@@ -830,5 +830,74 @@ namespace QMS.Application.Issues
             await Helper.Helper.SetUserColumns(this._issueColumnDisplayRep, JSON.Serialize(input));
         }
         #endregion
+
+        #region 问题统计
+        public class StatisticModel
+        {
+            /// <summary>
+            /// 查询(创建)问题起始时间
+            /// </summary>
+            public DateTime From { get; set; }
+            /// <summary>
+            /// 查询(创建)问题结束时间
+            /// </summary>
+            public DateTime To { get; set; }
+        }
+
+        public class StatisticData
+        {
+            /// <summary>
+            /// 致命问题数量
+            /// </summary>
+            public int DeadlyConsequenceCount { get; set; }
+
+            /// <summary>
+            /// 严重问题数量
+            /// </summary>
+            public int SeriousConsequenceCount { get; set; }
+
+            /// <summary>
+            /// 指派给我的问题数量
+            /// </summary>
+            public int AssignToMeCount { get; set; }
+
+            /// <summary>
+            /// 已处理的问题数量
+            /// </summary>
+            public int SolvedCount { get; set; }
+        }
+
+        private class IssuePropertyModel
+        {
+            public EnumConsequence Consequence { get; set; }
+            public long CreatorId { get; set; }
+            public long? Dispatcher { get; set; }
+            public long? Executor { get; set; }
+            public long? CurrentAssignment { get; set; }
+            public EnumIssueStatus Status { get; set; }
+        }
+
+
+        /// <summary>
+        /// 问题统计数据
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/issue/statistic")]
+        public async Task<StatisticData> Statistic(StatisticModel input)
+        {
+            Helper.Helper.Assert(input != null && (input.To - input.From < TimeSpan.FromDays(365)), "参数为空或间隔超过一年");
+
+            var collections = await this._issueRep.Where(model => model.CreateTime >= input.From && model.CreateTime <= input.To).ProjectToType<IssuePropertyModel>().ToListAsync();
+
+            return new StatisticData
+            {
+                DeadlyConsequenceCount = collections.Count(model => model.Consequence == EnumConsequence.Deadly),
+                SeriousConsequenceCount = collections.Count(model => model.Consequence == EnumConsequence.Serious),
+                AssignToMeCount = collections.Count(model => model.CurrentAssignment == Helper.Helper.GetCurrentUser()),
+                SolvedCount = collections.Count(model => model.Status == EnumIssueStatus.Solved)
+            };
+        }
+        #endregion
     }
 }

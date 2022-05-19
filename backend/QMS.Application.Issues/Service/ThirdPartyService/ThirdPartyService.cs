@@ -1,6 +1,5 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
-using Furion.Extras.Admin.NET;
 using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
