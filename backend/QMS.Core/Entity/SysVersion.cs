@@ -15,6 +15,13 @@ namespace QMS.Core
     public class SysVersion : DEntityBase
     {
         /// <summary>
+        /// 类型
+        /// </summary>
+        [Comment("类型")]
+        [Required, MaxLength(30)]
+        public string Type { get; set; }
+
+        /// <summary>
         /// 版本号
         /// </summary>
         [Comment("版本号")]
