@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-12 20:57:21
- * @LastEditTime: 2022-05-17 09:38:23
+ * @LastEditTime: 2022-05-17 17:19:33
  * @LastEditors: 林伟群
  * @Description: 表格
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
@@ -280,13 +280,20 @@ export default {
 
     // 操作类型
     operationType(record, operName) {
-      console.log(record, operName)
+      // console.log(record, operName)
       switch (operName) {
         case '删除':
           this.problemDelect(record)
           break
         case '挂起':
           this.$refs.hangProblem.edit(record)
+          break
+        case '详情':
+          this.$router.push({
+            path: '/problemInfo',
+            query: { id: record.id },
+          })
+          this.$store.commit('SET_CHECK_RECORD', record)
           break
         default:
           break

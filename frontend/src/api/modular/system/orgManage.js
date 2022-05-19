@@ -1,3 +1,4 @@
+
 import { axios } from '@/utils/request'
 
 /**
@@ -6,11 +7,22 @@ import { axios } from '@/utils/request'
  * @author yubaoshan
  * @date 2020/4/26 12:08
  */
-export function getOrgTree (parameter) {
+export function getOrgTree(parameter) {
   return axios({
     url: '/sysOrg/tree',
     method: 'get',
     params: parameter
+  })
+}
+/**
+ * @description: 根据机构ID获取人员列表
+ * @return {*}
+ */
+export function getOrgUserList(parameter) {
+  return axios({
+    url: '/SsuEmpOrg/getorguser',
+    method: 'post',
+    data: parameter
   })
 }
 
@@ -20,7 +32,7 @@ export function getOrgTree (parameter) {
  * @author yubaoshan
  * @date 2020/5/11 12:59
  */
-export function getOrgList (parameter) {
+export function getOrgList(parameter) {
   return axios({
     url: '/sysOrg/list',
     method: 'get',
@@ -34,7 +46,7 @@ export function getOrgList (parameter) {
  * @author yubaoshan
  * @date 2020/5/11 16:17
  */
-export function getOrgPage (parameter) {
+export function getOrgPage(parameter) {
   return axios({
     url: '/sysOrg/page',
     method: 'get',
@@ -48,7 +60,7 @@ export function getOrgPage (parameter) {
  * @author yubaoshan
  * @date 2020/5/11 13:56
  */
-export function sysOrgAdd (parameter) {
+export function sysOrgAdd(parameter) {
   return axios({
     url: '/sysOrg/add',
     method: 'post',
@@ -62,7 +74,7 @@ export function sysOrgAdd (parameter) {
  * @author yubaoshan
  * @date 2020/5/11 13:56
  */
-export function sysOrgEdit (parameter) {
+export function sysOrgEdit(parameter) {
   return axios({
     url: '/sysOrg/edit',
     method: 'post',
@@ -76,7 +88,7 @@ export function sysOrgEdit (parameter) {
  * @author yubaoshan
  * @date 2020/5/11 12:59
  */
-export function sysOrgDelete (parameter) {
+export function sysOrgDelete(parameter) {
   return axios({
     url: '/sysOrg/delete',
     method: 'post',

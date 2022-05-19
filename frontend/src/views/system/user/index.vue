@@ -213,6 +213,7 @@
           return
         }
         this.orgTree = res.data
+        console.log(this.orgTree );
         for (var item of res.data) {
           // eslint-disable-next-line eqeqeq
           if (item.parentId == 0) {
@@ -369,6 +370,7 @@
        * 点击左侧机构树查询列表
        */
       handleClick(e) {
+        console.log(e);
         this.queryParam = {
           'sysEmpParam.orgId': e.toString()
         }

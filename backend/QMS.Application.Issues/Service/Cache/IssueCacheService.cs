@@ -2,8 +2,8 @@
 using Furion.DynamicApiController;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
+using QMS.Core;
 
 namespace QMS.Application.Issues
 {
@@ -47,6 +47,23 @@ namespace QMS.Application.Issues
 
             var res = await _cache.GetStringAsync(cacheKey);
             return res;
+        }
+
+        [NonAction]
+        public async Task<string> GetUserName(long userId)
+        {
+            var cacheKey = CoreCommonConst.USERID + userId;
+
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
+        }
+
+        [NonAction]
+        public async Task SetUserName(long userId, string name)
+        {
+            var cacheKey = CoreCommonConst.USERID + userId;
+
+            await _cache.SetStringAsync(cacheKey, name);
         }
 
         [NonAction]

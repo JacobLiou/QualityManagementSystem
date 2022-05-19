@@ -98,20 +98,21 @@ const user = {
 
   actions: {
     // 登录
-    Login ({ commit }, userInfo) {
+    Login({ commit }, userInfo) {
       Vue.ls.remove(ALL_APPS_MENU)//清除菜单缓存
       return new Promise((resolve, reject) => {
+        console.log(userInfo);
         login(userInfo).then(response => {
           if (!response.success) {
             reject(response.message)
             return
           }
-         // 从响应 Header 中读取，处理逻辑移至 request.js 中处理
+          // 从响应 Header 中读取，处理逻辑移至 request.js 中处理
           // const result = response.data
           // Vue.ls.set(ACCESS_TOKEN, result, 7 * 24 * 60 * 60 * 1000)
           // commit('SET_TOKEN', result)
           resolve()
-        // eslint-disable-next-line handle-callback-err
+          // eslint-disable-next-line handle-callback-err
         }).catch(error => {
           // eslint-disable-next-line prefer-promise-reject-errors
           reject('后端未启动或代理错误')
@@ -120,7 +121,7 @@ const user = {
     },
 
     // 获取用户信息
-    GetInfo ({ commit }) {
+    GetInfo({ commit }) {
       return new Promise((resolve, reject) => {
         getLoginUser().then(response => {
           if (response.success) {
@@ -155,7 +156,7 @@ const user = {
     },
 
     // 登出
-    Logout ({ commit, state }) {
+    Logout({ commit, state }) {
       return new Promise((resolve) => {
         logout(state.token).then(() => {
           resolve()
@@ -176,7 +177,7 @@ const user = {
     },
 
     // 加载所有字典数据
-    dictTypeData () {
+    dictTypeData() {
       return new Promise((resolve, reject) => {
         sysDictTypeTree().then((data) => {
           if (data.success) {
@@ -194,7 +195,7 @@ const user = {
     },
 
     // 切换应用菜单
-    MenuChange ({ commit }, application) {
+    MenuChange({ commit }, application) {
       return new Promise((resolve) => {
         sysMenuChange({ application: application.code }).then((res) => {
           const apps = { 'code': '', 'name': '', 'active': '', 'menu': '' }

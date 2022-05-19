@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-05-16 18:55:13
+ * @LastEditTime: 2022-05-18 19:43:59
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理
  * @FilePath: \frontend\src\views\main\SsuGroupUser\index.vue
@@ -19,36 +19,35 @@
     <!-- 树 -->
     <a-col :md="5" :xs="24">
       <a-card class="user1">
-        <a-tree :tree-data="treeData" default-expand-all @select="selectTree">
-          <template #title="{ title }">
-            <a-dropdown :trigger="['contextmenu']">
-              <span>{{ title }}</span>
-            </a-dropdown>
-          </template>
-        </a-tree>
+        <a-spin :spinning="treeLoading">
+          <a-tree :tree-data="treeData" default-expand-all @select="selectTree" :replaceFields="replaceFields">
+          </a-tree>
+        </a-spin>
       </a-card>
     </a-col>
     <!-- 列表 -->
     <a-col :md="16" :xs="24">
       <a-card class="user_list">
-        <a-table
-          :columns="columns"
-          :row-key="
-            (record, index) => {
-              return index
-            }
-          "
-          :data-source="userData"
-          :pagination="false"
-          @change="handleTableChange"
-          :scroll="{ y: 'calc(100vh - 120px)' }"
-          :row-selection="rowSelection"
-        >
-        </a-table>
-        <section class="list_buttom">
-          <a-button type="primary" @click="userDefine">确定</a-button>
-          <a-button @click="userCancel">返回</a-button>
-        </section>
+        <a-spin :spinning="tabLoading">
+          <a-table
+            :columns="columns"
+            :row-key="
+              (record, index) => {
+                return index
+              }
+            "
+            :data-source="userData"
+            :pagination="false"
+            @change="handleTableChange"
+            :scroll="{ y: 'calc(100vh - 120px)' }"
+            :row-selection="rowSelection"
+          >
+          </a-table>
+          <section class="list_button">
+            <a-button type="primary" @click="userDefine" class="button1">确定</a-button>
+            <a-button @click="userCancel">返回</a-button>
+          </section>
+        </a-spin>
       </a-card>
     </a-col>
   </a-row>
@@ -56,6 +55,11 @@
 </template>
 
 <script>
+import { SsuProductList, SsuProductusers } from '@/api/modular/main/SsuProductManage'
+import { SsuProjectList, SsuProjectusers } from '@/api/modular/main/SsuProjectManage'
+import { getOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
+import { SsuGroupList, SsuGroupusers } from '@/api/modular/main/SsuGroupManage'
+
 export default {
   data() {
     return {
@@ -78,80 +82,273 @@ export default {
         },
       ],
       current: ['productId'],
-      treeData: [
-        {
-          title: '0-0',
-          key: '0-0',
-          children: [
-            {
-              title: '0-0-0',
-              key: '0-0-0',
-              children: [
-                { title: '0-0-0-0', key: '0-0-0-0' },
-                { title: '0-0-0-1', key: '0-0-0-1' },
-                { title: '0-0-0-2', key: '0-0-0-2' },
-              ],
-            },
-            {
-              title: '0-0-1',
-              key: '0-0-1',
-              children: [
-                { title: '0-0-1-0', key: '0-0-1-0' },
-                { title: '0-0-1-1', key: '0-0-1-1' },
-                { title: '0-0-1-2', key: '0-0-1-2' },
-              ],
-            },
-          ],
-        },
-      ],
+      treeData: [],
       columns: [
         {
           title: '序号',
           align: 'center',
-          dataIndex: 'id',
+          dataIndex: 'index',
         },
         {
           title: '姓名',
           align: 'center',
-          dataIndex: 'userName',
+          dataIndex: 'name',
         },
       ],
-      userData: [
-        {
-          id: '1',
-          userName: '理想',
-        },
-        {
-          id: '1',
-          userName: '理想',
-        },
-      ],
+      userData: [],
       checkRadio: false,
+      replaceFields: {
+        key: 'id',
+      },
+      treeLoading: false,
+      tabLoading: false,
+      checkUser: [],
     }
+  },
+  created() {
+    this.checkRadio = this.$route.query?.checkRadio ?? false
   },
   computed: {
     rowSelection() {
       return {
         onChange: (selectedRowKeys, selectedRows) => {
+          this.checkUser = selectedRows
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows)
         },
         type: this.checkRadio ? 'checkbox' : 'radio',
       }
     },
   },
+  watch: {
+    current: {
+      handler(val) {
+        this.userData = []
+        this.treeLoading = true
+        switch (val[0]) {
+          case 'productId':
+            this.getSsuProductList()
+            break
+          case 'projectId':
+            this.getProjectList()
+            break
+          case 'departmentId':
+            this.getDepartmentList()
+            break
+          case 'personnelID':
+            this.getPersonnelList()
+            break
+          default:
+            break
+        }
+      },
+      immediate: true,
+    },
+  },
   methods: {
     // 树节点选中
-    selectTree(selectedKeys, e) {
-      console.log(selectedKeys, e)
+    selectTree(key) {
+      this.tabLoading = true
+      switch (this.current[0]) {
+        case 'productId':
+          this.getproductuserList(key)
+          break
+        case 'projectId':
+          this.getProjectUserList(key)
+          break
+        case 'departmentId':
+          this.getDepartmentUserList(key)
+          break
+        case 'personnelID':
+          this.getPersonnelUserList(key)
+          break
+        default:
+          break
+      }
     },
 
     // 表格选择
-    handleTableChange() {},
+    handleTableChange(value) {
+      console.log(value)
+    },
+
+    // 获取产品列表
+    getSsuProductList() {
+      SsuProductList()
+        .then((res) => {
+          if (res.success) {
+            const resultData = res.data
+            this.treeData = resultData.map((item) => {
+              item.title = item.productName
+              return item
+            })
+          } else {
+            this.treeData = []
+            this.$message.error('产品列表获取失败')
+          }
+        })
+        .catch(() => {
+          this.treeData = []
+          this.$message.error('产品列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+
+    // 获取项目列表
+    getProjectList() {
+      SsuProjectList()
+        .then((res) => {
+          if (res.success) {
+            const resultData = res.data
+            this.treeData = resultData.map((item) => {
+              item.title = item.projectName
+              return item
+            })
+          } else {
+            this.treeData = []
+            this.$message.error('项目列表获取失败')
+          }
+        })
+        .catch(() => {
+          this.treeData = []
+          this.$message.error('项目列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+
+    // 获取部门列表
+    getDepartmentList() {
+      getOrgTree()
+        .then((res) => {
+          if (res.success) {
+            this.treeData = res.data
+          } else {
+            this.treeData = []
+            this.$message.error('部门列表获取失败')
+          }
+        })
+        .catch(() => {
+          this.treeData = []
+          this.$message.error('部门列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+
+    // 获取人员列表
+    getPersonnelList() {
+      SsuGroupList()
+        .then((res) => {
+          if (res.success) {
+            const resultData = res.data
+            this.treeData = resultData.map((item) => {
+              item.title = item.groupName
+              return item
+            })
+          } else {
+            this.treeData = []
+            this.$message.error('人员列表获取失败')
+          }
+        })
+        .catch(() => {
+          this.treeData = []
+          this.$message.error('人员列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+
+    // 根据部门id获取人员列表
+    getDepartmentUserList(key) {
+      const id = key[0]
+      getOrgUserList({ id })
+        .then((res) => {
+          console.log(res);
+          if (res.success) {
+            this.userData = res.data
+            this.userData.forEach((item, index) => (item.index = index + 1))
+          }
+        })
+        .catch(() => {
+          this.$message.error('用户列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+    // 根据项目ID获取成员列表
+    getProjectUserList(key) {
+      const id = key[0]
+      SsuProjectusers({ id })
+        .then((res) => {
+          if (res.success) {
+            this.userData = res.data
+            this.userData.forEach((item, index) => (item.index = index + 1))
+          }
+        })
+        .catch(() => {
+          this.$message.error('用户列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+    // 根据产品id获取人员列表
+    getproductuserList(key) {
+      const id = key[0]
+      SsuProductusers({ id })
+        .then((res) => {
+          if (res.success) {
+            this.userData = res.data
+            this.userData.forEach((item, index) => (item.index = index + 1))
+          }
+        })
+        .catch(() => {
+          this.$message.error('用户列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+    // 根据人员ID获取人员列表
+    getPersonnelUserList(key) {
+      const id = key[0]
+      SsuGroupusers({ id })
+        .then((res) => {
+          if (res.success) {
+            this.userData = res.data
+            this.userData.forEach((item, index) => (item.index = index + 1))
+          }
+        })
+        .catch(() => {
+          this.$message.error('用户列表获取失败')
+        })
+        .finally(() => {
+          this.cancelLoading()
+        })
+    },
+
+    // 消除加载
+    cancelLoading() {
+      this.tabLoading = false
+      this.treeLoading = false
+    },
 
     // 确定
-    userDefine() {},
+    userDefine() {
+      this.$store.commit('SET_CHECK_USER', this.checkUser)
+      this.$router.back()
+    },
     // 返回
-    userCancel() {},
+    userCancel() {
+      this.$store.commit('SET_CHECK_USER', [])
+      this.$router.back()
+    },
   },
 }
 </script>
@@ -163,9 +360,12 @@ export default {
 .user_list {
   width: 100%;
   height: calc(100vh - 120px);
-  .list_buttom {
+  .list_button {
     margin-top: 1.5em;
     text-align: right;
+    .button1 {
+      margin-right: 2em;
+    }
   }
 }
 </style>

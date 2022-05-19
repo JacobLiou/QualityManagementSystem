@@ -150,6 +150,16 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// </summary>
         public int ValidationStatus { get; set; }
 
+        /// <summary>
+        /// 当前指派人ID
+        /// </summary>
+        public long? CurrentAssignId { get; set; }
+        /// <summary>
+        /// 当前指派人名称
+        /// </summary>
+        public string CurrentAssignName { get; set; }
+
+
         public OutputGeneralIssue(Core.Entity.Issue model)
         {
             this.Id = model.Id;
@@ -187,6 +197,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
 
             this.Verifier = model.Verifier;
             this.VerifierName = model.Verifier == null ? this.CreatorName : model.Verifier.GetNameByEmpId();
+
+            this.CurrentAssignId = model.CurrentAssignment;
+            this.CurrentAssignName = model.CurrentAssignment.GetNameByEmpId();
 
             this.CloseTime = model.CloseTime;
 
