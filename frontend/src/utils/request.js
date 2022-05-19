@@ -6,15 +6,10 @@ import { message, Modal, notification } from 'ant-design-vue' /// es/notificatio
 import { VueAxios } from './axios'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 
-
-const isProd = process.env.NODE_ENV === 'production'  // 生产环境
-
-const baseUrl = isProd ? location.origin  : 'http://localhost:81/api/'
-
 // 创建 axios 实例
 const service = axios.create({
-  // baseURL: '/api', // api base_url
-  baseURL: baseUrl,
+  baseURL: '/api', // api base_url
+  //baseURL: ' http://localhost:81/api/',
   timeout: 6000 // 请求超时时间
 })
 
