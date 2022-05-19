@@ -1,17 +1,16 @@
 ﻿using Furion.DynamicApiController;
 using Furion.EventBus;
 using Furion.Extras.Admin.NET;
-using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using QMS.Core;
 using Serilog;
 
 namespace QMS.Application.Issues
-{ /// <summary>
-  /// 系统服务接口
-  /// </summary>
+{ 
+    /// <summary>
+    /// 系统服务接口
+    /// </summary>
     [ApiDescriptionSettings("问题管理服务", Name = "Issue", Order = 100)]
     [Route("issue/[controller]")]
     public class IssueStatusNoticeService : IDynamicApiController

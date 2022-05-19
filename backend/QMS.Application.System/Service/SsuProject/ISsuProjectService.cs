@@ -23,8 +23,8 @@ namespace QMS.Application.System
 
         Task<List<UserOutput>> GetProjectUser(long projectId);
 
-        Task InsertProjectGroup(long projectId, long[] userIds);
+        Task InsertProjectGroup(long projectId, IEnumerable<long> userIds);
 
-        Task<Dictionary<long, SsuProject>> GetProjectList(long[] projectIds);
+        Task<Dictionary<long, SsuProject>> GetProjectList(IEnumerable<long> projectIds);
     }
 }

@@ -202,7 +202,7 @@ namespace QMS.Application.System
         /// <param name="description">内容描述</param>
         /// <param name="url">url地址</param>
         /// <returns></returns>
-        public async Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        public async Task<string> QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url)
         {
             //将用户ID转换成企业微信ID
             var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).Select(u => u.Uuid).ToList();

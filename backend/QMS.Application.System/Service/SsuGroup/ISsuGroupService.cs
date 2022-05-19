@@ -23,6 +23,6 @@ namespace QMS.Application.System
 
         Task<List<UserOutput>> GetGroupUsers(long groupId);
 
-        Task InsertUserGroup(long groupId, long[] userIds);
+        Task InsertUserGroup(long groupId, IEnumerable<long> userIds);
     }
 }

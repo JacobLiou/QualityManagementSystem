@@ -3,6 +3,7 @@ using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
 using Furion.JsonSerialization;
 using QMS.Application.Issues.Field;
+using QMS.Application.Issues.Service.ThirdPartyService.Dto;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -70,14 +71,32 @@ namespace QMS.Application.Issues.Helper
         {
             //Assert(false);
 
-            return "项目" + id.ToString();
+            var cacheService = App.GetService<IssueCacheService>();
+
+            string cacheStr = cacheService.GetProjectName(id).Result;
+
+            if (!string.IsNullOrEmpty(cacheStr))
+            {
+                return JSON.Deserialize<ProjectModelFromThirdParty>(cacheStr).ProjectName;
+            }
+
+            return Constants.PROJECT_MARK + id.ToString();
         }
 
         public static string GetNameByProductId(this long id)
         {
             //Assert(false);
 
-            return "产品" + id.ToString();
+            var cacheService = App.GetService<IssueCacheService>();
+
+            string cacheStr = cacheService.GetProductName(id).Result;
+
+            if (!string.IsNullOrEmpty(cacheStr))
+            {
+                return JSON.Deserialize<ProductModelFromThirdParty>(cacheStr).ProductName;
+            }
+
+            return Constants.PRODUCT_MARK + id.ToString();
         }
         #endregion
 
@@ -94,20 +113,7 @@ namespace QMS.Application.Issues.Helper
                 return string.Empty;
             }
 
-            var cacheService = App.GetService<IssueCacheService>();
-
-            string name = cacheService.GetUserName((long)id).Result;
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                return name;
-            }
-
-            name = Helper.GetThirdPartyService().GetNameById((long)id).Result;
-
-            cacheService.SetUserName((long)id, name);
-
-            return name;
+            return GetNameByEmpId((long)id);
 
             //return "员工" + id?.ToString();
         }
@@ -118,16 +124,17 @@ namespace QMS.Application.Issues.Helper
 
             var cacheService = App.GetService<IssueCacheService>();
 
-            string name = cacheService.GetUserName((long)id).Result;
+            string name = cacheService.GetUserName(id).Result;
 
             if (!string.IsNullOrEmpty(name))
             {
                 return name;
             }
 
-            name = Helper.GetThirdPartyService().GetNameById((long)id).Result;
+            name = Helper.GetThirdPartyService().GetNameById(id).Result;
 
-            cacheService.SetUserName((long)id, name);
+            // 注释掉，由被调用方缓存在共享缓存中
+            //cacheService.SetUserName(id, name);
 
             return name;
 

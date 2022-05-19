@@ -4,17 +4,22 @@ namespace QMS.Application.Issues.Helper
 {
     internal class Constants
     {
-        public readonly static string UPLOAD_FILE = "http://localhost:5566/sysFileInfo/upload";
+        public readonly static string URL_ROOT = "http://localhost:5566/";
 
-        public readonly static string DOWNLOAD_FILE = "http://localhost:5566/sysFileInfo/download";
+        public readonly static string UPLOAD_FILE = Constants.URL_ROOT + "sysFileInfo / upload";
 
-        public readonly static string PROJECTS_URL = "http://localhost:5566/SsuProject/list";
+        public readonly static string DOWNLOAD_FILE = Constants.URL_ROOT + "sysFileInfo/download";
 
-        public readonly static string PRODUCTS_URL = "http://localhost:5566/SsuProduct/list";
+        public readonly static string PROJECTS_URL = Constants.URL_ROOT + "SsuProject/getprojectlist";
 
-        public readonly static string USER_URL = "http://localhost:5566/sysUser/detail";
+        public readonly static string PRODUCTS_URL = Constants.URL_ROOT + "SsuProduct/getproductlist";
 
-        
+        public readonly static string USER_URL = Constants.URL_ROOT + "SsuEmpOrg/getuserlist";
+
+
+        public const string PROJECT_MARK = "项目";
+        public const string PRODUCT_MARK = "产品";
+
 
         public const string USER_COLUMNS = "UserColumns_";
 

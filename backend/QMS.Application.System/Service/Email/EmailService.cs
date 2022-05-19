@@ -25,7 +25,7 @@ namespace QMS.Application.System
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
         [HttpPost("system/email/SendMessageAddres")]
-        public async Task<bool> SendMessage(string[] mailTo, string mailTitle, string mailContent)
+        public async Task<bool> SendMessage(IEnumerable<string> mailTo, string mailTitle, string mailContent)
         {
             return await _email.SendEmail(mailTo, mailTitle, mailContent);
         }
@@ -39,7 +39,7 @@ namespace QMS.Application.System
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
         [HttpPost("system/email/SendMessageUserId")]
-        public async Task<bool> SendMessage(long[] mailTo, string mailTitle, string mailContent)
+        public async Task<bool> SendMessage(IEnumerable<long> mailTo, string mailTitle, string mailContent)
         {
             return await _email.SendEmail(mailTo, mailTitle, mailContent);
         }

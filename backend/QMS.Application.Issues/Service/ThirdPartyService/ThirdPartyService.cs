@@ -1,6 +1,5 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
-using Furion.Extras.Admin.NET;
 using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,8 +33,10 @@ namespace QMS.Application.Issues
                 {
                     Authorization = authHeader
                 })
-                .SetBody(projectIds)
+                .SetBody(projectIds.ToArray())
                 .PostAsAsync<ThirdPartyApiModel<Dictionary<long, ProjectModelFromThirdParty>>>();
+
+            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"项目集合不存在");
 
             return response.data;
         }
@@ -55,6 +56,8 @@ namespace QMS.Application.Issues
                 .SetBody(projectIds)
                 .PostAsAsync<ThirdPartyApiModel<Dictionary<long, ProductModelFromThirdParty>>>();
 
+            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"产品集合不存在");
+
             return response.data;
         }
 
@@ -71,25 +74,26 @@ namespace QMS.Application.Issues
             var request = _contextAccessor.HttpContext.Request;
             var authHeader = request.Headers["Authorization"];
 
-            var paramUserInfo = new Dictionary<string, string>()
-            {
-                ["id"] = userId.ToString()
-            };
-            var response = await $"{Constants.USER_URL}?{paramUserInfo.ToQueryString()}"
+            var response =
+                await Constants.USER_URL
                 .SetHeaders(new
-            {
-                Authorization = authHeader
-            }).GetAsAsync<ThirdPartyApiModel<UserOutput>>();
+                {
+                    Authorization = authHeader
+                })
+                .SetBody(new long[] { userId })
+                .PostAsAsync<ThirdPartyApiModel<Dictionary<long, UserModelFromThirdParty>>>();
 
-            return response.data.Name;
+            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"员工【{userId}】不存在");
+
+            return response.data[0].Name;
         }
     }
 
     public class ThirdPartyApiModel<T>
-{
-    public bool success { get; set; }
-    public int code { get; set; }
-    public T data { get; set; }
-    public string message { get; set; }
-}
+    {
+        public bool success { get; set; }
+        public int code { get; set; }
+        public T data { get; set; }
+        public string message { get; set; }
+    }
 }
