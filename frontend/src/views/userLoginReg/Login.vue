@@ -188,7 +188,6 @@ export default {
     }
   },
   created() {
-    console.log(1111111111111)
     this.setWeChatToken()
     this.getCaptchaOpen()
   },
@@ -218,14 +217,12 @@ export default {
     setWeChatToken() {
       const { search } = window.location
       const accessTrue = search.indexOf('access_token')
-      console.log(accessTrue)
       if (accessTrue > 0) {
-        console.log(token)
+        const token = search.split('=')[1]
         Vue.ls.set(ACCESS_TOKEN, token /*, 7 * 24 * 60 * 60 * 1000 */)
         this.$store.commit('SET_TOKEN', token)
         Vue.ls.set('X-Access-Token', token /*, 7 * 24 * 60 * 60 * 1000 */)
-        this.loginSuccess(res)
-        console.log(token)
+        this.loginSuccess()
       }
     },
     /**
@@ -284,7 +281,6 @@ export default {
           if (this.tenantOpen) {
             loginParams.tenantCode = values.tenantCode
           }
-          console.log(loginParams)
           Login(loginParams)
             .then((res) => {
               this.loginSuccess(res)
@@ -362,7 +358,6 @@ export default {
     },
     loginSuccess(res) {
       this.setLocalStorageData()
-      console.log(1111)
       this.$router.push({ path: '/' })
       this.isLoginError = false
       // 加载字典所有字典到缓存中
