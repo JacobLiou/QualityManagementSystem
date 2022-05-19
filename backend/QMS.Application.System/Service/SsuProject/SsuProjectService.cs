@@ -192,15 +192,15 @@ namespace QMS.Application.System
         /// <param name="projectIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuProject/getprojectlist")]
-        public async Task<Dictionary<long, SsuProject>> GetProjectList(long[] projectIds)
+        public async Task<Dictionary<long, SsuProject>> GetProjectList(IEnumerable<long> projectIds)
         {
             Dictionary<long, SsuProject> Dcit = new Dictionary<long, SsuProject>();
-            var products = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            var products  = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id)).ToDictionary(u => u.Id);
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SsuProject obj in products.Values)
             {
                 var cacheProduct = _cacheService.GetCache(CoreCommonConst.PROJECTID + obj.Id);
-                if (cacheProduct != null)
+                if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);
                 }

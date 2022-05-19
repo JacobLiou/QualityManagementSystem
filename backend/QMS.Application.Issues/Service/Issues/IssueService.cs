@@ -202,7 +202,7 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.Status==EnumIssueStatus.HasHangUp, "必须为已挂起状态才能开启");
+            Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp, "必须为已挂起状态才能开启");
 
             common.DoReOpen();
             await this._issueRep.UpdateNowAsync(common, true);
@@ -394,19 +394,30 @@ namespace QMS.Application.Issues
             // 根据保存的项目id和产品id调用第三方服务获取对应的名称
             if (issues.TotalRows > 0)
             {
-                Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Rows.Select<OutputGeneralIssue, long>(issue => issue.ProjectId));
-                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Rows.Select<OutputGeneralIssue, long>(issue => issue.ProductId));
+                IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName.StartsWith(Constants.PROJECT_MARK));
+                IEnumerable<OutputGeneralIssue> products = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName.StartsWith(Constants.PRODUCT_MARK));
 
-                foreach (var item in issues.Rows)
+                if (projects.Any())
                 {
-                    if (projects != null && projects.ContainsKey(item.ProjectId))
+                    Dictionary<long, ProjectModelFromThirdParty> projectNames = await Helper.Helper.GetThirdPartyService().GetProjectByIds(projects.Select<OutputGeneralIssue, long>(model => model.ProjectId).Distinct());
+                    foreach (var item in projects)
                     {
-                        item.ProjectName = projects[item.ProjectId].ProjectName;
+                        if (projectNames != null && projectNames.ContainsKey(item.ProjectId))
+                        {
+                            item.ProjectName = projectNames[item.ProjectId].ProjectName;
+                        }
                     }
+                }
 
-                    if (products != null && products.ContainsKey(item.ProductId))
+                if (projects.Any())
+                {
+                    Dictionary<long, ProductModelFromThirdParty> productNames = await Helper.Helper.GetThirdPartyService().GetProductByIds(products.Select<OutputGeneralIssue, long>(issue => issue.ProductId).Distinct());
+                    foreach (var item in products)
                     {
-                        item.ProductName = products[item.ProductId].ProductName;
+                        if (productNames != null && productNames.ContainsKey(item.ProductId))
+                        {
+                            item.ProductName = productNames[item.ProductId].ProductName;
+                        }
                     }
                 }
             }

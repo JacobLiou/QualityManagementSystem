@@ -191,7 +191,7 @@ namespace QMS.Application.System
         /// <param name="productIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuProduct/getproductlist")]
-        public async Task<Dictionary<long, SsuProduct>> GetProductList(long[] productIds)
+        public async Task<Dictionary<long, SsuProduct>> GetProductList(IEnumerable<long> productIds)
         {
             Dictionary<long, SsuProduct> Dcit = new Dictionary<long, SsuProduct>();
             var products = _ssuProductRep.DetachedEntities.Where(u => productIds.Contains(u.Id)).ToDictionary(u => u.Id);
@@ -199,7 +199,7 @@ namespace QMS.Application.System
             foreach (SsuProduct obj in products.Values)
             {
                 var cacheProduct = _cacheService.GetCache(CoreCommonConst.PRODUCTID + obj.Id);
-                if (cacheProduct != null)
+                if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);
                 }

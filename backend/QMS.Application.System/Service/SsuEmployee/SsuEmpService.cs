@@ -256,7 +256,7 @@ namespace QMS.Application.System
         /// <param name="userIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuEmpOrg/getuserlist")]
-        public async Task<Dictionary<long, SysUser>> GetUserList(long[] userIds)
+        public async Task<Dictionary<long, SysUser>> GetUserList(IEnumerable<long> userIds)
         {
             Dictionary<long, SysUser> Dcit = new Dictionary<long, SysUser>();
             var products = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id)).ToDictionary(u => u.Id);

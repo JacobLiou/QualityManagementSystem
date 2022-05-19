@@ -8,7 +8,7 @@ using QMS.Core;
 namespace QMS.Application.Issues
 {
     /// <summary>
-    /// 问题扩展属性服务
+    /// 问题信息缓存服务
     /// </summary>
     [ApiDescriptionSettings("问题管理服务", Name = "IssueColumn", Order = 100)]
     public class IssueCacheService : IDynamicApiController, ISingleton
@@ -35,9 +35,7 @@ namespace QMS.Application.Issues
         {
             var cacheKey = Constants.USER_COLUMNS + userId;
 
-            DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
-            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
-            await _cache.SetStringAsync(cacheKey, json, cacheOption);
+            await _cache.SetStringAsync(cacheKey, json, this.GetCacheEntryOptions());
         }
 
         [NonAction]
@@ -47,6 +45,14 @@ namespace QMS.Application.Issues
 
             var res = await _cache.GetStringAsync(cacheKey);
             return res;
+        }
+
+        [NonAction]
+        public async Task SetFieldsStruct(string fieldStructDicStr)
+        {
+            var cacheKey = Constants.FIELD_STRUCT;
+
+            await _cache.SetStringAsync(cacheKey, fieldStructDicStr, this.GetCacheEntryOptions(120));
         }
 
         [NonAction]
@@ -63,17 +69,34 @@ namespace QMS.Application.Issues
         {
             var cacheKey = CoreCommonConst.USERID + userId;
 
-            await _cache.SetStringAsync(cacheKey, name);
+            await _cache.SetStringAsync(cacheKey, name, this.GetCacheEntryOptions());
+        }
+
+
+        [NonAction]
+        public async Task<string> GetProjectName(long projectId)
+        {
+            var cacheKey = CoreCommonConst.PROJECTID + projectId;
+
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
         }
 
         [NonAction]
-        public async Task SetFieldsStruct(string fieldStructDicStr)
+        public async Task<string> GetProductName(long productId)
         {
-            var cacheKey = Constants.FIELD_STRUCT;
+            var cacheKey = CoreCommonConst.PRODUCTID + productId;
 
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
+        }
+
+        private DistributedCacheEntryOptions GetCacheEntryOptions(int minutes = 30)
+        {
             DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
             cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(120));
-            await _cache.SetStringAsync(cacheKey, fieldStructDicStr, cacheOption);
+
+            return cacheOption;
         }
     }
 }
