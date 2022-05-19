@@ -27,12 +27,12 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProductUser> _ssuProductUserRep;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly ICacheService<SsuProductOutput> _cacheService;
+        private readonly ICacheService<SsuProduct> _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProductService(
             IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService<SsuProductOutput> cacheService
+            ISysEmpService sysEmpService, ICacheService<SsuProduct> cacheService
         )
         {
             _ssuProductRep = ssuProductRep;
@@ -97,6 +97,7 @@ namespace QMS.Application.System
 
             var ssuProduct = input.Adapt<SsuProduct>();
             await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
+            await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheMinute);
         }
 
         /// <summary>
@@ -190,29 +191,25 @@ namespace QMS.Application.System
         /// <param name="productIds"></param>
         /// <returns></returns>
         [HttpPost("/SsuProduct/getproductlist")]
-        public async Task<List<SsuProductOutput>> GetProductList(long[] productIds)
+        public async Task<Dictionary<long, SsuProduct>> GetProductList(long[] productIds)
         {
-            List<SsuProductOutput> list = new List<SsuProductOutput>();
+            Dictionary<long, SsuProduct> Dcit = new Dictionary<long, SsuProduct>();
+            var products = _ssuProductRep.DetachedEntities.Where(u => productIds.Contains(u.Id)).ToDictionary(u => u.Id);
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
-            foreach (long id in productIds)
+            foreach (SsuProduct obj in products.Values)
             {
-                var cacheProduct = _cacheService.GetCache(CoreCommonConst.PRODUCTID + id);
+                var cacheProduct = _cacheService.GetCache(CoreCommonConst.PRODUCTID + obj.Id);
                 if (cacheProduct != null)
                 {
-                    list.Add(cacheProduct.Result);
+                    Dcit.Add(obj.Id, cacheProduct.Result);
                 }
                 else
                 {
-                    var product = await _ssuProductRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == id);
-                    if (product != null)
-                    {
-                        var productOutput = product.Adapt<SsuProductOutput>();
-                        list.Add(productOutput);
-                        await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + id, productOutput, CacheMinute);
-                    }
+                    Dcit.Add(obj.Id, obj);
+                    await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + obj.Id, obj, CacheMinute);
                 }
             }
-            return list;
+            return Dcit;
         }
     }
 }

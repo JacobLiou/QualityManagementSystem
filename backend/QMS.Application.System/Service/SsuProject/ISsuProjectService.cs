@@ -1,4 +1,5 @@
 ﻿using Furion.Extras.Admin.NET;
+using Furion.Extras.Admin.NET.Entity.Common;
 using Furion.Extras.Admin.NET.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -24,6 +25,6 @@ namespace QMS.Application.System
 
         Task InsertProjectGroup(long projectId, long[] userIds);
 
-        Task<List<SsuProjectOutput>> GetProjectList(long[] projectIds);
+        Task<Dictionary<long, SsuProject>> GetProjectList(long[] projectIds);
     }
 }

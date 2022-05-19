@@ -50,17 +50,17 @@ namespace QMS.Application.System
             }
 
             //判断用户是否已经存在
-            var user = _sysUserRep.Where(u => u.Account.Equals(input.Account)).FirstOrDefault();
+            var user = _sysUserRep.DetachedEntities.Where(u => u.Account.Equals(input.Account)).FirstOrDefault();
             if (user != null)
             {
                 throw Oops.Oh("该账号已存在");
             }
-            user = _sysUserRep.Where(u => u.Phone.Equals(input.Phone)).FirstOrDefault();
+            user = _sysUserRep.DetachedEntities.Where(u => u.Phone.Equals(input.Phone)).FirstOrDefault();
             if (user != null)
             {
                 throw Oops.Oh("该手机号已存在对应用户");
             }
-            user = _sysUserRep.Where(u => u.Email.Equals(input.Email)).FirstOrDefault();
+            user = _sysUserRep.DetachedEntities.Where(u => u.Email.Equals(input.Email)).FirstOrDefault();
             if (user != null)
             {
                 throw Oops.Oh("该邮箱已存在对应用户");
@@ -91,7 +91,7 @@ namespace QMS.Application.System
         /// <param name="phone">手机号</param>
         /// <param name="num">验证码个数</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("system/register/sendsmscode")]
         public string SendSMSCode(string phone, int num = 4)
         {
             return _phone.SendSMSCode(phone, num);

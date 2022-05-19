@@ -37,7 +37,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 手机号
         /// </summary>
-        [JsonPropertyName("mobile")]
+        [JsonPropertyName("phone")]
         public string Phone { get; set; }
 
 
