@@ -259,7 +259,7 @@ namespace QMS.Application.System
         public async Task<Dictionary<long, SysUser>> GetUserList(IEnumerable<long> userIds)
         {
             Dictionary<long, SysUser> Dcit = new Dictionary<long, SysUser>();
-            var products = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            var products = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SysUser obj in products.Values)
             {

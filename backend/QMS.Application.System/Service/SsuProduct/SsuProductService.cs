@@ -165,7 +165,7 @@ namespace QMS.Application.System
         /// <param name="userIds">人员列表ID</param>
         /// <returns></returns>
         [HttpPost("/SsuProduct/insertproductgroup")]
-        public async Task InsertProductGroup(long productId, long[] userIds)
+        public async Task InsertProductGroup(long productId, IEnumerable<long> userIds)
         {
             List<SsuProductUser> list = new List<SsuProductUser>();
             var resultList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
@@ -194,7 +194,7 @@ namespace QMS.Application.System
         public async Task<Dictionary<long, SsuProduct>> GetProductList(IEnumerable<long> productIds)
         {
             Dictionary<long, SsuProduct> Dcit = new Dictionary<long, SsuProduct>();
-            var products = _ssuProductRep.DetachedEntities.Where(u => productIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            var products = _ssuProductRep.DetachedEntities.Where(u => productIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SsuProduct obj in products.Values)
             {

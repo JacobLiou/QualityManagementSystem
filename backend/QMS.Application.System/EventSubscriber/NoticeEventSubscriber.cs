@@ -50,7 +50,7 @@ namespace QMS.Application.System.EventSubscriber
         {
             using var scope = Services.CreateScope();
             var WeChatOAuth = scope.ServiceProvider.GetRequiredService<IQYWeChatOAuth>();
-            await WeChatOAuth.QYWechatSendMessage(notice.NoticeUserIdList.ToArray(), null, null, notice.Title, notice.Content, notice.PageUrl);
+            await WeChatOAuth.QYWechatSendMessage(notice.NoticeUserIdList, null, null, notice.Title, notice.Content, notice.PageUrl);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace QMS.Application.System.EventSubscriber
         {
             using var scope = Services.CreateScope();
             var EmailApply = scope.ServiceProvider.GetRequiredService<IEmailApplpy>();
-            await EmailApply.SendEmail(notice.NoticeUserIdList.ToArray(), notice.Title, notice.Content + notice.PageUrl);
+            await EmailApply.SendEmail(notice.NoticeUserIdList, notice.Title, notice.Content + notice.PageUrl);
         }
     }
 }

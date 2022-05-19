@@ -148,7 +148,7 @@ namespace QMS.Application.System
         /// <param name="userIds">人员列表ID</param>
         /// <returns></returns>
         [HttpPost("/SsuGroup/insertusergroup")]
-        public async Task InsertUserGroup(long groupId, long[] userIds)
+        public async Task InsertUserGroup(long groupId, IEnumerable<long> userIds)
         {
             List<SsuGroupUser> list = new List<SsuGroupUser>();
             var resultList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);

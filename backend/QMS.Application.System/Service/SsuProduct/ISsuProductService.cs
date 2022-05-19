@@ -21,7 +21,7 @@ namespace QMS.Application.System
 
         Task<List<UserOutput>> GetProductUsers(long productId);
 
-        Task InsertProductGroup(long productId, long[] userIds);
+        Task InsertProductGroup(long productId, IEnumerable<long> userIds);
 
         Task<Dictionary<long, SsuProduct>> GetProductList(IEnumerable<long> productIds);
     }
