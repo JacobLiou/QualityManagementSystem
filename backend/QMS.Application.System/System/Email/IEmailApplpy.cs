@@ -2,9 +2,9 @@
 {
     public interface IEmailApplpy
     {
-        Task<bool> SendEmail(string[] mailTo, string mailTitle, string mailContent);
+        Task<bool> SendEmail(IEnumerable<string> mailTo, string mailTitle, string mailContent);
 
 
-        Task<bool> SendEmail(long[] userId, string mailTitle, string mailContent);
+        Task<bool> SendEmail(IEnumerable<long> userId, string mailTitle, string mailContent);
     }
 }

@@ -14,7 +14,7 @@ namespace QMS.Application.System
 
         string QYWechatGetLoginToken(string code);
 
-        string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url);
+        string QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url);
 
         string QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url);
     }

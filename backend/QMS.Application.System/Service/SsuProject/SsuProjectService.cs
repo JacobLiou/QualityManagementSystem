@@ -165,7 +165,7 @@ namespace QMS.Application.System
         /// <param name="userIds">人员列表ID</param>
         /// <returns></returns>
         [HttpPost("/SsuProject/insertprojectgroup")]
-        public async Task InsertProjectGroup(long projectId, long[] userIds)
+        public async Task InsertProjectGroup(long projectId, IEnumerable<long> userIds)
         {
             List<SsuProjectUser> list = new List<SsuProjectUser>();
             var resultList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
@@ -195,7 +195,7 @@ namespace QMS.Application.System
         public async Task<Dictionary<long, SsuProject>> GetProjectList(IEnumerable<long> projectIds)
         {
             Dictionary<long, SsuProject> Dcit = new Dictionary<long, SsuProject>();
-            var products  = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id)).ToDictionary(u => u.Id);
+            var products = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SsuProject obj in products.Values)
             {

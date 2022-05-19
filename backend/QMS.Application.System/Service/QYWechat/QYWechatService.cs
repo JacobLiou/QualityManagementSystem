@@ -132,7 +132,7 @@ namespace QMS.Application.System
         /// <param name="url"></param>
         /// <returns></returns>
         [HttpPost("system/qyWechat/sendMessageQYWechatID")]
-        public string QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url)
+        public string QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url)
         {
             return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
         }

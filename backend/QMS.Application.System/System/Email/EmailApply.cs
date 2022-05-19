@@ -32,7 +32,7 @@ namespace QMS.Application.System
         /// <param name="mailTitle">邮件标题</param>
         /// <param name="mailContent">邮件内容</param>
         /// <returns></returns>
-        public async Task<bool> SendEmail(long[] userId, string mailTitle, string mailContent)
+        public async Task<bool> SendEmail(IEnumerable<long> userId, string mailTitle, string mailContent)
         {
             var mailTo = _sysUserRep.Where(u => userId.Contains(u.Id)).Select(u => u.Email).ToArray();
             if (mailTo == null || mailTo.Length == 0)
@@ -49,7 +49,7 @@ namespace QMS.Application.System
         /// <param name="mailTitle">发送邮件标题</param>
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
-        public async Task<bool> SendEmail(string[] mailTo, string mailTitle, string mailContent)
+        public async Task<bool> SendEmail(IEnumerable<string> mailTo, string mailTitle, string mailContent)
         {
             try
             {
@@ -63,10 +63,10 @@ namespace QMS.Application.System
                 smtpClient.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
 
                 MailAddress from = new MailAddress(MailAccount, NickName);
-                for (int i = 0; i < mailTo.Length; i++)
+                foreach (string address in mailTo)
                 {
                     //MailMessage mailMessage = new MailMessage(MailAccount, mailTo[i]);      //实例化邮件信息实体并设置发送方和接收方
-                    MailAddress to = new MailAddress(mailTo[i]);
+                    MailAddress to = new MailAddress(address);
                     MailMessage mailMessage = new MailMessage(from, to);
                     mailMessage.Subject = mailTitle;                                        //标题
                     mailMessage.Body = mailContent;                                         //内容

@@ -2,8 +2,8 @@
 {
     public interface IEmailService
     {
-        Task<bool> SendMessage(string[] mailTo, string mailTitle, string mailContent);
+        Task<bool> SendMessage(IEnumerable<string> mailTo, string mailTitle, string mailContent);
 
-        Task<bool> SendMessage(long[] mailTo, string mailTitle, string mailContent);
+        Task<bool> SendMessage(IEnumerable<long> mailTo, string mailTitle, string mailContent);
     }
 }

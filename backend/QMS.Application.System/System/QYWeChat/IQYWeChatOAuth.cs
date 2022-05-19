@@ -12,7 +12,7 @@ namespace QMS.Application.System
 
         Task<QYUserInfoModel> GetQYUserInfoAsync(string accessToken, string userId);
 
-        Task<string> QYWechatSendMessage(string[] touser, string toparty, string totag, string title, string description, string url);
+        Task<string> QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url);
 
         Task<string> QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url);
 
