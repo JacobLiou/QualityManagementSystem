@@ -14,11 +14,11 @@ New-Item -Path $outputFolder -ItemType Directory
 
 ### 还原&打包
 Set-Location $vueFolder
-npm run build
+npm run build:preview
 Copy-Item (Join-Path $vueFolder "dist") (Join-Path $outputFolder "qms_vue/") -Recurse
 
 ### 推送到服务器
 Set-Location $outputFolder
 
-ssh root@$remoteIp "rm -rf /wwwroot/smart_prison_vue; exit"
+ssh root@$remoteIp "rm -rf /wwwroot/qms_vue; exit"
 scp -r (Join-Path $outputFolder "qms_vue") root@${remoteIp}:/wwwroot
