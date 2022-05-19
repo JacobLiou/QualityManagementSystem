@@ -156,6 +156,7 @@ import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
 import { getSmsCaptcha, getCaptchaOpen, qiWeChatLoginUrl } from '@/api/modular/system/loginManage'
 import Verify from '@/components/verifition/Verify'
+import { ACCESS_TOKEN } from '@/store/mutation-types'
 
 export default {
   components: {
@@ -187,6 +188,7 @@ export default {
     }
   },
   created() {
+    this.setWeChatToken()
     this.getCaptchaOpen()
   },
   mounted() {
@@ -206,6 +208,22 @@ export default {
         .catch(() => {
           this.$message.error('企业微信登录失败')
         })
+    },
+
+    /**
+     * @description: 微信扫码登录后返回token，存储token
+     * @return {*}
+     */
+    setWeChatToken() {
+      const { search } = window.location
+      const accessTrue = search.indexOf('access_token')
+      if (accessTrue > 0) {
+        const token = search.split('=')[1]
+        Vue.ls.set(ACCESS_TOKEN, token /*, 7 * 24 * 60 * 60 * 1000 */)
+        this.$store.commit('SET_TOKEN', token)
+        Vue.ls.set('X-Access-Token', token /*, 7 * 24 * 60 * 60 * 1000 */)
+        this.loginSuccess()
+      }
     },
     /**
      * 获取验证码开关
@@ -264,7 +282,9 @@ export default {
             loginParams.tenantCode = values.tenantCode
           }
           Login(loginParams)
-            .then((res) => this.loginSuccess(res))
+            .then((res) => {
+              this.loginSuccess(res)
+            })
             .catch((err) => this.requestFailed(JSON.stringify(err)))
             .finally(() => {
               state.loginBtn = false

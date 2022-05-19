@@ -8,7 +8,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-const isProd = process.env.NODE_ENV === 'production'
+const isProd = process.env.NODE_ENV === 'production'  // 生产环境
 
 const assetsCDN = {
   // webpack build externals
@@ -54,7 +54,7 @@ const vueConfig = {
       })
     ],
     // if prod, add externals
-    externals: isProd ? assetsCDN.externals : {}
+    // externals: isProd ? assetsCDN.externals : {} // DO取消生产环境使用cdn  
   },
 
   chainWebpack: (config) => {
@@ -79,12 +79,12 @@ const vueConfig = {
 
     // if prod is on
     // assets require on cdn
-    if (isProd) {
-      config.plugin('html').tap(args => {
-        args[0].cdn = assetsCDN
-        return args
-      })
-    }
+    // if (isProd) {
+    //   config.plugin('html').tap(args => {
+    //     args[0].cdn = assetsCDN
+    //     return args
+    //   })
+    // }  // DO取消生产环境使用cdn
   },
 
   css: {

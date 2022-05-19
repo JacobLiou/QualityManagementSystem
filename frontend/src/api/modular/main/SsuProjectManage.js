@@ -5,7 +5,7 @@
  *
  * @author lilulu
  */
-export function SsuProjectPage (parameter) {
+export function SsuProjectPage(parameter) {
   return axios({
     url: '/SsuProject/page',
     method: 'get',
@@ -18,7 +18,7 @@ export function SsuProjectPage (parameter) {
  *
  * @author lilulu
  */
-export function SsuProjectList (parameter) {
+export function SsuProjectList(parameter) {
   return axios({
     url: '/SsuProject/list',
     method: 'get',
@@ -27,11 +27,23 @@ export function SsuProjectList (parameter) {
 }
 
 /**
+ * @description: 根据项目ID获取成员列表
+ * @return {*}
+ */
+export function SsuProjectusers(parameter) {
+  return axios({
+    url: '/SsuProject/getprojectuser',
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 添加项目
  *
  * @author lilulu
  */
-export function SsuProjectAdd (parameter) {
+export function SsuProjectAdd(parameter) {
   return axios({
     url: '/SsuProject/add',
     method: 'post',
@@ -44,7 +56,7 @@ export function SsuProjectAdd (parameter) {
  *
  * @author lilulu
  */
-export function SsuProjectEdit (parameter) {
+export function SsuProjectEdit(parameter) {
   return axios({
     url: '/SsuProject/edit',
     method: 'post',
@@ -57,7 +69,7 @@ export function SsuProjectEdit (parameter) {
  *
  * @author lilulu
  */
-export function SsuProjectDelete (parameter) {
+export function SsuProjectDelete(parameter) {
   return axios({
     url: '/SsuProject/delete',
     method: 'post',

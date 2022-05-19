@@ -1,11 +1,12 @@
-﻿import { axios } from '@/utils/request'
+﻿
+import { axios } from '@/utils/request'
 
 /**
  * 查询产品
  *
  * @author lilulu
  */
-export function SsuProductPage (parameter) {
+export function SsuProductPage(parameter) {
   return axios({
     url: '/SsuProduct/page',
     method: 'get',
@@ -18,7 +19,7 @@ export function SsuProductPage (parameter) {
  *
  * @author lilulu
  */
-export function SsuProductList (parameter) {
+export function SsuProductList(parameter) {
   return axios({
     url: '/SsuProduct/list',
     method: 'get',
@@ -27,11 +28,23 @@ export function SsuProductList (parameter) {
 }
 
 /**
+ * @description: 根据产品id获取人员列表
+ * @return {*}
+ */
+export function SsuProductusers(parameter) {
+  return axios({
+    url: "/SsuProduct/getproductusers",
+    method: 'post',
+    data: parameter
+  })
+}
+
+/**
  * 添加产品
  *
  * @author lilulu
  */
-export function SsuProductAdd (parameter) {
+export function SsuProductAdd(parameter) {
   return axios({
     url: '/SsuProduct/add',
     method: 'post',
@@ -44,7 +57,7 @@ export function SsuProductAdd (parameter) {
  *
  * @author lilulu
  */
-export function SsuProductEdit (parameter) {
+export function SsuProductEdit(parameter) {
   return axios({
     url: '/SsuProduct/edit',
     method: 'post',
@@ -57,7 +70,7 @@ export function SsuProductEdit (parameter) {
  *
  * @author lilulu
  */
-export function SsuProductDelete (parameter) {
+export function SsuProductDelete(parameter) {
   return axios({
     url: '/SsuProduct/delete',
     method: 'post',
