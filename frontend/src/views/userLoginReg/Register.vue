@@ -160,7 +160,7 @@
 
 <script>
 import { mixinDevice } from '@/utils/mixin.js'
-import { getSmsCaptcha, userRegister } from '@/api/modular/system/loginManage'
+import { getSmsCaptcha, sendSmscode, userRegister } from '@/api/modular/system/loginManage'
 
 const levelNames = {
   0: '低',
@@ -306,8 +306,9 @@ export default {
           }, 1000)
 
           const hide = $message.loading('验证码发送中..', 0)
+          console.log({ mobile: values.mobile })
 
-          getSmsCaptcha({ mobile: values.mobile })
+          sendSmscode({ phone: values.mobile, num: 4 })
             .then((res) => {
               setTimeout(hide, 2500)
               $notification['success']({
