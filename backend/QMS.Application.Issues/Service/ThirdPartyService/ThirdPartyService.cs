@@ -1,5 +1,6 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.JsonSerialization;
 using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -83,9 +84,14 @@ namespace QMS.Application.Issues
                 .SetBody(new long[] { userId })
                 .PostAsAsync<ThirdPartyApiModel<Dictionary<long, UserModelFromThirdParty>>>();
 
-            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"员工【{userId}】不存在");
+            Helper.Helper.Assert(response != null && response.data != null, $"员工【{userId}】不存在");
 
-            return response.data[0].Name;
+            if (response.data.Count == 0)
+            {
+                return String.Empty;
+            }
+
+            return response.data[userId].Name;
         }
     }
 
