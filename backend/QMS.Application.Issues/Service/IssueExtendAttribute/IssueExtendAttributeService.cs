@@ -47,6 +47,8 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/extAttr/addStruct")]
         public async Task Add(AddIssueExtendAttributeInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             var issueExtendAttribute = input.Adapt<IssueExtendAttribute>();
             issueExtendAttribute.SetCreate();
 
@@ -63,6 +65,8 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/extAttr/deleteStruct")]
         public async Task Delete(DeleteIssueExtendAttributeInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             var issueExtendAttribute = await _issueExtendAttributeRep.FirstOrDefaultAsync(u => u.Id == input.Id);
 
             if (issueExtendAttribute != null && !issueExtendAttribute.IsDeleted)
@@ -83,6 +87,8 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/extAttr/editStruct")]
         public async Task Update(UpdateIssueExtendAttributeInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             var isExist = await _issueExtendAttributeRep.AnyAsync(u => u.Id == input.Id, false);
 
             Helper.Helper.Assert(isExist, Oops.Oh(ErrorCode.D1007));
@@ -114,6 +120,8 @@ namespace QMS.Application.Issues
         [HttpGet("/issue/extAttr/page")]
         public async Task<PageResult<IssueExtendAttributeOutput>> Page([FromQuery] IssueExtendAttributeInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             var issueExtendAttributes = await _issueExtendAttributeRep.DetachedEntities
                                      .Where(input.Module != null, u => u.Module == input.Module)
                                      .Where(!string.IsNullOrEmpty(input.AttibuteName), u => u.AttibuteName == input.AttibuteName)
@@ -147,7 +155,7 @@ namespace QMS.Application.Issues
         [HttpGet("/issue/extAttr/listStruct")]
         public async Task<List<FieldStruct>> List([FromQuery] MoudleModel input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             return await _issueExtendAttributeRep.DetachedEntities
                 .Where(attr => attr.Module == input.Module)
@@ -169,7 +177,9 @@ namespace QMS.Application.Issues
         [HttpPost($"/issue/extAttr/batchAddStruct")]
         public async Task BatchAddFieldStruct(List<FieldStruct> input)
         {
-            Helper.Helper.Assert(input != null && input.Count > 0, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
+
+            Helper.Helper.Assert(input.Count > 0, "传入的新增扩展字段数不允许为0");
 
             var list = this._issueExtendAttributeRep.DetachedEntities
                 .Where(attr => attr.Module == input.First().Module)
@@ -232,7 +242,9 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/extAttr/import")]
         public async Task ImportExtAttr(IFormFile file)
         {
-            Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(file);
+
+            Helper.Helper.Assert(!string.IsNullOrEmpty(file.FileName), Oops.Oh(ErrorCode.xg1002));
 
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueExtAttrTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
@@ -290,6 +302,8 @@ namespace QMS.Application.Issues
         [HttpPost($"/issue/extAttr/batchAddValue")]
         public async Task AddFieldValue(BatchFieldValue input)
         {
+            Helper.Helper.CheckInput(input);
+
             DateTime now = DateTime.Now;
 
             // 根据字段编号和问题Id插入数据
@@ -307,6 +321,8 @@ namespace QMS.Application.Issues
         [HttpPost($"/issue/extAttr/updateValue")]
         public async Task UpdateFieldValue(long IssueId, List<FieldValue> fieldValues)
         {
+            Helper.Helper.CheckInput(fieldValues);
+
             DateTime now = DateTime.Now;
 
             // 找到对应的字段编号

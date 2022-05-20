@@ -3,7 +3,6 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
-using Furion.FriendlyException;
 using Furion.JsonSerialization;
 using Mapster;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +18,7 @@ using QMS.Application.Issues.Service.Issue.Dto;
 using QMS.Application.Issues.Service.Issue.Dto.Add;
 using QMS.Application.Issues.Service.Issue.Dto.Query;
 using QMS.Application.Issues.Service.Issue.Dto.Update;
+using QMS.Application.Issues.Service.Issues.AnalyzeData;
 using QMS.Application.Issues.Service.Issues.Dto.Update;
 using QMS.Application.Issues.Service.ThirdPartyService.Dto;
 using QMS.Core;
@@ -32,7 +32,8 @@ namespace QMS.Application.Issues
     /// 问题管理服务
     /// </summary>
     [ApiDescriptionSettings("问题管理服务", Name = "Issue", Order = 100)]
-    public class IssueService : IIssueService, IDynamicApiController, ITransient
+    [Route("issue")]
+    public partial class IssueService : IIssueService, IDynamicApiController, ITransient
     {
         private readonly IRepository<Issue, IssuesDbContextLocator> _issueRep;
         private readonly IRepository<IssueDetail, IssuesDbContextLocator> _issueDetailRep;
@@ -82,9 +83,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/add")]
+        [HttpPost("add")]
         public async Task<BaseId> Add(InIssue input)
         {
+            Helper.Helper.CheckInput(input);
+
             var issue = input.Adapt<Issue>();
             if (input.CCList != null && input.CCList.Count > 0)
             {
@@ -120,9 +123,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/delete")]
+        [HttpPost("delete")]
         public async Task Delete(DeleteIssueInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             if (!issue.IsDeleted)
@@ -149,9 +154,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/edit")]
+        [HttpPost("edit")]
         public async Task Edit(UpdateIssueInput input)
         {
+            Helper.Helper.CheckInput(input);
+
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             //var isExist = await _issueRep.AnyAsync(u => u.Id == input.Id, false);
@@ -182,9 +189,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/issue/detail")]
+        [HttpGet("detail")]
         public async Task<OutputDetailIssue> Get([FromQuery] BaseId input)
         {
+            Helper.Helper.CheckInput(input);
+
             return (await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
         }
         #endregion
@@ -195,10 +204,10 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/reopen")]
+        [HttpPost("reopen")]
         public async Task ReOpen(BaseId input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -220,10 +229,10 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/recheck")]
+        [HttpPost("recheck")]
         public async Task ReCheck(InReCheck input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -252,10 +261,10 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/execute")]
+        [HttpPost("execute")]
         public async Task Execute(InSolve input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -283,10 +292,10 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/validate")]
+        [HttpPost("validate")]
         public async Task Validate(InValidate input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -315,10 +324,10 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/hangup")]
+        [HttpPost("hangup")]
         public async Task HangUp(InHangup input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -344,7 +353,7 @@ namespace QMS.Application.Issues
 
         private async Task ReDispatch(InReDispatch input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
@@ -365,10 +374,12 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/redispatch")]
+        [HttpPost("redispatch")]
         public async Task ReDispatch(List<InReDispatch> input)
         {
-            Helper.Helper.Assert(input != null && input.Count > 0, "转交信息为空!");
+            Helper.Helper.CheckInput(input);
+
+            Helper.Helper.Assert(input.Count > 0, "转交信息为空!");
 
             foreach (var item in input)
             {
@@ -539,9 +550,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/issue/page")]
+        [HttpGet("page")]
         public async Task<PageResult<OutputGeneralIssue>> Page([FromQuery] BaseQueryModel input)
         {
+            Helper.Helper.CheckInput(input);
+
             IQueryable<Issue> querable = this.GetQueryable(input).OrderBy(PageInputOrder.OrderBuilder(input));
 
             var issues = await this.SelectToOutput(input, querable).ToADPagedListAsync(input.PageNo, input.PageSize);
@@ -620,10 +633,12 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/export")]
+        [HttpPost("export")]
         public async Task<IActionResult> Export(List<long> input)
         {
-            Helper.Helper.Assert(input != null && input.Count > 0, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
+
+            Helper.Helper.Assert(input.Count > 0, "没有问题项选中，无法导出");
 
             // 导出查询到的数据
             //IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
@@ -649,7 +664,7 @@ namespace QMS.Application.Issues
         /// 下载Excel以方便导入问题数据
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/issue/template")]
+        [HttpGet("template")]
         public async Task<IActionResult> Template()
         {
             var item = this._issueRep.Where(model => model.Title != null).Take(1).ProjectToType<InIssue>();
@@ -661,10 +676,12 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost("/issue/import")]
+        [HttpPost("import")]
         public async Task ImportIssues(IFormFile file)
         {
-            Helper.Helper.Assert(file != null && !string.IsNullOrEmpty(file.FileName), "文件为空");
+            Helper.Helper.CheckInput(file);
+
+            Helper.Helper.Assert(!string.IsNullOrEmpty(file.FileName), "文件为空");
 
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
@@ -714,9 +731,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost("/issue/attachment/saveId")]
+        [HttpPost("attachment/saveId")]
         public async Task SaveAttachment(AttachmentIssue input)
         {
+            Helper.Helper.CheckInput(input);
+
             Helper.Helper.Assert(input.Attachments != null && input.Attachments.Count > 0 && input.IssueId != 0, "附件信息或问题编号为空!无法保存");
 
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.IssueId);
@@ -741,12 +760,14 @@ namespace QMS.Application.Issues
         /// 传入问题编号
         /// </summary>
         /// <returns></returns>
-        [HttpPost("/issue/attachment/infoList")]
-        public async Task<List<AttachmentModel>> AttachmentInfoList(BaseId issueId)
+        [HttpPost("attachment/infoList")]
+        public async Task<List<AttachmentModel>> AttachmentInfoList(BaseId input)
         {
-            Helper.Helper.Assert(issueId != null && issueId.Id != 0, "问题编号不合法,无法获取相关附件信息");
+            Helper.Helper.CheckInput(input);
 
-            IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, issueId.Id);
+            Helper.Helper.Assert(input.Id != 0, "问题编号不合法,无法获取相关附件信息");
+
+            IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
 
             List<AttachmentModel> list = null;
             if (!string.IsNullOrEmpty(detail.Attachments))
@@ -764,9 +785,11 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/dispatch")]
+        [HttpPost("dispatch")]
         public async Task Dispatch(InDispatch input)
         {
+            Helper.Helper.CheckInput(input);
+
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
             input.SetIssue(issue);
             Helper.Helper.Assert(issue.Executor != null, "分发时必须指定执行人");
@@ -811,7 +834,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input">{"id":"序号","title":"标题"}</param>
         /// <returns></returns>
-        [HttpGet("/issue/column/display")]
+        [HttpGet("column/display")]
         public async Task<Dictionary<string, string>> GetColumnDisplay()
         {
             return await Helper.Helper.GetUserColumns(this._issueColumnDisplayRep);
@@ -822,81 +845,67 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input">{"id":"序号","title":"标题"}</param>
         /// <returns></returns>
-        [HttpPost("/issue/column/update")]
+        [HttpPost("column/update")]
         public async Task UpdateColumnDisplay(Dictionary<string, string> input)
         {
-            Helper.Helper.Assert(input != null, Oops.Oh(ErrorCode.xg1002));
+            Helper.Helper.CheckInput(input);
 
             await Helper.Helper.SetUserColumns(this._issueColumnDisplayRep, JSON.Serialize(input));
         }
+
         #endregion
 
         #region 问题统计
-        public class StatisticModel
-        {
-            /// <summary>
-            /// 查询(创建)问题起始时间
-            /// </summary>
-            public DateTime From { get; set; }
-            /// <summary>
-            /// 查询(创建)问题结束时间
-            /// </summary>
-            public DateTime To { get; set; }
-        }
-
-        public class StatisticData
-        {
-            /// <summary>
-            /// 致命问题数量
-            /// </summary>
-            public int DeadlyConsequenceCount { get; set; }
-
-            /// <summary>
-            /// 严重问题数量
-            /// </summary>
-            public int SeriousConsequenceCount { get; set; }
-
-            /// <summary>
-            /// 指派给我的问题数量
-            /// </summary>
-            public int AssignToMeCount { get; set; }
-
-            /// <summary>
-            /// 已处理的问题数量
-            /// </summary>
-            public int SolvedCount { get; set; }
-        }
-
-        private class IssuePropertyModel
-        {
-            public EnumConsequence Consequence { get; set; }
-            public long CreatorId { get; set; }
-            public long? Dispatcher { get; set; }
-            public long? Executor { get; set; }
-            public long? CurrentAssignment { get; set; }
-            public EnumIssueStatus Status { get; set; }
-        }
-
-
         /// <summary>
         /// 问题统计数据
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("/issue/statistic")]
-        public async Task<StatisticData> Statistic(StatisticModel input)
+        [HttpPost("statistic")]
+        public async Task<IEnumerable<DataPairOutput>> Statistic(StatisticInput input)
         {
-            Helper.Helper.Assert(input != null && (input.To - input.From < TimeSpan.FromDays(365)), "参数为空或间隔超过一年");
+            Helper.Helper.CheckInput(input);
+            Helper.Helper.Assert((input.To - input.From < TimeSpan.FromDays(365)), "间隔超过一年");
 
-            var collections = await this._issueRep.Where(model => model.CreateTime >= input.From && model.CreateTime <= input.To).ProjectToType<IssuePropertyModel>().ToListAsync();
+            var collections = await this._issueRep.Where(model => model.CreateTime >= input.From && model.CreateTime <= input.To)
+                .OrderBy<Issue, DateTime>(model => model.CreateTime)
+                .ProjectToType<IssuePropertyDto>().ToListAsync();
 
-            return new StatisticData
+            IEnumerable<DataPairOutput> results = collections.GroupBy<IssuePropertyDto, DateTime>(model => model.CreateTime.Date)
+                .Select<IGrouping<DateTime, IssuePropertyDto>, DataPairOutput>(group => new DataPairOutput(group.Key, new StatisticData()
+                {
+                    DeadlyConsequenceCount = group.Count(model => model.Consequence == EnumConsequence.Deadly),
+                    SeriousConsequenceCount = group.Count(model => model.Consequence == EnumConsequence.Serious),
+                    AssignToMeCount = group.Count(model => model.CurrentAssignment == Helper.Helper.GetCurrentUser()),
+                    SolvedCount = group.Count(model => model.Status == EnumIssueStatus.Solved)
+                }));
+
+            var list = new List<DataPairOutput>();
+
+            DateTime from = input.From.Date;
+            DateTime to = input.To.Date;
+
+            DateTime current = from;
+
+            foreach (var item in results)
             {
-                DeadlyConsequenceCount = collections.Count(model => model.Consequence == EnumConsequence.Deadly),
-                SeriousConsequenceCount = collections.Count(model => model.Consequence == EnumConsequence.Serious),
-                AssignToMeCount = collections.Count(model => model.CurrentAssignment == Helper.Helper.GetCurrentUser()),
-                SolvedCount = collections.Count(model => model.Status == EnumIssueStatus.Solved)
-            };
+                while (item.Day > current)
+                {
+                    list.Add(new DataPairOutput(current));
+                    current = current.AddDays(1);
+                }
+
+                list.Add(item);
+                current = current.AddDays(1);
+            }
+
+            while (current <= to)
+            {
+                list.Add(new DataPairOutput(current));
+                current = current.AddDays(1);
+            }
+
+            return list;
         }
         #endregion
     }
