@@ -154,7 +154,7 @@ export default {
                     var attachmentType = 0
 
                     var data = {
-                      attachment: [{
+                      attachments: [{
                         attachmentId: attachmentId,
                         fileName: fileName,
                         attachmentType: attachmentType

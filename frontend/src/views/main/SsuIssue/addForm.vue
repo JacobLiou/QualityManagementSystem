@@ -253,7 +253,9 @@ import {
             values.solveTime = this.solveTimeDateString
             values.validateTime = this.validateTimeDateString
 
-            values.cCList = [values.cC,values.cC]
+            if (values.cC){
+              values.cCList = [values.cC,values.cC]
+            }
 
             IssueAdd(values).then((res) => {
               if (res.success) {
@@ -274,7 +276,7 @@ import {
                       var attachmentType = 0
 
                       var data = {
-                        attachment:[{
+                        attachments:[{
                           attachmentId: attachmentId,
                           fileName: fileName,
                           attachmentType: attachmentType

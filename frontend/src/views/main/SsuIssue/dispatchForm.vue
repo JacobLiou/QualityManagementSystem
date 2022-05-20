@@ -134,6 +134,10 @@ export default {
           values.forecastSolveTime = this.forecastSolveTimeDateString
           this.record.forecastSolveTime = this.forecastSolveTimeDateString
 
+          if (values.cC) {
+            this.record.cCList = [values.cC, values.cC]
+          }
+
           IssueDispatch(this.record).then((res) => {
             if (res.success) {
               this.$message.success('分发成功')

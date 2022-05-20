@@ -236,6 +236,8 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
+            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(复核人)");
+
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
             common.DoReCheck(pass);
@@ -268,6 +270,8 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
+            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
+
             input.SetIssue(common);
             common.DoSolve();
 
@@ -298,6 +302,8 @@ namespace QMS.Application.Issues
             Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(验证人)");
 
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
@@ -356,6 +362,9 @@ namespace QMS.Application.Issues
             Helper.Helper.CheckInput(input);
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(重分发人)");
+
 
             input.SetIssue(common);
             Helper.Helper.Assert(common.Executor != null, "重分发时必须指定执行人");
@@ -791,6 +800,9 @@ namespace QMS.Application.Issues
             Helper.Helper.CheckInput(input);
 
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(分发人)");
+
             input.SetIssue(issue);
             Helper.Helper.Assert(issue.Executor != null, "分发时必须指定执行人");
             issue.DoDispatch();
