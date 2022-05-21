@@ -828,6 +828,42 @@ namespace QMS.Application.Issues
             {
                 List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
 
+                Helper.Helper.Assert(list != null && list.Count > 0, "更新扩展字段数据时，数据为空");
+
+                IEnumerable<long> attrIds = list.Select<FieldValue, long>(model => model.FieldId);
+                IEnumerable<long> issueIds = list.Select<FieldValue, long>(model => model.IssueId);
+
+                IEnumerable<IssueExtendAttributeValue> values = this._issueAttrValueRep.Where(
+                    model =>
+                    model.IssueNum == list[0].IssueId
+                    && attrIds.Contains(model.Id)
+                );
+
+                int realCount = list.Count;
+
+                if (realCount > values.Count())
+                {
+                    IEnumerable<long> ids = values.Select<IssueExtendAttributeValue, long>(val => val.Id);
+                    if (ids != null && ids.Any())
+                    {
+                        IssueExtendAttributeValue[] insertLists = list.TakeWhile(model => !ids.Contains(model.FieldId))?.Select<FieldValue, IssueExtendAttributeValue>(model => new IssueExtendAttributeValue
+                        {
+                            Id = model.FieldId,
+                            IssueNum = model.IssueId,
+                            AttibuteValue = model.Value
+                        })?.ToArray();
+
+                        if (insertLists != null && insertLists.Any())
+                        {
+                            this._issueAttrValueRep.Entities.AddRange(insertLists);
+
+                            this._issueAttrValueRep.Context.SaveChanges();
+
+                            list.RemoveAll(model => ids.Contains(model.FieldId));
+                        }
+                    }
+                }
+
                 this._issueAttrValueRep.Entities.UpdateRange(list.Select(model => new IssueExtendAttributeValue
                 {
                     Id = model.FieldId,
@@ -877,7 +913,7 @@ namespace QMS.Application.Issues
         public async Task<IEnumerable<DataPairOutput>> Statistic(StatisticInput input)
         {
             Helper.Helper.CheckInput(input);
-            Helper.Helper.Assert((input.To - input.From < TimeSpan.FromDays(365)), "间隔超过一年");
+            Helper.Helper.Assert((input.To - input.From < TimeSpan.FromDays(365)), "间隔不允许超过一年");
 
             var collections = await this._issueRep.Where(model => model.CreateTime >= input.From && model.CreateTime <= input.To)
                 .OrderBy<Issue, DateTime>(model => model.CreateTime)
