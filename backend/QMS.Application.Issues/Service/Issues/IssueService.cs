@@ -101,10 +101,22 @@ namespace QMS.Application.Issues
             var detail = input.Adapt<IssueDetail>();
             detail.Id = issueEntity.Entity.Id;
 
+            if (!string.IsNullOrEmpty(detail.ExtendAttribute))
+            {
+                var list = JSON.Deserialize<List<FieldValue>>(detail.ExtendAttribute);
+
+                foreach (var item in list)
+                {
+                    item.IssueId = detail.Id;
+                }
+
+                detail.ExtendAttribute= JSON.Serialize(list);
+            }
+
             await this._issueDetailRep.InsertNowAsync(detail, ignoreNullValues: true);
 
             // 插入扩展字段数据
-            await this.AddAttributeValuesBatch(input.ExtendAttribute);
+            await this.AddAttributeValuesBatch(detail.ExtendAttribute);
 
             await IssueLogger.Log(
                 this._issueOperateRep,
@@ -194,7 +206,40 @@ namespace QMS.Application.Issues
         {
             Helper.Helper.CheckInput(input);
 
-            return (await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
+            IssueDetail detail = await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
+
+            if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
+            {
+                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(outputDetailIssue.ExtendAttribute);
+
+                var attrColl = this._issueAttrRep.DetachedEntities.Where<IssueExtendAttribute>(model => model.Module == list[0].Module);
+                var attrIds = attrColl.Select<IssueExtendAttribute, long>(attr => attr.Id);
+
+                List<FieldValue> fieldValues = list.Where(val => attrIds.Contains(val.FieldId)).ToList();
+                var fieldIds = fieldValues.Select<FieldValue, long>(val => val.FieldId);
+
+                foreach (var item in attrColl)
+                {
+                    if (!fieldIds.Contains(item.Id))
+                    {
+                        fieldValues.Add(new FieldValue()
+                        {
+                            IssueId = input.Id,
+                            FieldCode = item.AttributeCode,
+                            FieldName = item.AttibuteName,
+                            FieldDataType = item.ValueType,
+                            FieldId = item.Id,
+                            Module = item.Module,
+                            Value = string.Empty
+                        });
+                    }
+                }
+
+                outputDetailIssue.ExtendAttribute = JSON.Serialize(fieldValues);
+            }
+
+            return outputDetailIssue;
         }
         #endregion
 

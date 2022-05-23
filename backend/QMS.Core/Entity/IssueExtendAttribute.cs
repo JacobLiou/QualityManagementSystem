@@ -68,13 +68,28 @@ namespace QMS.Core.Entity
         }
 
         [NotMapped]
+        public ICollection<Issue> Issues { get; set; }
+
+        [NotMapped]
         public ICollection<IssueExtendAttributeValue> AttrValues { get; set; }
 
         public void Configure(EntityTypeBuilder<IssueExtendAttribute> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
-            //entityBuilder.HasMany(i => i.AttrValues)
-            //    .WithOne(i => i.IssueExtendAttribute)
-            //    .HasForeignKey(i => i.Id);
+            entityBuilder.HasMany(i => i.AttrValues)
+                .WithOne(i => i.IssueExtendAttribute)
+                .HasForeignKey(i => i.Id);
+
+            // 设置联合主键和外键
+            //entityBuilder
+            //    .HasMany(model => model.Issues)
+            //    .WithMany(model => model.Attrs)
+            //    .UsingEntity<IssueExtendAttributeValue>(
+            //    u => u.HasOne(c => c.Issue).WithMany(c => c.AttrValues).HasForeignKey(c => c.IssueNum),
+            //    u => u.HasOne(c => c.IssueExtendAttribute).WithMany(c => c.AttrValues).HasForeignKey(c => c.Id),
+            //    u =>
+            //    {
+            //        u.HasKey(c => new { c.IssueNum, c.Id });
+            //    });
         }
 
         [Comment("排序优先级")]

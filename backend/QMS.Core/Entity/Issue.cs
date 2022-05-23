@@ -209,6 +209,12 @@ namespace QMS.Core.Entity
         public long? CurrentAssignment { get; set; }
 
         [NotMapped]
+        public ICollection<IssueExtendAttribute> Attrs { get; set; }
+
+        [NotMapped]
+        public ICollection<IssueExtendAttributeValue> AttrValues { get; set; }
+
+        [NotMapped]
         public ICollection<IssueOperation> SsuIssueOperations { get; set; }
 
         [NotMapped]
