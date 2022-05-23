@@ -43,7 +43,7 @@ namespace QMS.Core.Entity
 
 
         [Comment("问题来源")]
-        public EnumIssueSource Source { get; set; }
+        public EnumIssueSource? Source { get; set; }
 
         [Comment("问题状态")]
         public EnumIssueStatus Status { get; set; }
