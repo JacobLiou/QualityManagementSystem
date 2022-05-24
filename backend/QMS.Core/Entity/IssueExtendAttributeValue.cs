@@ -29,7 +29,7 @@ namespace QMS.Core.Entity
 
         public void Configure(EntityTypeBuilder<IssueExtendAttributeValue> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
-            entityBuilder.HasKey(entity => new { entity.Id, entity.IssueNum });
+            //entityBuilder.HasKey(entity => new { entity.Id, entity.IssueNum });
         }
     }
 }
