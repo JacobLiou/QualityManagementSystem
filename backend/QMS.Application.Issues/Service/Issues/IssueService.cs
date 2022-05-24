@@ -101,10 +101,22 @@ namespace QMS.Application.Issues
             var detail = input.Adapt<IssueDetail>();
             detail.Id = issueEntity.Entity.Id;
 
+            if (!string.IsNullOrEmpty(detail.ExtendAttribute))
+            {
+                var list = JSON.Deserialize<List<FieldValue>>(detail.ExtendAttribute);
+
+                foreach (var item in list)
+                {
+                    item.IssueId = detail.Id;
+                }
+
+                detail.ExtendAttribute= JSON.Serialize(list);
+            }
+
             await this._issueDetailRep.InsertNowAsync(detail, ignoreNullValues: true);
 
             // 插入扩展字段数据
-            await this.AddAttributeValuesBatch(input.ExtendAttribute);
+            await this.AddAttributeValuesBatch(detail.ExtendAttribute);
 
             await IssueLogger.Log(
                 this._issueOperateRep,
@@ -194,7 +206,40 @@ namespace QMS.Application.Issues
         {
             Helper.Helper.CheckInput(input);
 
-            return (await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<OutputDetailIssue>();
+            IssueDetail detail = await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
+
+            if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
+            {
+                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(outputDetailIssue.ExtendAttribute);
+
+                var attrColl = this._issueAttrRep.DetachedEntities.Where<IssueExtendAttribute>(model => model.Module == list[0].Module);
+                var attrIds = attrColl.Select<IssueExtendAttribute, long>(attr => attr.Id);
+
+                List<FieldValue> fieldValues = list.Where(val => attrIds.Contains(val.FieldId)).ToList();
+                var fieldIds = fieldValues.Select<FieldValue, long>(val => val.FieldId);
+
+                foreach (var item in attrColl)
+                {
+                    if (!fieldIds.Contains(item.Id))
+                    {
+                        fieldValues.Add(new FieldValue()
+                        {
+                            IssueId = input.Id,
+                            FieldCode = item.AttributeCode,
+                            FieldName = item.AttibuteName,
+                            FieldDataType = item.ValueType,
+                            FieldId = item.Id,
+                            Module = item.Module,
+                            Value = string.Empty
+                        });
+                    }
+                }
+
+                outputDetailIssue.ExtendAttribute = JSON.Serialize(fieldValues);
+            }
+
+            return outputDetailIssue;
         }
         #endregion
 
@@ -828,6 +873,42 @@ namespace QMS.Application.Issues
             {
                 List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
 
+                Helper.Helper.Assert(list != null && list.Count > 0, "更新扩展字段数据时，数据为空");
+
+                IEnumerable<long> attrIds = list.Select<FieldValue, long>(model => model.FieldId);
+                IEnumerable<long> issueIds = list.Select<FieldValue, long>(model => model.IssueId);
+
+                IEnumerable<IssueExtendAttributeValue> values = this._issueAttrValueRep.Where(
+                    model =>
+                    model.IssueNum == list[0].IssueId
+                    && attrIds.Contains(model.Id)
+                );
+
+                int realCount = list.Count;
+
+                if (realCount > values.Count())
+                {
+                    IEnumerable<long> ids = values.Select<IssueExtendAttributeValue, long>(val => val.Id);
+                    if (ids != null && ids.Any())
+                    {
+                        IssueExtendAttributeValue[] insertLists = list.TakeWhile(model => !ids.Contains(model.FieldId))?.Select<FieldValue, IssueExtendAttributeValue>(model => new IssueExtendAttributeValue
+                        {
+                            Id = model.FieldId,
+                            IssueNum = model.IssueId,
+                            AttibuteValue = model.Value
+                        })?.ToArray();
+
+                        if (insertLists != null && insertLists.Any())
+                        {
+                            this._issueAttrValueRep.Entities.AddRange(insertLists);
+
+                            this._issueAttrValueRep.Context.SaveChanges();
+
+                            list.RemoveAll(model => ids.Contains(model.FieldId));
+                        }
+                    }
+                }
+
                 this._issueAttrValueRep.Entities.UpdateRange(list.Select(model => new IssueExtendAttributeValue
                 {
                     Id = model.FieldId,
@@ -877,7 +958,7 @@ namespace QMS.Application.Issues
         public async Task<IEnumerable<DataPairOutput>> Statistic(StatisticInput input)
         {
             Helper.Helper.CheckInput(input);
-            Helper.Helper.Assert((input.To - input.From < TimeSpan.FromDays(365)), "间隔超过一年");
+            Helper.Helper.Assert((input.To - input.From < TimeSpan.FromDays(365)), "间隔不允许超过一年");
 
             var collections = await this._issueRep.Where(model => model.CreateTime >= input.From && model.CreateTime <= input.To)
                 .OrderBy<Issue, DateTime>(model => model.CreateTime)

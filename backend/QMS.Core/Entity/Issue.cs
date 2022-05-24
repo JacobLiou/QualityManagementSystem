@@ -43,7 +43,7 @@ namespace QMS.Core.Entity
 
 
         [Comment("问题来源")]
-        public EnumIssueSource Source { get; set; }
+        public EnumIssueSource? Source { get; set; }
 
         [Comment("问题状态")]
         public EnumIssueStatus Status { get; set; }
@@ -207,6 +207,12 @@ namespace QMS.Core.Entity
         /// </summary>
         [Comment("当前指派给")]
         public long? CurrentAssignment { get; set; }
+
+        [NotMapped]
+        public ICollection<IssueExtendAttribute> Attrs { get; set; }
+
+        [NotMapped]
+        public ICollection<IssueExtendAttributeValue> AttrValues { get; set; }
 
         [NotMapped]
         public ICollection<IssueOperation> SsuIssueOperations { get; set; }

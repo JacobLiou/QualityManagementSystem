@@ -51,8 +51,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// <summary>
         /// 问题来源
         /// </summary>
-        [Required]
-        public EnumIssueSource Source { get; set; }
+        //[Required]
+        public EnumIssueSource? Source { get; set; }
         /// <summary>
         /// 问题状态
         /// </summary>

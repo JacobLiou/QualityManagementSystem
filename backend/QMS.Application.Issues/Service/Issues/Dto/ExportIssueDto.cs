@@ -186,7 +186,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             this.Module = issue.Module.GetEnumDescription();
             this.Consequence = issue.Consequence.GetEnumDescription();
             this.IssueClassification = issue.IssueClassification.GetEnumDescription();
-            this.Source = issue.Source.GetEnumDescription();
+            if (issue.Source != null)
+            {
+                this.Source = ((EnumIssueSource)issue.Source).GetEnumDescription();
+            }
             this.Status = issue.Status.GetEnumDescription();
             this.CreateTime = issue.CreateTime.GetTimeString();
             this.DiscoverTime = issue.DiscoverTime.GetTimeString();

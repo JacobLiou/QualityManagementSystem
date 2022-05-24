@@ -1,6 +1,7 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.Extras.Admin.NET;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using QMS.Core.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +10,7 @@ namespace QMS.Core.Entity
 {
     [Table("issue_ext_attr")]
     [Comment("问题扩展属性")]
-    public class IssueExtendAttribute : IEntity<IssuesDbContextLocator>
+    public class IssueExtendAttribute : IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<IssueExtendAttribute, IssuesDbContextLocator>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -64,6 +65,31 @@ namespace QMS.Core.Entity
         {
             this.SetUpdate();
             this.IsDeleted = true;
+        }
+
+        [NotMapped]
+        public ICollection<Issue> Issues { get; set; }
+
+        [NotMapped]
+        public ICollection<IssueExtendAttributeValue> AttrValues { get; set; }
+
+        public void Configure(EntityTypeBuilder<IssueExtendAttribute> entityBuilder, DbContext dbContext, Type dbContextLocator)
+        {
+            entityBuilder.HasMany(i => i.AttrValues)
+                .WithOne(i => i.IssueExtendAttribute)
+                .HasForeignKey(i => i.Id);
+
+            // 设置联合主键和外键
+            //entityBuilder
+            //    .HasMany(model => model.Issues)
+            //    .WithMany(model => model.Attrs)
+            //    .UsingEntity<IssueExtendAttributeValue>(
+            //    u => u.HasOne(c => c.Issue).WithMany(c => c.AttrValues).HasForeignKey(c => c.IssueNum),
+            //    u => u.HasOne(c => c.IssueExtendAttribute).WithMany(c => c.AttrValues).HasForeignKey(c => c.Id),
+            //    u =>
+            //    {
+            //        u.HasKey(c => new { c.IssueNum, c.Id });
+            //    });
         }
 
         [Comment("排序优先级")]
