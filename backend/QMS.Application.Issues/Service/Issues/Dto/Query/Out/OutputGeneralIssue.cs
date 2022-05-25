@@ -31,8 +31,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// <summary>
         /// 产品编号
         /// </summary>
-        [Required]
-        public long ProductId { get; set; }
+        //[Required]
+        public long? ProductId { get; set; }
         /// <summary>
         /// 模块名
         /// </summary>
@@ -186,8 +186,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
             this.ProjectName = model.ProjectId.GetNameByProjectId();
             this.ProjectId = model.ProjectId;
 
-            this.ProductName = model.ProductId.GetNameByProductId();
             this.ProductId = model.ProductId;
+            if (this.ProductId != null)
+            {
+                this.ProductName = ((long)model.ProductId).GetNameByProductId();
+            }
 
             this.Discover = model.Discover;
             this.DiscoverName = model.Discover.GetNameByEmpId();
