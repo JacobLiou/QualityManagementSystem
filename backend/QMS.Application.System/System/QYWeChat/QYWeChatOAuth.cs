@@ -22,6 +22,7 @@ namespace QMS.Application.System
         private readonly IRepository<SysOauthUser> _sysOauthUserRep;  // oauth用户表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 职员表仓储
         private readonly ILoginVerify _login;
+        private readonly IRepository<SysUserRole> _sysUserRole;
 
         //企业微信重定向至登录界面
         private readonly string RedirectUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect";
@@ -38,12 +39,17 @@ namespace QMS.Application.System
         //企业微信发送信息URL
         private readonly string SendMessageUrl = " https://qyapi.weixin.qq.com/cgi-bin/message/send";
 
+        //网页授权链接
+        private readonly string WebOAuthUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
+
         private readonly string Appid = "ww44dc5ededfe4a954";
         private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
         private readonly string Agentid = "1000017";
         private readonly string Status = "web_login@gyoss9";
-        private readonly long DefaultOrgId = 142307070910547;
-        private readonly string DefaultOrgName = "首航新能源";
+        private readonly long DefaultOrgId = 142307070910547;    //默认组织机构ID
+        private readonly string DefaultOrgName = "首航新能源";   //默认组织机构名称
+        private readonly long Role = 142307070910557;            //默认角色
+        private readonly long TenantId = 142307070918781;        //默认租户ID
 
         //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
         private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
@@ -51,13 +57,14 @@ namespace QMS.Application.System
         private readonly int CacheHour = 2;
 
         public QYWeChatOAuth(ICacheService<string> cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
-            ILoginVerify loginVerify)
+            ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole)
         {
             _cache = cache;
             _sysUserRep = user;
             _sysOauthUserRep = oauthUser;
             _sysEmpRep = emp;
             _login = loginVerify;
+            _sysUserRole = sysUserRole;
         }
 
         /// <summary>
@@ -98,7 +105,7 @@ namespace QMS.Application.System
             };
             accessTokenModel = await $"{AccessTokenUrl}?{param.ToQueryString()}".GetAsAsync<QYTokenModel>();
             if (accessTokenModel.HasError())
-                throw Oops.Oh($"{ accessTokenModel.ErrMsg}");
+                throw Oops.Oh($"{accessTokenModel.ErrMsg}");
             await _cache.SetCacheByHours(Appid, accessTokenModel.AccessToken, CacheHour);
             return accessTokenModel;
         }
@@ -118,7 +125,7 @@ namespace QMS.Application.System
             };
             var userIdModel = await $"{UserIdUrl}?{param.ToQueryString()}".GetAsAsync<QYUserIdModel>();
             if (userIdModel.HasError())
-                throw Oops.Oh($"{ userIdModel.ErrMsg}");
+                throw Oops.Oh($"{userIdModel.ErrMsg}");
             return userIdModel;
         }
 
@@ -155,6 +162,7 @@ namespace QMS.Application.System
                 var user = qYUserInfo.Adapt<SysUser>();
                 user.Password = MD5Encryption.Encrypt("123456");
                 user.Status = 0;
+                user.TenantId = TenantId;
                 var newUser = _sysUserRep.InsertNow(user);
                 sysUser = newUser.Entity;
             }
@@ -178,6 +186,16 @@ namespace QMS.Application.System
                 NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
                 NewEmp.OrgName = DefaultOrgName;
                 _sysEmpRep.InsertNow(NewEmp);
+            }
+            //如果角色表上不存在对应的记录则新增
+            var userRole = _sysUserRole.DetachedEntities.Where(u => u.SysUserId.Equals(sysUser.Id)).FirstOrDefault();
+            if (userRole == null)
+            {
+                //新增用户对应的角色记录
+                var NewUserRole = new SysUserRole();
+                NewUserRole.SysUserId = sysUser.Id;
+                NewUserRole.SysRoleId = Role;   //默认角色ID
+                _sysUserRole.InsertNow(NewUserRole);
             }
             return sysUser;
         }
