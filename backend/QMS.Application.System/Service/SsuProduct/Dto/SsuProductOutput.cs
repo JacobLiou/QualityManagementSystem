@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Furion.Extras.Admin.NET.Entity.Common.Enum;
+using System;
 
 namespace QMS.Application.System
 {
@@ -20,7 +21,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品线
         /// </summary>
-        public string ProductLine { get; set; }
+        public EnumProductLine ProductLine { get; set; }
         
         /// <summary>
         /// 所属项目

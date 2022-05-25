@@ -1,4 +1,5 @@
 ﻿using Furion.Extras.Admin.NET;
+using Furion.Extras.Admin.NET.Entity.Common.Enum;
 using Furion.Extras.Admin.NET.Service;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -23,7 +24,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品线
         /// </summary>
-        public virtual string ProductLine { get; set; }
+        public virtual EnumProductLine? ProductLine { get; set; }
         
         /// <summary>
         /// 所属项目

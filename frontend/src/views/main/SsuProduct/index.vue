@@ -38,13 +38,13 @@
           <a-button type="primary" v-if="hasPerm('SsuProduct:add')" icon="plus" @click="$refs.addForm.add()">新增产品</a-button>
         </template>
         <span slot="productLinescopedSlots" slot-scope="text">
-          {{ '' | dictType(text) }}
+          {{ 'product_line' | dictType(text) }}
         </span>
         <span slot="statusscopedSlots" slot-scope="text">
-          {{ '' | dictType(text) }}
+          {{ 'product_status' | dictType(text) }}
         </span>
         <span slot="classificationIdscopedSlots" slot-scope="text">
-          {{ '' | dictType(text) }}
+          {{ 'product_classification' | dictType(text) }}
         </span>
         <span slot="action" slot-scope="text, record">
           <a v-if="hasPerm('SsuProduct:edit')" @click="$refs.editForm.edit(record)">编辑</a>
@@ -142,7 +142,7 @@ sorter: true,
         })
       }
       const productLineOption = this.$options
-      this.productLineData = productLineOption.filters['dictData']('')
+      this.productLineData = productLineOption.filters['dictData']('product_line')
     },
     methods: {
       /**

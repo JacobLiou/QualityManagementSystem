@@ -33,7 +33,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         [Comment("产品线")]
         [MaxLength(100)]
         [Required]
-        public string ProductLine { get; set; }
+        public EnumProductLine ProductLine { get; set; }
 
 
         [Comment("所属项目")]

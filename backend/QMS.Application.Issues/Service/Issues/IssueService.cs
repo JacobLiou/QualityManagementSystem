@@ -461,7 +461,7 @@ namespace QMS.Application.Issues
             // 根据保存的项目id和产品id调用第三方服务获取对应的名称
             if (issues.TotalRows > 0)
             {
-                IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName.StartsWith(Constants.PROJECT_MARK));
+                IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProjectName.StartsWith(Constants.PROJECT_MARK));
                 IEnumerable<OutputGeneralIssue> products = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName.StartsWith(Constants.PRODUCT_MARK));
 
                 if (projects.Any())
@@ -476,7 +476,7 @@ namespace QMS.Application.Issues
                     }
                 }
 
-                if (projects.Any())
+                if (products.Any())
                 {
                     Dictionary<long, ProductModelFromThirdParty> productNames = await Helper.Helper.GetThirdPartyService().GetProductByIds(products.Where(model => model.ProductId != null).Select<OutputGeneralIssue, long>(issue => (long)issue.ProductId).Distinct());
                     foreach (var item in products)

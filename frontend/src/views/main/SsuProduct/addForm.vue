@@ -69,11 +69,11 @@
       add (record) {
         this.visible = true
         const productLineOption = this.$options
-        this.productLineData = productLineOption.filters['dictData']('')
+        this.productLineData = productLineOption.filters['dictData']('product_line')
         const statusOption = this.$options
-        this.statusData = statusOption.filters['dictData']('')
+        this.statusData = statusOption.filters['dictData']('product_status')
         const classificationIdOption = this.$options
-        this.classificationIdData = classificationIdOption.filters['dictData']('')
+        this.classificationIdData = classificationIdOption.filters['dictData']('product_classification')
       },
       /**
        * 提交表单

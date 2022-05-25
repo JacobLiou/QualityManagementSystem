@@ -52,7 +52,7 @@ namespace QMS.Application.System
         {
             var ssuProducts = await _ssuProductRep.DetachedEntities
                                      .Where(!string.IsNullOrEmpty(input.ProductName), u => u.ProductName == input.ProductName)
-                                     .Where(!string.IsNullOrEmpty(input.ProductLine), u => u.ProductLine == input.ProductLine)
+                                     .Where(input.ProductLine != null, u => u.ProductLine == input.ProductLine)
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProductInput>(input))
                                      .ProjectToType<SsuProductOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
