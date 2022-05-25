@@ -1,56 +1,67 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-05-20 16:07:38
+ * @LastEditTime: 2022-05-20 17:28:19
  * @LastEditors: 林伟群
- * @Description: 人员组成员管理
- * @FilePath: \frontend\src\views\main\SsuGroupUser\index.vue
+ * @Description: 人员组成员管理组件
+ * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
 -->
 <template>
-  <a-row :gutter="[12, 6]">
-    <!-- 列表 -->
-    <a-col :md="3" :xs="24">
-      <a-card class="user1">
-        <a-menu v-model="current" mode="inline">
-          <a-menu-item :key="item.currentKey" v-for="item in currentList"> {{ item.currentName }}</a-menu-item>
-        </a-menu>
-      </a-card>
-    </a-col>
-    <!-- 树 -->
-    <a-col :md="5" :xs="24">
-      <a-card class="user1">
-        <a-spin :spinning="treeLoading">
-          <a-tree :tree-data="treeData" default-expand-all @select="selectTree" :replaceFields="replaceFields">
-          </a-tree>
-        </a-spin>
-      </a-card>
-    </a-col>
-    <!-- 列表 -->
-    <a-col :md="16" :xs="24">
-      <a-card class="user_list">
-        <a-spin :spinning="tabLoading">
-          <a-table
-            :columns="columns"
-            :row-key="
-              (record, index) => {
-                return index
-              }
-            "
-            :data-source="userData"
-            :pagination="false"
-            @change="handleTableChange"
-            :scroll="{ y: 'calc(100vh - 120px)' }"
-            :row-selection="rowSelection"
-          >
-          </a-table>
-          <section class="list_button" v-if="backPath !== ''">
-            <a-button type="primary" @click="userDefine" class="button1">确定</a-button>
-            <a-button @click="userCancel">返回</a-button>
-          </section>
-        </a-spin>
-      </a-card>
-    </a-col>
-  </a-row>
+  <a-drawer
+    destroyOnClose
+    title="人员选择"
+    placement="top"
+    :closable="false"
+    :visible="visible"
+    @close="onClose"
+    height="600"
+  >
+    <a-row :gutter="[12, 6]">
+      <!-- 列表 -->
+      <a-col :md="3" :xs="24">
+        <a-card class="user1">
+          <a-menu v-model="current" mode="inline">
+            <a-menu-item :key="item.currentKey" v-for="item in currentList"> {{ item.currentName }}</a-menu-item>
+          </a-menu>
+        </a-card>
+      </a-col>
+      <!-- 树 -->
+      <a-col :md="5" :xs="24">
+        <a-card class="user1">
+          <a-spin :spinning="treeLoading">
+            <a-tree :tree-data="treeData" default-expand-all @select="selectTree" :replaceFields="replaceFields">
+            </a-tree>
+          </a-spin>
+        </a-card>
+      </a-col>
+      <!-- 列表 -->
+      <a-col :md="16" :xs="24">
+        <a-card class="user_list">
+          <a-spin :spinning="tabLoading">
+            <a-table
+              :columns="columns"
+              :row-key="
+                (record, index) => {
+                  return index
+                }
+              "
+              :data-source="userData"
+              :pagination="false"
+              @change="handleTableChange"
+              :scroll="{ y: 'calc(100vh - 120px)' }"
+              :row-selection="rowSelection"
+            >
+            </a-table>
+            <section class="list_button">
+              <a-button type="primary" @click="userDefine" class="button1">确定</a-button>
+              <a-button @click="userCancel">返回</a-button>
+            </section>
+          </a-spin>
+        </a-card>
+      </a-col>
+    </a-row>
+  </a-drawer>
+
   <!-- </section> -->
 </template>
 
@@ -61,6 +72,16 @@ import { getOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
 import { SsuGroupList, SsuGroupusers } from '@/api/modular/main/SsuGroupManage'
 
 export default {
+  props: {
+    userVisible: {
+      type: Boolean,
+      default: false,
+    },
+    personnelType: {
+      type: String,
+      default: '',
+    },
+  },
   data() {
     return {
       currentList: [
@@ -96,28 +117,23 @@ export default {
         },
       ],
       userData: [],
-      checkRadio: false,
       replaceFields: {
         key: 'id',
       },
       treeLoading: false,
       tabLoading: false,
       checkUser: [],
-      backPath: '',
+      visible: false,
     }
-  },
-  created() {
-    const { personnelType, backPath } = this.$store.state.record
-    this.backPath = backPath
-    this.checkRadio = personnelType == 'ccList' ? true : false
   },
   computed: {
     rowSelection() {
+      console.log(this.personnelType)
       return {
         onChange: (selectedRowKeys, selectedRows) => {
           this.checkUser = selectedRows
         },
-        type: this.checkRadio ? 'checkbox' : 'radio',
+        type: this.personnelType == 'ccList' ? 'checkbox' : 'radio',
       }
     },
   },
@@ -144,6 +160,9 @@ export default {
         }
       },
       immediate: true,
+    },
+    userVisible() {
+      this.visible = !this.visible
     },
   },
   methods: {
@@ -341,17 +360,24 @@ export default {
       this.treeLoading = false
     },
 
+    onClose() {
+      this.visible = false
+      this.userData = []
+      this.checkUser = []
+    },
+
     // 确定
     userDefine() {
-      this.$store.commit('SET_CHECK_USER', this.checkUser)
-      this.$store.commit('SET_CHECK_TRUE', true)
-      this.$router.replace({ path: this.backPath })
+      this.$emit('checkUserArray', this.checkUser)
+      this.userData = []
+      this.checkUser = []
+      this.visible = false
     },
     // 返回
     userCancel() {
-      this.$store.commit('SET_CHECK_USER', [])
-      this.$store.commit('SET_CHECK_TRUE', false)
-      this.$router.replace({ path: this.backPath })
+      this.visible = false
+      this.userData = []
+      this.checkUser = []
     },
   },
 }

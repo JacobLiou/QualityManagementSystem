@@ -53,7 +53,8 @@ import {
   Descriptions,
   Result,
   Cascader,
-  Pagination
+  Pagination,
+  FormModel
 } from 'ant-design-vue'
 // import VueCropper from 'vue-cropper'
 
@@ -105,6 +106,7 @@ Vue.use(Descriptions)
 Vue.use(Result)
 Vue.use(Cascader)
 Vue.use(Pagination)
+Vue.use(FormModel)
 
 Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$message = message
