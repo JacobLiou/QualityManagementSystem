@@ -29,7 +29,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         public string ProductName { get; set; }
 
         [ExcelIgnore]
-        public long ProductId { get; set; }
+        public long? ProductId { get; set; }
 
         [ExcelColumnName("问题模块")]
         [Comment("问题模块")]
@@ -186,7 +186,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             this.Module = issue.Module.GetEnumDescription();
             this.Consequence = issue.Consequence.GetEnumDescription();
             this.IssueClassification = issue.IssueClassification.GetEnumDescription();
-            this.Source = issue.Source.GetEnumDescription();
+            if (issue.Source != null)
+            {
+                this.Source = ((EnumIssueSource)issue.Source).GetEnumDescription();
+            }
             this.Status = issue.Status.GetEnumDescription();
             this.CreateTime = issue.CreateTime.GetTimeString();
             this.DiscoverTime = issue.DiscoverTime.GetTimeString();
@@ -198,10 +201,14 @@ namespace QMS.Application.Issues.Service.Issue.Dto
 
             this.Creator = issue.CreatorId.GetNameByEmpId();
             this.Dispatcher = issue.Dispatcher.GetNameByEmpId();
-            this.ProjectName = issue.ProjectId.GetNameByProjectId();
             this.ProjectId = issue.ProjectId;
-            this.ProductName = issue.ProductId.GetNameByProductId();
+            this.ProjectName = issue.ProjectId.GetNameByProjectId();
+
             this.ProductId = issue.ProductId;
+            if (this.ProductId != null)
+            {
+                this.ProductName = ((long)this.ProductId).GetNameByProductId();
+            }
             this.Discover = issue.Discover.GetNameByEmpId();
             this.Executor = issue.Executor.GetNameByEmpId();
             this.Verifier = issue.Verifier == null ? this.Creator : issue.Verifier.GetNameByEmpId();

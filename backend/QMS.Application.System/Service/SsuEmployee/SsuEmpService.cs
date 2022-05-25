@@ -264,7 +264,7 @@ namespace QMS.Application.System
             foreach (SysUser obj in products.Values)
             {
                 var cacheProduct = _cacheService.GetCache(CoreCommonConst.USERID + obj.Id);
-                if (cacheProduct != null)
+                if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);
                 }

@@ -124,17 +124,24 @@ namespace QMS.Application.Issues.Helper
 
             var cacheService = App.GetService<IssueCacheService>();
 
-            string name = cacheService.GetUserName(id).Result;
+            string cacheStr = cacheService.GetUserName(id).Result;
 
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(cacheStr))
             {
-                return name;
+                return JSON.Deserialize<UserModelFromThirdParty>(cacheStr).Name;
             }
 
-            name = Helper.GetThirdPartyService().GetNameById(id).Result;
+            string name = Helper.GetThirdPartyService().GetNameById(id).Result;
 
             // 注释掉，由被调用方缓存在共享缓存中
-            //cacheService.SetUserName(id, name);
+            if (string.IsNullOrEmpty(name))
+            {
+                cacheService.SetUserName(id, JSON.Serialize(new UserModelFromThirdParty
+                {
+                    Id = id,
+                    Name = $"用户{id}不存在"
+                }));
+            }
 
             return name;
 

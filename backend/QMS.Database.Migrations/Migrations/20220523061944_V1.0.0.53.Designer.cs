@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220523061944_V1.0.0.53")]
+    partial class V10053
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,7 +136,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue", (string)null);
+                    b.ToTable("issue");
 
                     b.HasComment("问题记录");
                 });
@@ -153,7 +155,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("issue_column_display", (string)null);
+                    b.ToTable("issue_column_display");
 
                     b.HasComment("问题列表显示列明记录");
                 });
@@ -218,7 +220,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_detail", (string)null);
+                    b.ToTable("issue_detail");
 
                     b.HasComment("详细问题记录");
                 });
@@ -277,7 +279,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_ext_attr", (string)null);
+                    b.ToTable("issue_ext_attr");
 
                     b.HasComment("问题扩展属性");
                 });
@@ -300,7 +302,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id", "IssueNum");
 
-                    b.ToTable("issue_ext_attr_val", (string)null);
+                    b.ToTable("issue_ext_attr_val");
 
                     b.HasComment("问题扩展属性值");
                 });
@@ -339,7 +341,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_operation", (string)null);
+                    b.ToTable("issue_operation");
 
                     b.HasComment("问题操作记录");
                 });

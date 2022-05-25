@@ -65,11 +65,11 @@ namespace QMS.Application.Issues
         }
 
         [NonAction]
-        public async Task SetUserName(long userId, string name)
+        public async Task SetUserName(long userId, string objStr)
         {
             var cacheKey = CoreCommonConst.USERID + userId;
 
-            await _cache.SetStringAsync(cacheKey, name, this.GetCacheEntryOptions());
+            await _cache.SetStringAsync(cacheKey, objStr, this.GetCacheEntryOptions());
         }
 
 
@@ -94,7 +94,7 @@ namespace QMS.Application.Issues
         private DistributedCacheEntryOptions GetCacheEntryOptions(int minutes = 30)
         {
             DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
-            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(120));
+            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(minutes));
 
             return cacheOption;
         }

@@ -59,6 +59,8 @@ namespace QMS.Application.Issues
         [HttpPost("/issue/operation/page")]
         public async Task<PageResult<IssueOperationOutput>> Page(IssueIdModel input)
         {
+            Helper.Helper.CheckInput(input);
+
             var issueOperations = await _issueOperationRep.DetachedEntities
                                      .Where(u => u.IssueId == input.IssueId)
                                      .ProjectToType<IssueOperationOutput>().ToListAsync();

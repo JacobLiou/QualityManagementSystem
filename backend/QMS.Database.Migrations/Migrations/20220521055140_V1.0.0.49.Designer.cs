@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220521055140_V1.0.0.49")]
+    partial class V10049
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,7 +103,7 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("datetime(6)")
                         .HasComment("解决日期");
 
-                    b.Property<int?>("Source")
+                    b.Property<int>("Source")
                         .HasColumnType("int")
                         .HasComment("问题来源");
 
@@ -134,7 +136,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue", (string)null);
+                    b.ToTable("issue");
 
                     b.HasComment("问题记录");
                 });
@@ -153,7 +155,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("issue_column_display", (string)null);
+                    b.ToTable("issue_column_display");
 
                     b.HasComment("问题列表显示列明记录");
                 });
@@ -218,7 +220,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_detail", (string)null);
+                    b.ToTable("issue_detail");
 
                     b.HasComment("详细问题记录");
                 });
@@ -277,7 +279,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_ext_attr", (string)null);
+                    b.ToTable("issue_ext_attr");
 
                     b.HasComment("问题扩展属性");
                 });
@@ -300,7 +302,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id", "IssueNum");
 
-                    b.ToTable("issue_ext_attr_val", (string)null);
+                    b.ToTable("issue_ext_attr_val");
 
                     b.HasComment("问题扩展属性值");
                 });
@@ -339,7 +341,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("issue_operation", (string)null);
+                    b.ToTable("issue_operation");
 
                     b.HasComment("问题操作记录");
                 });
@@ -355,25 +357,9 @@ namespace QMS.Database.Migrations.Migrations
                     b.Navigation("Issue");
                 });
 
-            modelBuilder.Entity("QMS.Core.Entity.IssueExtendAttributeValue", b =>
-                {
-                    b.HasOne("QMS.Core.Entity.IssueExtendAttribute", "IssueExtendAttribute")
-                        .WithMany("AttrValues")
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("IssueExtendAttribute");
-                });
-
             modelBuilder.Entity("QMS.Core.Entity.Issue", b =>
                 {
                     b.Navigation("SsuIssueDetail");
-                });
-
-            modelBuilder.Entity("QMS.Core.Entity.IssueExtendAttribute", b =>
-                {
-                    b.Navigation("AttrValues");
                 });
 #pragma warning restore 612, 618
         }

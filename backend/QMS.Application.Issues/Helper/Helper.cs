@@ -50,6 +50,11 @@ namespace QMS.Application.Issues.Helper
             return issue;
         }
 
+        public static void CheckInput(object input)
+        {
+            Helper.Assert(input != null, "接口需要的传入参数为null");
+        }
+
         public static void Assert(bool result, string errorMsg = "参数错误")
         {
             if (!result)
