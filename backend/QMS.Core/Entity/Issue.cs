@@ -28,7 +28,7 @@ namespace QMS.Core.Entity
         //public SsuProject Project { get; set; }
 
         [Comment("产品编号")]
-        public long ProductId { get; set; }
+        public long? ProductId { get; set; }
         //public SsuProduct Product { get; set; }
 
         [Comment("问题模块")]

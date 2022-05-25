@@ -27,8 +27,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// </summary>
         [ExcelColumnName("产品编号")]
         [ExcelColumnWidth(20)]
-        [Required]
-        public virtual long ProductId { get; set; }
+        //[Required]
+        public virtual long? ProductId { get; set; }
 
         /// <summary>
         /// 问题模块

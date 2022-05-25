@@ -110,7 +110,7 @@ namespace QMS.Application.Issues
                     item.IssueId = detail.Id;
                 }
 
-                detail.ExtendAttribute= JSON.Serialize(list);
+                detail.ExtendAttribute = JSON.Serialize(list);
             }
 
             await this._issueDetailRep.InsertNowAsync(detail, ignoreNullValues: true);
@@ -180,18 +180,20 @@ namespace QMS.Application.Issues
 
             // 手动更新，防止已有数据丢失
             input.SetIssue(issue);
-            await _issueRep.UpdateNowAsync(issue, ignoreNullValues: true);
+            await _issueRep.UpdateNowAsync(issue);
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
 
-            input.SetIssueDetail(issueDetail);
-            await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
+            if (input.SetIssueDetail(issueDetail))
+            {
+                await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
+            }
 
             await IssueLogger.Log(
                 this._issueOperateRep,
                 input.Id,
                 EnumIssueOperationType.Edit,
-                "更新问题"
+                "更新问题" + JSON.Serialize(input)
             );
         }
 
@@ -476,12 +478,13 @@ namespace QMS.Application.Issues
 
                 if (projects.Any())
                 {
-                    Dictionary<long, ProductModelFromThirdParty> productNames = await Helper.Helper.GetThirdPartyService().GetProductByIds(products.Select<OutputGeneralIssue, long>(issue => issue.ProductId).Distinct());
+                    Dictionary<long, ProductModelFromThirdParty> productNames = await Helper.Helper.GetThirdPartyService().GetProductByIds(products.Where(model => model.ProductId != null).Select<OutputGeneralIssue, long>(issue => (long)issue.ProductId).Distinct());
                     foreach (var item in products)
                     {
-                        if (productNames != null && productNames.ContainsKey(item.ProductId))
+                        long id = (long)item.ProductId;
+                        if (productNames != null && productNames.ContainsKey(id))
                         {
-                            item.ProductName = productNames[item.ProductId].ProductName;
+                            item.ProductName = productNames[id].ProductName;
                         }
                     }
                 }
@@ -626,7 +629,7 @@ namespace QMS.Application.Issues
             if (issues.Count > 0)
             {
                 Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProjectId));
-                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProductId));
+                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Where(model=>model.ProductId!=null).Select<ExportIssueDto, long>(issue => (long)issue.ProductId));
 
                 foreach (var item in issues)
                 {
@@ -635,9 +638,10 @@ namespace QMS.Application.Issues
                         item.ProjectName = projects[item.ProjectId].ProjectName;
                     }
 
-                    if (products != null && products.ContainsKey(item.ProductId))
+                    long id = (long)item.ProductId;
+                    if (products != null && products.ContainsKey(id))
                     {
-                        item.ProductName = products[item.ProductId].ProductName;
+                        item.ProductName = products[id].ProductName;
                     }
                 }
             }
