@@ -51,7 +51,8 @@ namespace QMS.Application.System
         public async Task<PageResult<SsuProjectOutput>> Page([FromQuery] SsuProjectInput input)
         {
             var ssuProjects = await _ssuProjectRep.DetachedEntities
-                                     .Where(!string.IsNullOrEmpty(input.ProjectName), u => u.ProjectName == input.ProjectName)
+                                     //.Where(!string.IsNullOrEmpty(input.ProjectName), u => u.ProjectName == input.ProjectName)
+                                     .Where(!string.IsNullOrEmpty(input.ProjectName), u => u.ProjectName.Contains(input.ProjectName))
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProjectInput>(input))
                                      .ProjectToType<SsuProjectOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);

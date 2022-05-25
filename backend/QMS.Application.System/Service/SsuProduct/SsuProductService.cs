@@ -51,7 +51,8 @@ namespace QMS.Application.System
         public async Task<PageResult<SsuProductOutput>> Page([FromQuery] SsuProductInput input)
         {
             var ssuProducts = await _ssuProductRep.DetachedEntities
-                                     .Where(!string.IsNullOrEmpty(input.ProductName), u => u.ProductName == input.ProductName)
+                                     //.Where(!string.IsNullOrEmpty(input.ProductName), u => u.ProductName == input.ProductName)
+                                     .Where(!string.IsNullOrEmpty(input.ProductName), u => u.ProductName.Contains(input.ProductName))
                                      .Where(input.ProductLine != null, u => u.ProductLine == input.ProductLine)
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProductInput>(input))
                                      .ProjectToType<SsuProductOutput>()

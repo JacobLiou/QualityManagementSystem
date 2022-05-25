@@ -46,7 +46,8 @@ namespace QMS.Application.System
         public async Task<PageResult<SsuGroupOutput>> Page([FromQuery] SsuGroupInput input)
         {
             var ssuGroups = await _ssuGroupRep.DetachedEntities
-                                     .Where(!string.IsNullOrEmpty(input.GroupName), u => u.GroupName == input.GroupName)
+                                     //.Where(!string.IsNullOrEmpty(input.GroupName), u => u.GroupName == input.GroupName)
+                                     .Where(!string.IsNullOrEmpty(input.GroupName), u => u.GroupName.Contains(input.GroupName))
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuGroupInput>(input))
                                      .ProjectToType<SsuGroupOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
