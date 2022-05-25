@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-18 19:55:46
+ * @LastEditTime: 2022-05-24 09:17:43
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -19,7 +19,7 @@
         </div>
         <div class="info_li">
           <span class="li_title">问题详情：</span>
-          <div class="li_content">{{ IssueDetailData.description }}</div>
+          <div class="li_content" v-html="IssueDetailData.description"></div>
         </div>
         <div class="info_li">
           <span class="li_title">原因分析：</span>
@@ -199,10 +199,47 @@
             </div>
           </a-col>
         </a-row>
-        <a-row :gutter="[24, 12]" align="middle" type="flex" v-if="extendAttribute.length !== 0">
-          <a-col :xl="12" :xs="24" v-for="(item, index) in extendAttribute" :key="index"
-            ><div class="info-li">
-              <span class="li_title">{{ item.fieldName }}</span>
+        <a-row :gutter="[24, 12]" type="flex" v-if="extendAttribute.length !== 0">
+          <a-col :xl="12" :xs="24" v-for="(item, index) in extendAttribute" :key="index">
+            <!-- 单选 -->
+            <div class="info-li" v-if="item.fieldDataType == 'bool'">
+              <span class="li_title">{{ item.fieldName }}:</span>
+              <div class="li_content">
+                <a-radio-group
+                  v-model="item.value"
+                  v-for="item in checkAttArray(item.fieldCode, item.value, true)"
+                  :key="item.label"
+                >
+                  <a-radio :value="item.value"> {{ item.label }} </a-radio>
+                </a-radio-group>
+              </div>
+            </div>
+            <!-- 多选 -->
+            <div class="info-li" v-else-if="item.fieldDataType == 'enum' && item.fieldName === '样机说明'">
+              <span class="li_title">{{ item.fieldName }}:</span>
+              <div class="li_content">
+                <a-checkbox-group :value="item.value == '' ? [] : item.value.split(',')">
+                  <a-row style="width: 100%" :gutter="[2, 2]">
+                    <a-col
+                      :span="24"
+                      v-for="(item, index) in checkAttArray(item.fieldCode, item.value, true)"
+                      :key="index"
+                    >
+                      <a-checkbox :value="item.value">
+                        {{ item.label }}
+                      </a-checkbox>
+                    </a-col>
+                  </a-row>
+                </a-checkbox-group>
+              </div>
+            </div>
+            <!-- 下拉 -->
+            <div class="info-li" v-else-if="item.fieldDataType == 'enum' && item.fieldName !== '样机说明'">
+              <span class="li_title">{{ item.fieldName }}:</span>
+              <div class="li_content">{{ checkAttArray(item.fieldCode, item.value) }}</div>
+            </div>
+            <div class="info-li" v-else>
+              <span class="li_title">{{ item.fieldName }}:</span>
               <div class="li_content">{{ item.value }}</div>
             </div>
           </a-col>
@@ -240,6 +277,7 @@ export default {
       const data = contentArray.find((item) => item.code == text)
       return data.name
     },
+
     ICFContent(text) {
       if (text == undefined) return
       const contentArray = this.$options.filters['dictData']('issue_classification')
@@ -378,11 +416,13 @@ export default {
     getIssueDetail(id) {
       IssueDetail({ id })
         .then((res) => {
+          console.log(res)
           if (res.success) {
+            console.log('测试')
             this.IssueDetailData = res.data
-            // this.extendAttribute = this.changeExtendAttribute(res.data.extendAttribute)
-          } else {
-            this.$message.error('问题详情查看失败')
+            console.log(res.data.extendAttribute)
+            this.extendAttribute = this.changeExtendAttribute(res.data.extendAttribute)
+            console.log(JSON.parse(res.data.extendAttribute))
           }
         })
         .catch((err) => {
@@ -393,7 +433,8 @@ export default {
     // 自定义数据数据改造
     changeExtendAttribute(extendAttribute) {
       if (extendAttribute == null) return []
-      const newExtendAttribute = extendAttribute.map((item) => {
+      const extendAttributeArray = JSON.parse(extendAttribute)
+      const newExtendAttribute = extendAttributeArray.map((item) => {
         if (item.filedDataType == 'enum') {
           const contentArray = this.$options.filters['dictData'](item.fieldCode)
           const data = contentArray.find((it) => it.code == item.value)
@@ -402,6 +443,19 @@ export default {
         return item
       })
       return newExtendAttribute
+    },
+
+    checkAttArray(fieldCode, value, check = false) {
+      console.log(fieldCode)
+      console.log('value', value)
+      const attArray = this.$options.filters['dictData'](fieldCode)
+      const ValueObj = attArray.find((item) => item.code == value)
+      console.log(attArray, ValueObj)
+      if (!check) return ValueObj?.name ?? ''
+      const newAttArray = attArray.map((item) => {
+        return { label: item.name, value: item.code }
+      })
+      return newAttArray
     },
   },
 }
@@ -412,9 +466,6 @@ export default {
   width: 100%;
   margin-bottom: 1.5em;
   .info_li {
-    display: flex;
-    justify-self: flex-start;
-    align-self: flex-start;
     margin-bottom: 1.5em;
     margin-right: 0.5em;
     .li_title {
@@ -425,7 +476,7 @@ export default {
       text-align: right;
     }
     .li_content {
-      font-size: 1.1em;
+      text-indent: 2em;
     }
   }
   .title {

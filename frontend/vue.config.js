@@ -112,11 +112,11 @@ const vueConfig = {
           '^/api': '' // 需要rewrite的,
         }
       },
-      '/hubs': {
-        target: process.env.VUE_APP_SOCKET_BASE_URL,
-        ws: true,
-        changeOrigin: true
-      }
+      // '/hubs': {
+      //   target: process.env.VUE_APP_SOCKET_BASE_URL,
+      //   ws: true,
+      //   changeOrigin: true
+      // }
     }
   },
 

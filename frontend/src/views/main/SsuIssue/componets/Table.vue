@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-12 20:57:21
- * @LastEditTime: 2022-05-17 17:19:33
+ * @LastEditTime: 2022-05-23 20:48:00
  * @LastEditors: 林伟群
  * @Description: 表格
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
@@ -295,6 +295,11 @@ export default {
           })
           this.$store.commit('SET_CHECK_RECORD', record)
           break
+        case '编辑':
+          this.$store.commit('SET_CHECK_RECORD', record)
+          this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
+          this.$router.push({ path: '/problemAdd', query: { editId: record.id } })
+          this.break
         default:
           break
       }

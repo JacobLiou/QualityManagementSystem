@@ -101,6 +101,18 @@ export function getSmsCaptcha(parameter) {
   })
 }
 
+/**
+ * @description: 发送手机验证码
+ * @return {*}
+ */
+export function sendSmscode(parameter) {
+  return axios({
+    url: "/system/register/sendsmscode",
+    method: "post",
+    data: parameter
+  })
+}
+
 // 用户注册
 export function userRegister(parameter) {
   return axios({

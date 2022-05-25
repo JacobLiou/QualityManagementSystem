@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-18 10:29:11
+ * @LastEditTime: 2022-05-23 15:08:36
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemMan.vue
@@ -140,7 +140,7 @@ export default {
             const contentArray = this.$options.filters['dictData']('issue_module')
             const data = contentArray.find((item) => item.code == text)
             // const contentArray = ['研发', '研发', '试产', 'IQC', '量产', '售后']
-            return data.name
+            return data?.name
           },
         },
         {
@@ -153,7 +153,7 @@ export default {
             // const contentArray = ['致命', '严重', '一般', '提示']
             const contentArray = this.$options.filters['dictData']('issue_consequence')
             const data = contentArray.find((item) => item.code == text)
-            return data.name
+            return data?.name
           },
         },
         {
@@ -183,7 +183,7 @@ export default {
             // ]
             const contentArray = this.$options.filters['dictData']('issue_classification')
             const data = contentArray.find((item) => item.code == text)
-            return data.name
+            return data?.name
           },
         },
         {
@@ -197,7 +197,7 @@ export default {
             // const contentArray = ['客户反馈 ', '工厂 ', '测试发现 ']
             const contentArray = this.$options.filters['dictData']('issue_source')
             const data = contentArray.find((item) => item.code == text)
-            return data.name
+            return data?.name
           },
         },
         {
@@ -210,7 +210,7 @@ export default {
             // const contentArray = ['已开启', '已分派', '已处理', '未解决', '已关闭', '已挂起']
             const contentArray = this.$options.filters['dictData']('issue_status')
             const data = contentArray.find((item) => item.code == text)
-            return data.name
+            return data?.name
           },
         },
         {
@@ -426,7 +426,11 @@ export default {
     },
 
     // 新增问题
-    handleAddProblem() {},
+    handleAddProblem() {
+      this.$router.push({
+        path: '/problemAdd',
+      })
+    },
 
     // 导入
     customRequest(data) {

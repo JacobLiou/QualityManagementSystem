@@ -29,7 +29,9 @@ const constantRouterComponents = {
   // 问题管理测试
   'problemTest': () => import('../views/main/SsuIssue/problemMan.vue'),
   // 问题详情
-  'problemInfo': () => import('../views/main/SsuIssue/problemInfo.vue')
+  'problemInfo': () => import('../views/main/SsuIssue/problemInfo.vue'),
+  // 问题新增
+  'problemAdd': () => import('../views/main/SsuIssue/problemAdd.vue'),
 }
 
 // 前端未找到页面路由（固定不用改）、原来为 /404
@@ -159,6 +161,15 @@ const userAccount = [
     'meta': { title: '问题详情', icon: null, show: true, target: '', link: null },
     'component': 'problemInfo'
   },
+  {
+    'name': 'problemAdd',
+    'path': '/problemAdd',
+    'pid': 0,
+    'id': 183183,
+    'meta': { title: '问题新增', icon: null, show: true, target: '', link: null },
+    'component': 'problemAdd'
+  },
+
 
 ]
 

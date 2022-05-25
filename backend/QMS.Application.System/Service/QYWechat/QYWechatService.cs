@@ -7,6 +7,7 @@ using Furion.FriendlyException;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.System
@@ -110,8 +111,8 @@ namespace QMS.Application.System
             QYUserIdModel userId = _qyWechatOAuth.GetQYUserIdAsync(token.AccessToken, code).Result;
             QYUserInfoModel userInfo = _qyWechatOAuth.GetQYUserInfoAsync(token.AccessToken, userId.UserId).Result;
 
-            //判断用户是否已经存在
-            var user = _sysUserRep.DetachedEntities.Where(u => u.Account.Equals(userInfo.Account) || u.Phone.Equals(userInfo.Phone) || u.Email.Equals(userInfo.Email)).FirstOrDefault();
+            //判断用户是否已经存在,取消租户查询（IgnoreQueryFilters）
+            var user = _sysUserRep.DetachedEntities.IgnoreQueryFilters().Where(u => u.Account.Equals(userInfo.Account) || u.Phone.Equals(userInfo.Phone) || u.Email.Equals(userInfo.Email)).FirstOrDefault();
 
             //用户不存在则注册
             user = _qyWechatOAuth.QYWechatRegister(userInfo, user);
