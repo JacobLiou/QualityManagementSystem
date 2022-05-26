@@ -228,8 +228,11 @@ namespace QMS.Application.Issues
         {
             Helper.Helper.CheckInput(input);
 
-            IssueDetail detail = await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+            Issue issue = await this._issueRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
             OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
+
+            outputDetailIssue.SetCommon(issue);
 
             if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
             {
