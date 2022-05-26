@@ -1,4 +1,5 @@
-﻿using Furion.DatabaseAccessor;
+﻿using Furion;
+using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
@@ -25,6 +26,7 @@ using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
 using System.Linq.Dynamic.Core;
+using static QMS.Application.Issues.IssueStatusNoticeService;
 
 namespace QMS.Application.Issues
 {
@@ -94,7 +96,7 @@ namespace QMS.Application.Issues
                 issue.CCs = JSON.Serialize(input.CCList);
             }
             Helper.Helper.Assert(issue.Dispatcher != null, "创建问题时必须要指定分发者!");
-            issue.SetCreate();
+            issue.SetCreate(input.IsTemporary);
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
 
@@ -124,6 +126,22 @@ namespace QMS.Application.Issues
                 EnumIssueOperationType.New,
                 "新建问题"
             );
+
+            if (!input.IsTemporary)
+            {
+                var msg = new NoticeMsgInput()
+                {
+                    Url = "",
+                    Content = "",
+                    Title = "",
+                    UserIdList = new List<string>()
+                };
+
+                if (!string.IsNullOrEmpty(msg.Url))
+                {
+                    App.GetService<IssueStatusNoticeService>().SendNoticeAsync(msg);
+                }
+            }
 
             return new BaseId() { Id = detail.Id };
         }
@@ -186,7 +204,9 @@ namespace QMS.Application.Issues
 
             if (input.SetIssueDetail(issueDetail))
             {
-                await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
+                await this._issueDetailRep.UpdateNowAsync(issueDetail);
+
+                await this.UpdateAttributeValuesBatch(input.ExtendAttribute);
             }
 
             await IssueLogger.Log(
@@ -208,8 +228,11 @@ namespace QMS.Application.Issues
         {
             Helper.Helper.CheckInput(input);
 
-            IssueDetail detail = await this._issueDetailRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+            Issue issue = await this._issueRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
             OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
+
+            outputDetailIssue.SetCommon(issue);
 
             if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
             {
@@ -629,7 +652,7 @@ namespace QMS.Application.Issues
             if (issues.Count > 0)
             {
                 Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProjectId));
-                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Where(model=>model.ProductId!=null).Select<ExportIssueDto, long>(issue => (long)issue.ProductId));
+                Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Where(model => model.ProductId != null).Select<ExportIssueDto, long>(issue => (long)issue.ProductId));
 
                 foreach (var item in issues)
                 {

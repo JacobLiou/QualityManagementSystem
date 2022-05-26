@@ -109,5 +109,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// </summary>
         [ExcelIgnore]
         public virtual List<long> CCList { get; set; } = new List<long>();
+
+        /// <summary>
+        /// 是否是暂存
+        /// </summary>
+        [ExcelIgnore]
+        public virtual bool IsTemporary { get; set; }
     }
 }

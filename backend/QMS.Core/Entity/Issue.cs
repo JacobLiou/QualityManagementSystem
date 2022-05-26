@@ -56,12 +56,19 @@ namespace QMS.Core.Entity
         [Comment("提出日期")]
         public DateTime CreateTime { get; set; }
 
-        public void SetCreate()
+        public void SetCreate(bool isTemporary)
         {
             this.CreateTime = DateTime.Now;
             this.CreatorId = CurrentUserInfo.UserId;
 
-            this.Status = EnumIssueStatus.Created;
+            if (isTemporary)
+            {
+                this.Status = EnumIssueStatus.HasTemporary;
+            }
+            else
+            {
+                this.Status = EnumIssueStatus.Created;
+            }
 
             if (this.Verifier == null)
             {

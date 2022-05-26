@@ -37,5 +37,10 @@ namespace QMS.Core.Enum
         /// </summary>
         [Description("已挂起")]
         HasHangUp,
+        /// <summary>
+        /// 已暂存
+        /// </summary>
+        [Description("已暂存")]
+        HasTemporary,
     }
 }

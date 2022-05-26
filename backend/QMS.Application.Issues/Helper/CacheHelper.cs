@@ -83,6 +83,18 @@ namespace QMS.Application.Issues.Helper
             return Constants.PROJECT_MARK + id.ToString();
         }
 
+        public static string GetNameByProductId(this long? id)
+        {
+            if (id == null)
+            {
+                return string.Empty;
+            }
+
+            return GetNameByProductId((long)id);
+
+            //return "员工" + id?.ToString();
+        }
+
         public static string GetNameByProductId(this long id)
         {
             //Assert(false);
