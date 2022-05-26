@@ -217,8 +217,18 @@ namespace QMS.Application.Issues
         /// </summary>
         public long? CurrentAssignment { get; set; }
 
+        /// <summary>
+        /// 扩展字段
+        /// </summary>
+        public string ExtendAttribute { get; set; }
+
         public bool SetIssue(Issue issue)
         {
+            if (issue.Status == Core.Enum.EnumIssueStatus.HasTemporary)
+            {
+                issue.Status = Core.Enum.EnumIssueStatus.Created;
+            }
+
             issue.ProjectId = this.ProjectId > 0 ? this.ProjectId : issue.ProjectId;
             issue.ProductId = this.ProductId;
             issue.Title = this.Title;
@@ -250,16 +260,15 @@ namespace QMS.Application.Issues
 
         public bool SetIssueDetail(IssueDetail issueDetail)
         {
-            if (issueDetail.Description != issueDetail.Description)
-            {
-                issueDetail.Description = this.Description;
-                return true;
-            }
+            issueDetail.Description = this.Description;
+
+            issueDetail.ExtendAttribute = this.ExtendAttribute;
+
             //issueDetail.Reason = this.Reason;
             //issueDetail.Measures = this.Measures;
             //issueDetail.Result = this.Result;
 
-            return false;
+            return true;
         }
     }
 

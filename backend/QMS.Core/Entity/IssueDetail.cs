@@ -24,11 +24,11 @@ namespace QMS.Core.Entity
         public string Description { get; set; }
 
         [Comment("原因分析")]
-        [MaxLength(1000)]
+        //[MaxLength(1000)]
         public string Reason { get; set; }
 
         [Comment("解决措施")]
-        [MaxLength(1000)]
+        //[MaxLength(1000)]
         public string Measures { get; set; }
 
         [Comment("验证数量")]

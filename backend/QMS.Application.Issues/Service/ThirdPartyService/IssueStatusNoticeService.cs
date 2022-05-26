@@ -1,4 +1,5 @@
-﻿using Furion.DynamicApiController;
+﻿using Furion.DependencyInjection;
+using Furion.DynamicApiController;
 using Furion.EventBus;
 using Furion.Extras.Admin.NET;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +15,7 @@ namespace QMS.Application.Issues
     /// </summary>
     [ApiDescriptionSettings("问题管理服务", Name = "IssueStatusNotice", Order = 100)]
     [Route("issue/[controller]")]
-    public class IssueStatusNoticeService : IDynamicApiController
+    public class IssueStatusNoticeService : IDynamicApiController, IScoped
     {
         private readonly IHttpProxy _http;
         private readonly IHttpContextAccessor _contextAccessor;
@@ -27,7 +28,7 @@ namespace QMS.Application.Issues
             _eventPublisher = eventPublisher;
         }
 
-        public class NoticeInput
+        public class NoticeMsgInput
         {
             /// <summary>
             /// 要推送的目标页面链接
@@ -61,7 +62,7 @@ namespace QMS.Application.Issues
         /// <param name="userIdList">用户id数组</param>
         /// <returns></returns>
         [HttpPost("sendMessageToApp")]
-        public async Task SendNoticeAsync(NoticeInput input)
+        public async Task SendNoticeAsync(NoticeMsgInput input)
         {
             Helper.Helper.CheckInput(input);
 
