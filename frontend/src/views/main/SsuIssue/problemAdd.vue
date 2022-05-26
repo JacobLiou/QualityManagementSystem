@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-05-24 15:37:21
+ * @LastEditTime: 2022-05-26 21:05:04
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -39,7 +39,7 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item ref="dispatcherName" label="当前指派" prop="dispatcherName">
+        <a-form-model-item ref="dispatcherName" label="当前指派" prop="dispatcherName" v-if="isStorage">
           <section class="from_chilen">
             <a-input
               v-model="form.dispatcherName"
@@ -51,7 +51,22 @@
               placeholder="请选择指派人"
               disabled
             />
-            <a-button @click="changePersonnel('dispatcher')" :disabled="isEdit"> 选择 </a-button>
+            <a-button @click="changePersonnel('dispatcher')"> 选择 </a-button>
+          </section>
+        </a-form-model-item>
+        <a-form-model-item ref="currentAssignmentName" label="当前指派" prop="currentAssignmentName" v-else>
+          <section class="from_chilen">
+            <a-input
+              v-model="form.currentAssignmentName"
+              @blur="
+                () => {
+                  $refs.currentAssignment.onFieldBlur()
+                }
+              "
+              placeholder="请选择指派人"
+              disabled
+            />
+            <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
         <a-form-model-item label="性质" prop="consequence">
@@ -104,12 +119,10 @@
         <a-form-model-item label="抽送" prop="ccListNmae">
           <section class="from_chilen">
             <a-input v-model="form.ccListNmae" placeholder="请选择抽送人" disabled />
-            <a-button @click="changePersonnel('ccList')" :disabled="isEdit"> 选择 </a-button>
+            <a-button @click="changePersonnel('ccList')"> 选择 </a-button>
           </section>
         </a-form-model-item>
         <!-- 新增的属性 -->
-        <!-- <section class="add_once">
-          <a-form-model ref="attribuForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="attribuForm"> -->
         <section class="add_two">
           <a-form-model-item :label="attItem.fieldName" v-for="attItem in extendAttributeList" :key="attItem.fieldCode">
             <!-- input输入框  -->
@@ -180,8 +193,6 @@
             </section>
           </a-form-model-item>
         </section>
-        <!-- </a-form-model>
-        </section> -->
         <section class="add_once">
           <a-form-item label="附件上传" :labelCol="labelCol2">
             <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file">
@@ -191,9 +202,9 @@
         </section>
         <section class="add_once">
           <a-form-model-item :wrapper-col="wrapperCol3">
-            <a-button type="primary" @click="onSubmit"> 添加 </a-button>
+            <a-button type="primary" @click="onSubmit"> {{ status | addName }} </a-button>
             <a-button style="margin-left: 10px" @click="resetForm"> 重置 </a-button>
-            <a-button style="margin-left: 10px" type="primary" @click="onStorage"> 暂存 </a-button>
+            <a-button style="margin-left: 10px" type="primary" @click="onStorage" v-if="isStorage"> 暂存 </a-button>
             <a-button style="margin-left: 10px" @click="addAttribute"> 添加属性 </a-button>
             <a-button style="margin-left: 10px" @click="onback"> 返回 </a-button>
           </a-form-model-item>
@@ -211,6 +222,7 @@
       :attributVisible="attributVisible"
       :moduleType="form.module"
       @handleAttribut="handleAttribut"
+      :initCheckAttr="initCheckAttr"
     ></AttributCheck>
   </a-card>
 </template>
@@ -218,11 +230,12 @@
 <script>
 import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
 import { SsuProductList } from '@/api/modular/main/SsuProductManage'
-import { IssueAdd, IssueAttachmentSaveId, IssueDetail } from '@/api/modular/main/SsuIssueManage'
+import { IssueAdd, IssueAttachmentSaveId, IssueDetail, IssueEdit } from '@/api/modular/main/SsuIssueManage'
 import VueQuillEditor from './componets/VueQuillEditor.vue'
 import CheckUserList from './componets/CheckUserList.vue'
 import AttributCheck from './componets/AttributCheck.vue'
 import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
+import LogoVue from '@/components/tools/Logo.vue'
 
 export default {
   components: { CheckUserList, VueQuillEditor, AttributCheck },
@@ -275,30 +288,24 @@ export default {
       personnelType: '', // 选择的人
       attributVisible: false, // 选择属性
       extendAttributeList: [], // 新增的属性
+      initCheckAttr: [],
       attribuForm: {}, // 新增属性表单
       moduleType: '', // 新增类型属性
       dateType: '', // 时间类型
       attachment: {}, // 附件参数
       isEdit: false, // 问题编辑
+      status: -1, // 状态
+      oldDescription: '',
     }
   },
   created() {
+    const id = this.$route.query.editId
+    if (id) {
+      // 编辑
+      this.getIssueDetail(id)
+    }
     this.initList()
     this.getFromData()
-    const { storageAddform, editProblem, checkRecord } = this.$store.state.record
-    if (storageAddform.isStorage) {
-      this.form = storageAddform.form
-      this.extendAttributeList = storageAddform.extendAttributeList
-      this.attribuForm = storageAddform.attribuForm
-      this.attachment = storageAddform.attachment
-    }
-    if (editProblem.isEdit) {
-      this.isEdit = editProblem.isEdit
-      const id = this.$route.query.editId
-      this.form = checkRecord
-      this.getIssueDetail(id)
-      console.log('编辑的数据', checkRecord)
-    }
   },
   filters: {
     placeholderName(item) {
@@ -316,31 +323,70 @@ export default {
       }
       return constent
     },
+    addName(state) {
+      return state == -1 ? '添加' : state == 6 ? '添加' : '确定'
+    },
+  },
+  computed: {
+    isStorage() {
+      return this.status == -1 ? true : this.status == 6 ? true : false
+    },
   },
   methods: {
     // 获取详情
     getIssueDetail(id) {
       IssueDetail({ id })
         .then((res) => {
-          console.log(res)
           if (res.success) {
-            console.log(res)
-            // this.form.description = res.data.description
-            this.extendAttributeList = JSON.parse(res.data.extendAttribute)
-            // this.IssueDetailData = res.data
-            console.log(res.data.extendAttribute)
-            // this.extendAttribute = this.changeExtendAttribute(res.data.extendAttribute)
-            console.log(JSON.parse(res.data.extendAttribute))
+            this.form.description = res.data.description
+            this.oldDescription = res.data.description
+            this.initEditData(res.data)
+            if (!res.data.extendAttribute) return
+            const extendAttributeS = JSON.parse(res.data.extendAttribute)
+            if (extendAttributeS.length === 0) return
+            this.extendAttributeList = extendAttributeS.filter((item) => {
+              return item.value !== ''
+            })
+            this.extendAttributeList.forEach((item) => {
+              if (item.fieldName == '样机说明') {
+                const arrTrue = item.value.indexOf(',')
+                this.attribuForm[item.fieldCode] = arrTrue == -1 ? item.value : item.value.split(',')
+              } else {
+                this.attribuForm[item.fieldCode] = item.value
+              }
+            })
+            this.initCheckAttr = this.extendAttributeList.map((item) => {
+              const { value, issueId, ...newItem } = item
+              return JSON.stringify(newItem)
+            })
           }
         })
-        .catch((err) => {
-          this.$message.error('问题详情查看失败')
+        .catch(() => {
+          this.$message.warning('描述获取失败')
         })
+    },
+    // 编辑数据初始化
+    initEditData(checkRecord) {
+      this.form.id = checkRecord.id
+      this.form.title = checkRecord.title
+      this.form.projectId = checkRecord.projectId // 项目编号
+      this.form.productId = checkRecord.productId // 产品编号
+      this.form.module = checkRecord.module // 模块
+      this.form.issueClassification = checkRecord.issueClassification // 问题分类
+      this.form.dispatcher = checkRecord.dispatcher // 分发人ID（指派人）
+      this.form.dispatcherName = checkRecord.dispatcherName // 分发人名字
+      this.form.consequence = checkRecord.consequence // 性质
+      this.form.source = checkRecord.source // 问题来源
+      this.form.discover = checkRecord.discover // 发现人
+      this.form.discoverName = checkRecord.discoverName // 发现人名字
+      this.form.discoverTime = checkRecord.discoverTime // 发现日期
+      this.form.ccList = checkRecord.copyTo // 抽送人
+      this.form.ccListNmae = checkRecord.copyToName?.join() // 抽送人名字
+      this.status = checkRecord.status
     },
     // 列表初始化
     initList() {
       this.moduleData = this.$options.filters['dictData']('issue_module')
-      console.log('this.moduleData', this.moduleData)
       this.issueClassificationData = this.$options.filters['dictData']('issue_classification')
       this.consequenceData = this.$options.filters['dictData']('issue_consequence')
       this.sourceData = this.$options.filters['dictData']('issue_source')
@@ -416,7 +462,7 @@ export default {
       if (checkUser.length === 0) return
       let perArray = []
       switch (this.personnelType) {
-        case 'dispatcher': // 分发指派人
+        case 'dispatcher': // 分发
           this.dispatcherData = checkUser
           perArray = checkUser.map((item) => {
             return item.name
@@ -424,7 +470,7 @@ export default {
           this.form.dispatcherName = perArray.join()
           this.form.dispatcher = Number(checkUser[0].id)
           break
-        case 'discover': // 发现指派人
+        case 'discover': // 发现
           this.discoverData = checkUser
           perArray = checkUser.map((item) => {
             return item.name
@@ -432,7 +478,7 @@ export default {
           this.form.discoverName = perArray.join()
           this.form.discover = Number(checkUser[0].id)
           break
-        case 'ccList': // 抽送指派人
+        case 'ccList': // 抽送
           this.ccListData = checkUser
           perArray = checkUser.map((item) => {
             return item.name
@@ -441,6 +487,15 @@ export default {
             return Number(item.id)
           })
           this.form.ccListNmae = perArray.join()
+          break
+        case 'currentAssignment': // 指派
+          this.ccListData = checkUser
+          perArray = checkUser.map((item) => {
+            return item.name
+          })
+          this.form.currentAssignmentName = perArray.join()
+          this.form.currentAssignment = Number(checkUser[0].id)
+          console.log(this.form)
           break
         default:
           perArray = checkUser.map((item) => {
@@ -478,38 +533,14 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.form.extendAttribute = this.attribuFormChange()
-          IssueAdd(this.form)
-            .then((res) => {
-              if (res.success) {
-                // const issueId = res.data.id
-                // const parameter = {
-                //   attachment: this.attachment,
-                //   issueId: issueId,
-                // }
-                this.$message.success('问题增加成功')
-                // IssueAttachmentSaveId(parameter)
-                //   .then((res) => {
-                //     if (!res.success) {
-                //       this.$message.error('附件信息保存失败：' + res.message)
-                //     }
-                //   })
-                //   .catch(() => {
-                //     this.$message.error('附件信息保存失败：' + res.message)
-                //   })
-                this.$router.replace({
-                  path: '/problemManagement',
-                })
-                this.$store.commit('SET_ADD_FORM', {})
-              } else {
-                this.$message.error('问题增加失败')
-              }
-            })
-            .catch(() => {
-              this.$message.error('问题增加失败')
-            })
+          console.log(this.form);
+          console.log(this.isStorage);
+          if (this.isStorage) {
+            this.addIssue(this.form)
+          } else {
+            this.editIssue(this.form)
+          }
         } else {
-          console.log(this.form)
-          console.log('error submit!!')
           return false
         }
       })
@@ -542,21 +573,81 @@ export default {
       return JSON.stringify(newEAL)
     },
 
+    // 新增/缓存
+    addIssue(form) {
+      IssueAdd(form)
+        .then((res) => {
+          if (res.success) {
+            // const issueId = res.data.id
+            // const parameter = {
+            //   attachment: this.attachment,
+            //   issueId: issueId,
+            // }
+            this.$message.success(this.form.isTemporary ? '问题暂存成功' : '问题增加成功')
+            // IssueAttachmentSaveId(parameter)
+            //   .then((res) => {
+            //     if (!res.success) {
+            //       this.$message.error('附件信息保存失败：' + res.message)
+            //     }
+            //   })
+            //   .catch(() => {
+            //     this.$message.error('附件信息保存失败：' + res.message)
+            //   })
+            this.$router.replace({
+              path: '/problemManagement',
+            })
+            this.$store.commit('SET_ADD_FORM', {})
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch(() => {
+          this.$message.error(this.form.isTemporary ? '问题暂存失败' : '问题增加失败')
+        })
+    },
+
+    // 编辑
+    editIssue(form) {
+      IssueEdit(form)
+        .then((res) => {
+          if (res.success) {
+            // const issueId = res.data.id
+            // const parameter = {
+            //   attachment: this.attachment,
+            //   issueId: issueId,
+            // }
+            this.$message.success('问题编辑成功')
+            // IssueAttachmentSaveId(parameter)
+            //   .then((res) => {
+            //     if (!res.success) {
+            //       this.$message.error('附件信息保存失败：' + res.message)
+            //     }
+            //   })
+            //   .catch(() => {
+            //     this.$message.error('附件信息保存失败：' + res.message)
+            //   })
+            this.$router.replace({
+              path: '/problemManagement',
+            })
+            this.$store.commit('SET_ADD_FORM', {})
+          } else {
+            this.$message.warning(res.message)
+          }
+        })
+        .catch(() => {
+          this.$message.error('问题编辑失败')
+        })
+    },
+
     // 重置
     resetForm() {
       this.$refs.ruleForm.resetFields()
+      this.form.description = this.oldDescription
     },
     // 暂存
     onStorage() {
-      const storageAddform = {
-        form: this.form,
-        extendAttributeList: this.extendAttributeList,
-        attribuForm: this.attribuForm,
-        attachment: this.attachment,
-        isStorage: true,
-      }
-      this.$store.commit('SET_ADD_FORM', storageAddform)
-      this.$message.success('问题已暂存')
+      this.form.isTemporary = true
+      this.onSubmit()
     },
     // 添加属性
     addAttribute() {
@@ -567,6 +658,7 @@ export default {
       this.attributVisible = !this.attributVisible
     },
     handleAttribut(val) {
+      this.initCheckAttr = val
       this.extendAttributeList = val.map((item) => JSON.parse(item))
       console.log('新增属性', this.extendAttributeList)
     },

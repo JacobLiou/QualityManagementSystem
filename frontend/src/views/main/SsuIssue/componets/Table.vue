@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-12 20:57:21
- * @LastEditTime: 2022-05-23 20:48:00
+ * @LastEditTime: 2022-05-26 17:47:43
  * @LastEditors: 林伟群
  * @Description: 表格
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
@@ -63,15 +63,19 @@
     </section>
     <!-- 问题挂起弹窗 -->
     <HangProblem ref="hangProblem"></HangProblem>
+    <!-- 问题分发 -->
+    <Distribute :distributeVisible="distributeVisible" :distributeRecord="distributeRecord"></Distribute>
   </section>
 </template>
 
 <script>
 import { IssueDelete, IssueExport, Downloadfile } from '@/api/modular/main/SsuIssueManage'
 import HangProblem from './HangProblem.vue'
+import Distribute from './Distribute.vue'
 export default {
   components: {
     HangProblem,
+    Distribute,
   },
   props: {
     columns: {
@@ -133,6 +137,8 @@ export default {
           operIcon: 'delete',
         },
       ],
+      distributeVisible: false, // 分发组件
+      distributeRecord: {}, // 分发内容
     }
   },
   watch: {
@@ -228,6 +234,7 @@ export default {
             operIcon: 'select',
           },
         ],
+        6: [],
       }
       const addList = operationAdd[String(state)]
       const newOperationList = [...addList, ...operationList]
@@ -280,7 +287,7 @@ export default {
 
     // 操作类型
     operationType(record, operName) {
-      // console.log(record, operName)
+      console.log(record, operName)
       switch (operName) {
         case '删除':
           this.problemDelect(record)
@@ -299,7 +306,11 @@ export default {
           this.$store.commit('SET_CHECK_RECORD', record)
           this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
           this.$router.push({ path: '/problemAdd', query: { editId: record.id } })
-          this.break
+          break
+        case '分发':
+          this.$store.commit('SET_CHECK_RECORD', record)
+          this.$router.push({ path: '/problemDistribure', query: { distributeId: record.id } })
+          break
         default:
           break
       }

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-20 17:57:57
- * @LastEditTime: 2022-05-23 15:58:52
+ * @LastEditTime: 2022-05-26 15:53:26
  * @LastEditors: 林伟群
  * @Description: 属性选择组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\AttributCheck.vue
@@ -10,8 +10,8 @@
   <a-modal v-model="visible" title="请选择属性" on-ok="handleOk" destroyOnClose forceRender>
     <section v-if="attributArray.length == 0">暂无可选择属性</section>
     <section v-else>
-      <!-- <a-checkbox-group :options="attributArray" :default-value="checkedValues" @change="checkChange" /> -->
-      <a-checkbox-group @change="checkChange">
+      <!-- <a-checkbox-group :options="attributArray" :default-value="initCheckAttr" @change="checkChange" /> -->
+      <a-checkbox-group @change="checkChange" :defaultValue="checkedValues">
         <a-row :gutter="[12, 12]">
           <a-col :span="12" v-for="(item, index) in attributArray" :key="index">
             <a-checkbox :value="item.value"> {{ item.label }} </a-checkbox>
@@ -35,7 +35,7 @@
 <script>
 import { IssueExtAttrListStruct } from '@/api/modular/main/SsuIssueExtendAttributeManage'
 export default {
-  props: ['attributVisible', 'moduleType'],
+  props: ['attributVisible', 'moduleType', 'initCheckAttr'],
   data() {
     return {
       visible: false,
@@ -62,6 +62,8 @@ export default {
                 }
                 return itemCheck
               })
+              this.checkedValues = this.initCheckAttr
+              console.log(this.checkedValues)
             } else {
               this.attributArray = []
               this.$message.warning('模块属性获取失败')
@@ -79,6 +81,7 @@ export default {
     // 选中的属性
     checkChange(val) {
       this.checkedValues = val
+      console.log(this.checkedValues)
     },
     handleOk() {
       this.visible = false

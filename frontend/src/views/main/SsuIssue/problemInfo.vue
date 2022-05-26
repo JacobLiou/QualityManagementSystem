@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-24 09:17:43
+ * @LastEditTime: 2022-05-26 21:23:03
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -15,7 +15,7 @@
       <a-card class="info">
         <div class="info_li">
           <span class="li_title">问题简述：</span>
-          <div class="li_content">{{ record.title }}</div>
+          <div class="li_content">{{ IssueDetailData.title }}</div>
         </div>
         <div class="info_li">
           <span class="li_title">问题详情：</span>
@@ -44,14 +44,7 @@
         <a-divider></a-divider>
         <section>
           <a-row :gutter="[6, 6]">
-            <a-col
-              :xl="3"
-              :lg="6"
-              :md="8"
-              :xs="6"
-              :key="item.currentKey"
-              v-for="item in operationFilter(record.status)"
-            >
+            <a-col :xl="3" :lg="6" :md="8" :xs="6" :key="item.currentKey" v-for="item in operationFilter">
               <a-button @click="operationType(item.operName)">{{ item.operName }}</a-button>
             </a-col>
           </a-row>
@@ -69,91 +62,91 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">项目名称：</span>
-              <div class="li_content">{{ record.projectName }}</div>
+              <div class="li_content">{{ IssueDetailData.projectName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">产品名称：</span>
-              <div class="li_content">{{ record.productName }}</div>
+              <div class="li_content">{{ IssueDetailData.productName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">模块：</span>
-              <div class="li_content">{{ moduleContent(record.module) }}</div>
+              <div class="li_content">{{ moduleContent(IssueDetailData.module) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题分类：</span>
-              <div class="li_content">{{ ICFContent(record.issueClassification) }}</div>
+              <div class="li_content">{{ ICFContent(IssueDetailData.issueClassification) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">状态：</span>
-              <div class="li_content">{{ statusContent(record.status) }}</div>
+              <div class="li_content">{{ statusContent(IssueDetailData.status) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">责任人：</span>
-              <div class="li_content">{{ record.dispatcherName }}</div>
+              <div class="li_content">{{ IssueDetailData.dispatcherName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">预计完成时间：</span>
-              <div class="li_content">{{ record.forecastSolveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.forecastSolveTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">性质：</span>
-              <div class="li_content">{{ consequenceContent(record.consequence) }}</div>
+              <div class="li_content">{{ consequenceContent(IssueDetailData.consequence) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">发现人：</span>
-              <div class="li_content">{{ record.discoverName }}</div>
+              <div class="li_content">{{ IssueDetailData.discoverName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">发现日期：</span>
-              <div class="li_content">{{ record.discoverTime }}</div>
+              <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">发现日期：</span>
-              <div class="li_content">{{ record.discoverTime }}</div>
+              <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题来源：</span>
-              <div class="li_content">{{ sourceContent(record.source) }}</div>
+              <div class="li_content">{{ sourceContent(IssueDetailData.source) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决人：</span>
-              <div class="li_content">{{ record.executorName }}</div>
+              <div class="li_content">{{ IssueDetailData.executorName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决日期：</span>
-              <div class="li_content">{{ record.solveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.solveTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">实际完成时间：</span>
-              <div class="li_content">{{ record.solveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.solveTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -165,25 +158,25 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证地点：</span>
-              <div class="li_content">{{ record.verifierPlace }}</div>
+              <div class="li_content">{{ IssueDetailData.verifierPlace }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证人：</span>
-              <div class="li_content">{{ record.verifierName }}</div>
+              <div class="li_content">{{ IssueDetailData.verifierName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证日期：</span>
-              <div class="li_content">{{ record.validateTime }}</div>
+              <div class="li_content">{{ IssueDetailData.validateTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证状态：</span>
-              <div class="li_content">{{ record.validateTime }}</div>
+              <div class="li_content">{{ IssueDetailData.validateTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -259,52 +252,12 @@ export default {
   data() {
     return {
       IssueDetailData: {},
-      record: {},
       extendAttribute: [], // 自定义属性
     }
   },
-  created() {
-    this.record = this.$store.state.record.checkRecord
-    const id = this.$route.query.id
-    if (id !== undefined) {
-      this.getIssueDetail(id)
-    }
-  },
-  methods: {
-    moduleContent(text) {
-      if (text == undefined) return
-      const contentArray = this.$options.filters['dictData']('issue_module')
-      const data = contentArray.find((item) => item.code == text)
-      return data.name
-    },
-
-    ICFContent(text) {
-      if (text == undefined) return
-      const contentArray = this.$options.filters['dictData']('issue_classification')
-      const data = contentArray.find((item) => item.code == text)
-      return data.name
-    },
-    statusContent(text) {
-      if (text == undefined) return
-      const contentArray = this.$options.filters['dictData']('issue_status')
-      const data = contentArray.find((item) => item.code == text)
-      return data.name
-    },
-    sourceContent(text) {
-      if (text == undefined) return
-      const contentArray = this.$options.filters['dictData']('issue_source')
-      const data = contentArray.find((item) => item.code == text)
-      return data.name
-    },
-    consequenceContent(text) {
-      if (text == undefined) return
-      const contentArray = this.$options.filters['dictData']('issue_consequence')
-      const data = contentArray.find((item) => item.code == text)
-      return data.name
-    },
-
-    // 操作权限
-    operationFilter(state) {
+  computed: {
+    operationFilter() {
+      if (!this.IssueDetailData.status) return []
       let operationList = [
         {
           operName: '编辑',
@@ -365,7 +318,7 @@ export default {
           },
         ],
       }
-      const addList = operationAdd[String(state)]
+      const addList = operationAdd[Number(this.IssueDetailData.status)]
       const newOperationList = [
         {
           operName: '返回',
@@ -376,6 +329,44 @@ export default {
       ]
       return newOperationList
     },
+  },
+  created() {
+    const id = this.$route.query.id
+    if (id) {
+      this.getIssueDetail(id)
+    }
+  },
+  methods: {
+    moduleContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_module')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
+    ICFContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_classification')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
+    statusContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_status')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
+    sourceContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_source')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
+    consequenceContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_consequence')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
 
     // 操作类型
     operationType(operName) {
@@ -384,9 +375,8 @@ export default {
           this.$router.back()
           break
         case '删除':
-          this.problemDelect(this.record)
+          this.problemDelect(this.IssueDetailData)
           break
-
         default:
           break
       }
@@ -416,31 +406,30 @@ export default {
     getIssueDetail(id) {
       IssueDetail({ id })
         .then((res) => {
-          console.log(res)
           if (res.success) {
-            console.log('测试')
             this.IssueDetailData = res.data
-            console.log(res.data.extendAttribute)
+            if (!res.data.extendAttribute) return
             this.extendAttribute = this.changeExtendAttribute(res.data.extendAttribute)
-            console.log(JSON.parse(res.data.extendAttribute))
           }
         })
-        .catch((err) => {
+        .catch(() => {
           this.$message.error('问题详情查看失败')
         })
     },
 
     // 自定义数据数据改造
     changeExtendAttribute(extendAttribute) {
-      if (extendAttribute == null) return []
+      if (!extendAttribute) return []
       const extendAttributeArray = JSON.parse(extendAttribute)
-      const newExtendAttribute = extendAttributeArray.map((item) => {
-        if (item.filedDataType == 'enum') {
-          const contentArray = this.$options.filters['dictData'](item.fieldCode)
-          const data = contentArray.find((it) => it.code == item.value)
-          item.value = data
+      const newExtendAttribute = extendAttributeArray.filter((item) => {
+        if (item.value !== '') {
+          if (item.filedDataType == 'enum') {
+            const contentArray = this.$options.filters['dictData'](item.fieldCode)
+            const data = contentArray.find((it) => it.code == item.value)
+            item.value = data
+          }
+          return item
         }
-        return item
       })
       return newExtendAttribute
     },

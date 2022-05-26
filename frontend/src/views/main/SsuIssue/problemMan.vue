@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-23 15:08:36
+ * @LastEditTime: 2022-05-26 10:51:52
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemMan.vue
@@ -58,6 +58,7 @@ import ProblemSelect from './componets/ProblemSelect.vue'
 import ListSet from './componets/ListSet.vue'
 import Table from './componets/Table.vue'
 import { SsuIssueColumnDis, IssuePage, IssueImport } from '@/api/modular/main/SsuIssueManage'
+
 export default {
   components: { ProblemSelect, ListSet, Table },
   data() {
