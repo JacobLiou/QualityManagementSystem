@@ -1,14 +1,14 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-05-26 21:05:04
+ * @LastEditTime: 2022-05-27 15:52:07
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
 -->
 <template>
   <a-card class="add">
-    <div class="add_title">问题新增</div>
+    <div class="add_title">{{ isStorage ? '问题新增' : '问题编辑' }}</div>
     <section class="form_1">
       <a-form-model ref="ruleForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="form" :rules="rules">
         <a-form-model-item label="所属项目" prop="projectId">
@@ -54,18 +54,9 @@
             <a-button @click="changePersonnel('dispatcher')"> 选择 </a-button>
           </section>
         </a-form-model-item>
-        <a-form-model-item ref="currentAssignmentName" label="当前指派" prop="currentAssignmentName" v-else>
+        <a-form-model-item label="当前指派" prop="currentAssignmentName" v-else>
           <section class="from_chilen">
-            <a-input
-              v-model="form.currentAssignmentName"
-              @blur="
-                () => {
-                  $refs.currentAssignment.onFieldBlur()
-                }
-              "
-              placeholder="请选择指派人"
-              disabled
-            />
+            <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled />
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -235,7 +226,6 @@ import VueQuillEditor from './componets/VueQuillEditor.vue'
 import CheckUserList from './componets/CheckUserList.vue'
 import AttributCheck from './componets/AttributCheck.vue'
 import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
-import LogoVue from '@/components/tools/Logo.vue'
 
 export default {
   components: { CheckUserList, VueQuillEditor, AttributCheck },
@@ -324,12 +314,12 @@ export default {
       return constent
     },
     addName(state) {
-      return state == -1 ? '添加' : state == 6 ? '添加' : '确定'
+      return state == -1 ? '添加' : '确定'
     },
   },
   computed: {
     isStorage() {
-      return this.status == -1 ? true : this.status == 6 ? true : false
+      return this.status == -1 ? true : false
     },
   },
   methods: {
@@ -383,6 +373,8 @@ export default {
       this.form.ccList = checkRecord.copyTo // 抽送人
       this.form.ccListNmae = checkRecord.copyToName?.join() // 抽送人名字
       this.status = checkRecord.status
+      this.form.currentAssignment = null
+      this.form.currentAssignmentName = ''
     },
     // 列表初始化
     initList() {
@@ -533,8 +525,8 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.form.extendAttribute = this.attribuFormChange()
-          console.log(this.form);
-          console.log(this.isStorage);
+          console.log(this.form)
+          console.log(this.isStorage)
           if (this.isStorage) {
             this.addIssue(this.form)
           } else {

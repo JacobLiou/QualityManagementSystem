@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 15:54:20
- * @LastEditTime: 2022-05-18 21:04:12
+ * @LastEditTime: 2022-05-27 17:16:31
  * @LastEditors: 林伟群
  * @Description: 高级筛选
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\QueryList.vue
@@ -17,7 +17,10 @@
         </a-select>
       </a-col>
       <a-col :xs="16">
-        <a-input v-model="nameList" allow-clear placeholder="请输入名字" />
+        <section class="check_btn">
+          <a-input v-model="nameList" allow-clear placeholder="请选择名字" disabled />
+          <a-button @click="changePersonnel(CreatorType)"> 选择 </a-button>
+        </section>
       </a-col>
     </a-row>
     <a-row :gutter="[12, 12]" align="middle" type="flex">
@@ -43,7 +46,12 @@
     <a-row :gutter="[12, 12]" align="middle" type="flex">
       <a-col :xs="8"> <div class="title_style">问题分类</div> </a-col>
       <a-col :xs="16">
-        <a-select :allowClear="true" v-model="queryParam.IssueClassification" style="width: 100%" placeholder="请选择问题分类">
+        <a-select
+          :allowClear="true"
+          v-model="queryParam.IssueClassification"
+          style="width: 100%"
+          placeholder="请选择问题分类"
+        >
           <a-select-option v-for="(item, index) in classificationList" :key="index" :value="item.code">{{
             item.name
           }}</a-select-option>
@@ -63,7 +71,12 @@
     <a-row :gutter="[12, 12]" align="middle" type="flex">
       <a-col :xs="8"> <div class="title_style">测试类别</div> </a-col>
       <a-col :xs="16">
-        <a-select :allowClear="true" v-model="queryParam.TestClassification" style="width: 100%" placeholder="请选择测试类别">
+        <a-select
+          :allowClear="true"
+          v-model="queryParam.TestClassification"
+          style="width: 100%"
+          placeholder="请选择测试类别"
+        >
           <a-select-option v-for="(item, index) in testClassificationList" :key="index" :value="item.code">{{
             item.name
           }}</a-select-option>
@@ -87,7 +100,9 @@
 </template>
 
 <script>
+import CheckUserList from './CheckUserList.vue'
 export default {
+  components: { CheckUserList },
   props: {
     visibleTrue: {
       type: Boolean,
@@ -99,6 +114,7 @@ export default {
       visible: false,
       queryParam: {},
       nameList: '',
+      nameId: null,
       CreatorList: [
         {
           name: '提出人',
@@ -185,15 +201,18 @@ export default {
     // 高级检索
     handleQuery() {
       if (this.nameList !== '') {
+        this.queryParam.Creator = undefined
+        this.queryParam.Dispatcher = undefined
+        this.queryParam.Executor = undefined
         switch (this.CreatorType) {
           case 'Creator':
-            this.queryParam.Creator = this.nameList
+            this.queryParam.Creator = this.nameId
             break
           case 'Dispatcher':
-            this.queryParam.Dispatcher = this.nameList
+            this.queryParam.Dispatcher = this.nameId
             break
           case 'Executor':
-            this.queryParam.Executor = this.nameList
+            this.queryParam.Executor = this.nameId
             break
           default:
             break
@@ -201,6 +220,11 @@ export default {
       }
       this.$emit('queryLsit', this.queryParam)
       this.visible = false
+    },
+
+    changePersonnel(value) {
+      this.$parent.userVisible = !this.$parent.userVisible
+      this.$emit('changePersonnel', value)
     },
 
     // 重置
@@ -217,6 +241,9 @@ export default {
     },
 
     stateTime(date, dateString) {
+      this.queryParam.CreateTimeFrom = undefined
+      this.queryParam.DispatchTimeFrom = undefined
+      this.queryParam.SolveTimeFrom = undefined
       switch (this.CreatorType) {
         case 'Creator':
           this.queryParam.CreateTimeFrom = dateString
@@ -232,6 +259,9 @@ export default {
       }
     },
     endTime(date, dateString) {
+      this.queryParam.CreateTimeTo = undefined
+      this.queryParam.DispatchTimeTo = undefined
+      this.queryParam.SolveTimeTo = undefined
       switch (this.CreatorType) {
         case 'Creator':
           this.queryParam.CreateTimeTo = dateString
@@ -254,5 +284,8 @@ export default {
 .title_style {
   width: 100%;
   text-align: right;
+}
+.check_btn {
+  display: flex;
 }
 </style>

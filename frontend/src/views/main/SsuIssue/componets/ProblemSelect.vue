@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 10:36:55
- * @LastEditTime: 2022-05-17 14:00:59
+ * @LastEditTime: 2022-05-27 17:07:51
  * @LastEditors: 林伟群
  * @Description: 问题管理筛选组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSelect.vue
@@ -49,16 +49,30 @@
         /></a-col>
       </a-row>
     </a-card>
-    <QueryList :visibleTrue="visibleTrue" @queryLsit="queryLsit"></QueryList>
+    <QueryList
+      ref="queryList"
+      :visibleTrue="visibleTrue"
+      @queryLsit="queryLsit"
+      @changePersonnel="changePersonnel"
+    ></QueryList>
+    <!-- 选择人员 -->
+    <CheckUserList
+      class="checkUser"
+      :userVisible="userVisible"
+      :personnelType="personnelType"
+      @checkUserArray="checkUserArray"
+    ></CheckUserList>
   </section>
 </template>
 
 <script>
 import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
 import QueryList from './QueryList.vue'
+import CheckUserList from './CheckUserList.vue'
 export default {
   components: {
     QueryList,
+    CheckUserList,
   },
   data() {
     return {
@@ -68,6 +82,9 @@ export default {
       consequenceData: [],
       statusData: [],
       visibleTrue: false, // 弹窗
+      // 人员选择
+      userVisible: false,
+      personnelType: '',
     }
   },
   created() {
@@ -80,6 +97,19 @@ export default {
     this.statusData = statusOption.filters['dictData']('issue_status')
   },
   methods: {
+    changePersonnel(value) {
+      this.personnelType = value
+    },
+    // 人员选择
+    checkUserArray(checkUser) {
+      console.log(checkUser)
+      const perArray = checkUser.map((item) => {
+        return item.name
+      })
+      console.log(this.$refs.queryList.nameList)
+      this.$refs.queryList.nameList = perArray.join()
+      this.$refs.queryList.nameId = checkUser[0].id
+    },
     // 获取项目列表
     getProjectList() {
       SsuProjectList()
@@ -97,10 +127,12 @@ export default {
 
     // 打开筛选弹窗
     openQuerylist() {
+      // this.$parent.userVisible = !this.$parent.userVisible
       this.visibleTrue = !this.visibleTrue
     },
 
     queryLsit(val) {
+      console.log(val);
       this.$emit('queryParamSelect', val)
     },
 

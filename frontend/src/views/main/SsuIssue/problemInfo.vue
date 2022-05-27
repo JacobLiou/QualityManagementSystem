@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-26 21:23:03
+ * @LastEditTime: 2022-05-27 15:26:07
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -257,7 +257,7 @@ export default {
   },
   computed: {
     operationFilter() {
-      if (!this.IssueDetailData.status) return []
+      if (this.IssueDetailData.status==undefined) return []
       let operationList = [
         {
           operName: '编辑',
@@ -268,14 +268,14 @@ export default {
           operIcon: 'delete',
         },
       ]
-      const operationAdd = {
-        0: [
+      const operationAdd = [
+        [
           {
             operName: '分发',
             operIcon: 'select',
           },
         ],
-        1: [
+        [
           {
             operName: '解决',
             operIcon: 'question-circle',
@@ -290,7 +290,7 @@ export default {
             operIcon: 'minus-circle',
           },
         ],
-        2: [
+        [
           {
             operName: '验证',
             operIcon: 'safety-certificate',
@@ -300,7 +300,7 @@ export default {
             operIcon: 'export',
           },
         ],
-        3: [
+        [
           {
             operName: '转交',
             operIcon: 'export',
@@ -310,23 +310,21 @@ export default {
             operIcon: 'minus-circle',
           },
         ],
-        4: [],
-        5: [
+        [],
+        [
           {
             operName: '分发',
             operIcon: 'select',
           },
         ],
-      }
-      const addList = operationAdd[Number(this.IssueDetailData.status)]
-      const newOperationList = [
-        {
-          operName: '返回',
-          operIcon: 'rollback',
-        },
-        ...addList,
-        ...operationList,
       ]
+      const addList = operationAdd[Number(this.IssueDetailData.status)]
+      console.log(addList)
+      const back = {
+        operName: '返回',
+        operIcon: 'rollback',
+      }
+      const newOperationList = [back, ...addList, ...operationList]
       return newOperationList
     },
   },
