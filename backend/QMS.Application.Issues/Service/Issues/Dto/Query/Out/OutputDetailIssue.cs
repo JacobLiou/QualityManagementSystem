@@ -59,7 +59,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public void SetCommon(QMS.Core.Entity.Issue issue)
         {
             this.Title = issue.Title;
+            this.ProductId = issue.ProductId;
             this.ProductName = issue.ProductId?.GetNameByProductId();
+            this.ProjectId = issue.ProjectId;
             this.ProjectName = issue.ProjectId.GetNameByProjectId();
             this.Module = issue.Module;
             this.IssueClassification = issue.IssueClassification;
@@ -89,9 +91,19 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public virtual string ProjectName { get; set; }
 
         /// <summary>
+        /// 项目Id
+        /// </summary>
+        public long ProjectId { get; set; }
+
+        /// <summary>
         /// 产品名
         /// </summary>
         public virtual string ProductName { get; set; }
+
+        /// <summary>
+        /// 产品Id
+        /// </summary>
+        public long? ProductId { get; set; }
 
         /// <summary>
         /// 问题模块
