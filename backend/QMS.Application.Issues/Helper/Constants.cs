@@ -6,7 +6,7 @@ namespace QMS.Application.Issues.Helper
     {
         public readonly static string URL_ROOT = "http://localhost:5566/";
 
-        public readonly static string UPLOAD_FILE = Constants.URL_ROOT + "sysFileInfo / upload";
+        public readonly static string UPLOAD_FILE = Constants.URL_ROOT + "sysFileInfo/upload";
 
         public readonly static string DOWNLOAD_FILE = Constants.URL_ROOT + "sysFileInfo/download";
 
