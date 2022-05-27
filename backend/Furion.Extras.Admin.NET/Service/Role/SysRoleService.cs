@@ -66,8 +66,10 @@ namespace Furion.Extras.Admin.NET.Service
             var name = !string.IsNullOrEmpty(input.Name?.Trim());
             var code = !string.IsNullOrEmpty(input.Code?.Trim());
             var roles = await _sysRoleRep.DetachedEntities
-                                         .Where((name, u => EF.Functions.Like(u.Name, $"%{input.Name.Trim()}%")),
-                                                (code, u => EF.Functions.Like(u.Code, $"%{input.Code.Trim()}%")))
+                                         //.Where((name, u => EF.Functions.Like(u.Name, $"%{input.Name.Trim()}%")),
+                                         //       (code, u => EF.Functions.Like(u.Code, $"%{input.Code.Trim()}%")))
+                                         .Where(!string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name.Trim()))
+                                         .Where(!string.IsNullOrEmpty(input.Code), u => u.Code.Contains(input.Code.Trim()))
                                          .Where(u => u.Status == CommonStatus.ENABLE).OrderBy(u => u.Sort)
                                          .ToADPagedListAsync(input.PageNo, input.PageSize);
             return roles;

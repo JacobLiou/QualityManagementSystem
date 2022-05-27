@@ -26,13 +26,15 @@ namespace Furion.Extras.Admin.NET.Service
         private readonly ISysUserDataScopeService _sysUserDataScopeService;
         private readonly ISysUserRoleService _sysUserRoleService;
         private readonly ISysOrgService _sysOrgService;
+        private readonly IRepository<SysOauthUser> _sysOauthUserRep;  // 用户表仓储
 
         public SysUserService(IRepository<SysUser> sysUserRep,
                               ISysCacheService sysCacheService,
                               ISysEmpService sysEmpService,
                               ISysUserDataScopeService sysUserDataScopeService,
                               ISysUserRoleService sysUserRoleService,
-                              ISysOrgService sysOrgService)
+                              ISysOrgService sysOrgService,
+                              IRepository<SysOauthUser> sysOauthUserRep)
         {
             _sysUserRep = sysUserRep;
             _sysCacheService = sysCacheService;
@@ -40,6 +42,7 @@ namespace Furion.Extras.Admin.NET.Service
             _sysUserDataScopeService = sysUserDataScopeService;
             _sysUserRoleService = sysUserRoleService;
             _sysOrgService = sysOrgService;
+            _sysOauthUserRep = sysOauthUserRep;
         }
 
         /// <summary>
@@ -138,6 +141,13 @@ namespace Furion.Extras.Admin.NET.Service
 
             //删除该用户对应的用户-数据范围表关联信息
             await _sysUserDataScopeService.DeleteUserDataScopeListByUserId(input.Id);
+
+            //如果企业微信记录表存在对应的用户记录则删除
+            var oauthUser = await _sysOauthUserRep.FirstOrDefaultAsync(u => u.OpenId == input.Id.ToString(), false);
+            if (oauthUser != null)
+            {
+                await oauthUser.DeleteAsync();
+            }
         }
 
         /// <summary>
@@ -313,7 +323,7 @@ namespace Furion.Extras.Admin.NET.Service
         public async Task<List<UserOutput>> GetUserSelector([FromQuery] UserSelectorInput input)
         {
             var name = !string.IsNullOrEmpty(input.Name?.Trim());
-            var result= await _sysUserRep.DetachedEntities
+            var result = await _sysUserRep.DetachedEntities
                                     .Where(name, u => EF.Functions.Like(u.Name, $"%{input.Name.Trim()}%"))
                                     .Where(u => u.Status != CommonStatus.DELETED)
                                     .Where(u => u.AdminType != AdminType.SuperAdmin)

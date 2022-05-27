@@ -104,7 +104,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        public string QYWechatGetLoginToken(string code)
+        [HttpGet("system/qyWechat/qywechatgetlogintoken")]
+        public string QYWechatGetLoginToken([FromQuery] string code)
         {
             //获取企业微信扫码用户详细信息
             QYTokenModel token = _qyWechatOAuth.GetAccessTokenAsync().Result;

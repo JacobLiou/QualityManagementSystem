@@ -21,6 +21,7 @@ namespace QMS.Application.System
         private readonly IRepository<SysUser> _sysUserRep;  // 用户表仓储
         private readonly IRepository<SysOauthUser> _sysOauthUserRep;  // oauth用户表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 职员表仓储
+        private readonly IRepository<SysEmpPos> _sysEmpPosRep;  // 员工职位表仓储
         private readonly ILoginVerify _login;
         private readonly IRepository<SysUserRole> _sysUserRole;
 
@@ -50,6 +51,7 @@ namespace QMS.Application.System
         private readonly string DefaultOrgName = "首航新能源";   //默认组织机构名称
         private readonly long Role = 142307070910557;            //默认角色
         private readonly long TenantId = 142307070918781;        //默认租户ID
+        private readonly long SysPos = 142307070910554;          //默认员工职位ID
 
         //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
         private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
@@ -57,7 +59,7 @@ namespace QMS.Application.System
         private readonly int CacheHour = 2;
 
         public QYWeChatOAuth(ICacheService<string> cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
-            ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole)
+            ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole, IRepository<SysEmpPos> sysEmpPosRep)
         {
             _cache = cache;
             _sysUserRep = user;
@@ -65,6 +67,7 @@ namespace QMS.Application.System
             _sysEmpRep = emp;
             _login = loginVerify;
             _sysUserRole = sysUserRole;
+            _sysEmpPosRep = sysEmpPosRep;
         }
 
         /// <summary>
@@ -174,7 +177,7 @@ namespace QMS.Application.System
                 var NewOauthUser = qYUserInfo.Adapt<SysOauthUser>();
                 NewOauthUser.OpenId = sysUser.Id.ToString();
                 NewOauthUser.Uuid = sysUser.Account;
-                _sysOauthUserRep.InsertNow(NewOauthUser);
+                _sysOauthUserRep.InsertNowAsync(NewOauthUser);
             }
             //如果职员表上不存在对应的记录则新增
             var emp = _sysEmpRep.DetachedEntities.Where(u => u.Id.Equals(sysUser.Id)).FirstOrDefault();
@@ -185,8 +188,19 @@ namespace QMS.Application.System
                 NewEmp.Id = sysUser.Id;
                 NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
                 NewEmp.OrgName = DefaultOrgName;
-                _sysEmpRep.InsertNow(NewEmp);
+                _sysEmpRep.InsertNowAsync(NewEmp);
             }
+            //如果员工职位表不存在对应的记录则新增
+            var empPos = _sysEmpPosRep.DetachedEntities.Where(u => u.SysEmpId.Equals(sysUser.Id)).FirstOrDefault();
+            if (empPos == null)
+            {
+                //新增员工职位表
+                var newEmpPos = new SysEmpPos();
+                newEmpPos.SysEmpId = sysUser.Id;
+                newEmpPos.SysEmpId = SysPos;
+                _sysEmpPosRep.InsertNowAsync(newEmpPos);
+            }
+
             //如果角色表上不存在对应的记录则新增
             var userRole = _sysUserRole.DetachedEntities.Where(u => u.SysUserId.Equals(sysUser.Id)).FirstOrDefault();
             if (userRole == null)
@@ -195,7 +209,7 @@ namespace QMS.Application.System
                 var NewUserRole = new SysUserRole();
                 NewUserRole.SysUserId = sysUser.Id;
                 NewUserRole.SysRoleId = Role;   //默认角色ID
-                _sysUserRole.InsertNow(NewUserRole);
+                _sysUserRole.InsertNowAsync(NewUserRole);
             }
             return sysUser;
         }
@@ -246,6 +260,17 @@ namespace QMS.Application.System
         {
             var token = GetAccessTokenAsync().Result.AccessToken;
             QYWechatMessage message = new QYWechatMessage();
+            //构建从企业微信卡片消息跳转到平台的URL
+            var paramUrl = new Dictionary<string, string>()
+            {
+                ["appid"] = Appid,
+                ["redirect_uri"] = url,
+                ["response_type"] = "code",
+                ["scope"] = "snsapi_base",
+                ["state"] = "FromQYWechat"
+            };
+            url = $"{WebOAuthUrl}?{paramUrl.ToQueryString()}#wechat_redirect";
+
             message.Touser = touser;
             message.Toparty = toparty;
             message.Totag = totag;

@@ -11,5 +11,7 @@
         Task SetCacheByMinutes(string cacheKey, T value, int minutes);
 
         Task SetCacheBySecond(string cacheKey, T value, int seconds);
+
+        Task SetCache(string cacheKey, T value);
     }
 }

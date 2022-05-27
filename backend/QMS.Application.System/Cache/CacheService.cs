@@ -79,6 +79,18 @@ namespace QMS.Application.System
         }
 
         /// <summary>
+        /// 设置缓存（不设置过期时间）
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public async Task SetCache(string cacheKey, T value)
+        {
+            var json = JSON.Serialize(value);
+            await _cache.SetStringAsync(cacheKey, json);
+        }
+
+        /// <summary>
         /// 获取缓存-引用类型
         /// </summary>
         /// <param name="cacheKey"></param>
