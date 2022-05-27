@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-23 15:08:36
+ * @LastEditTime: 2022-05-27 17:11:30
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemMan.vue
@@ -58,6 +58,7 @@ import ProblemSelect from './componets/ProblemSelect.vue'
 import ListSet from './componets/ListSet.vue'
 import Table from './componets/Table.vue'
 import { SsuIssueColumnDis, IssuePage, IssueImport } from '@/api/modular/main/SsuIssueManage'
+
 export default {
   components: { ProblemSelect, ListSet, Table },
   data() {
@@ -107,7 +108,7 @@ export default {
           align: 'center',
           sorter: true,
           dataIndex: 'id',
-          width: '10em',
+          width: '12em',
         },
         {
           title: '标题',
@@ -409,7 +410,9 @@ export default {
 
     // 筛选查询
     queryParamSelect(value) {
+      console.log(value)
       this.queryParam = { ...this.queryParam, ...value }
+      console.log(this.queryParam)
       this.getProblemList()
     },
 
@@ -421,6 +424,7 @@ export default {
 
     // 翻页
     queryProblem(value) {
+      console.log(value)
       this.queryParam = { ...this.queryParam, ...value }
       this.getProblemList()
     },

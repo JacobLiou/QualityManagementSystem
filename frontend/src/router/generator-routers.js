@@ -32,6 +32,8 @@ const constantRouterComponents = {
   'problemInfo': () => import('../views/main/SsuIssue/problemInfo.vue'),
   // 问题新增
   'problemAdd': () => import('../views/main/SsuIssue/problemAdd.vue'),
+  // 问题分发
+  "problemDistribure": () => import('../views/main/SsuIssue/problemDistribure.vue')
 }
 
 // 前端未找到页面路由（固定不用改）、原来为 /404
@@ -168,6 +170,14 @@ const userAccount = [
     'id': 183183,
     'meta': { title: '问题新增', icon: null, show: true, target: '', link: null },
     'component': 'problemAdd'
+  },
+  {
+    'name': 'problemDistribure',
+    'path': '/problemDistribure',
+    'pid': 0,
+    'id': 183183,
+    'meta': { title: '问题分发', icon: null, show: true, target: '', link: null },
+    'component': 'problemDistribure'
   },
 
 
