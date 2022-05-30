@@ -42,5 +42,10 @@ namespace QMS.Core.Enum
         /// </summary>
         [Description("已暂存")]
         HasTemporary,
+        /// <summary>
+        /// 已复核
+        /// </summary>
+        [Description("已复核")]
+        HasRechecked
     }
 }
