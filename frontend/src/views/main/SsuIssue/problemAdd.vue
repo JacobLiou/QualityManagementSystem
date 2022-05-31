@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-05-27 15:52:07
+ * @LastEditTime: 2022-05-31 17:06:04
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -193,7 +193,7 @@
         </section>
         <section class="add_once">
           <a-form-model-item :wrapper-col="wrapperCol3">
-            <a-button type="primary" @click="onSubmit"> {{ status | addName }} </a-button>
+            <a-button type="primary" @click="onSubmit"> {{ addName }} </a-button>
             <a-button style="margin-left: 10px" @click="resetForm"> 重置 </a-button>
             <a-button style="margin-left: 10px" type="primary" @click="onStorage" v-if="isStorage"> 暂存 </a-button>
             <a-button style="margin-left: 10px" @click="addAttribute"> 添加属性 </a-button>
@@ -286,10 +286,13 @@ export default {
       isEdit: false, // 问题编辑
       status: -1, // 状态
       oldDescription: '',
+      copyAdd: 0, // 是否为复制
     }
   },
   created() {
     const id = this.$route.query.editId
+    console.log(this.$route.query)
+    this.copyAdd = this.$route.query.copyAdd
     if (id) {
       // 编辑
       this.getIssueDetail(id)
@@ -313,13 +316,15 @@ export default {
       }
       return constent
     },
-    addName(state) {
-      return state == -1 ? '添加' : '确定'
-    },
   },
   computed: {
     isStorage() {
+      if (this.copyAdd == 1) return true
       return this.status == -1 ? true : false
+    },
+    addName() {
+      if (this.copyAdd == 1) return '添加'
+      return this.status == -1 ? '添加' : '确定'
     },
   },
   methods: {
@@ -335,7 +340,7 @@ export default {
             const extendAttributeS = JSON.parse(res.data.extendAttribute)
             if (extendAttributeS.length === 0) return
             this.extendAttributeList = extendAttributeS.filter((item) => {
-              return item.value !== ''
+              return Boolean(item.value)
             })
             this.extendAttributeList.forEach((item) => {
               if (item.fieldName == '样机说明') {
@@ -618,9 +623,7 @@ export default {
             //   .catch(() => {
             //     this.$message.error('附件信息保存失败：' + res.message)
             //   })
-            this.$router.replace({
-              path: '/problemManagement',
-            })
+            this.$router.back()
             this.$store.commit('SET_ADD_FORM', {})
           } else {
             this.$message.warning(res.message)

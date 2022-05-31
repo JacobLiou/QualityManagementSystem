@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-27 17:11:30
+ * @LastEditTime: 2022-05-31 10:36:23
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemMan.vue
@@ -329,6 +329,9 @@ export default {
   created() {
     this.getColumnDis()
     console.log(this.$store.state)
+  },
+  provide() {
+    return { getProblemList: this.getProblemList }
   },
   methods: {
     // 获取列表标题数据

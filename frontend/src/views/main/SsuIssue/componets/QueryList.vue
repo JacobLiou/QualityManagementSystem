@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 15:54:20
- * @LastEditTime: 2022-05-27 17:16:31
+ * @LastEditTime: 2022-05-31 13:52:40
  * @LastEditors: 林伟群
  * @Description: 高级筛选
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\QueryList.vue
@@ -100,9 +100,7 @@
 </template>
 
 <script>
-import CheckUserList from './CheckUserList.vue'
 export default {
-  components: { CheckUserList },
   props: {
     visibleTrue: {
       type: Boolean,

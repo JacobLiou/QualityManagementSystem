@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-27 15:26:07
+ * @LastEditTime: 2022-05-31 19:02:58
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -52,7 +52,7 @@
       </a-card>
       <!-- 历史记录 -->
       <a-card class="info">
-        <OperRecords></OperRecords>
+        <OperRecords :id="id"></OperRecords>
       </a-card>
     </a-col>
     <!-- 基本信息 -->
@@ -239,25 +239,58 @@
         </a-row>
       </a-card>
     </a-col>
+    <!-- 问题解决弹窗 -->
+    <ProblemSolve ref="problemSolve"></ProblemSolve>
+    <!-- 问题复核 -->
+    <ProblemRecheck ref="recheckProblem"></ProblemRecheck>
+    <!-- 问题验证 -->
+    <ProblemValidate ref="validateProblem"></ProblemValidate>
+    <!-- 问题转交 -->
+    <ProblemRedispatch ref="redispatchProblem" @changePersonnel="changePersonnel"></ProblemRedispatch>
+    <!-- 问题挂起 -->
+    <ProblemHang ref="hangProblem"></ProblemHang>
+    <!-- 选择人员 -->
+    <CheckUserList
+      class="checkUser"
+      :userVisible="userVisible"
+      :personnelType="personnelType"
+      @checkUserArray="checkUserArray"
+    ></CheckUserList>
   </a-row>
 </template>
 
 <script>
 import { IssueDetail, IssueDelete } from '@/api/modular/main/SsuIssueManage'
 import OperRecords from './componets/OperRecords.vue'
+import ProblemSolve from './componets/ProblemSolve.vue'
+import ProblemRecheck from './componets/ProblemRecheck.vue'
+import ProblemValidate from './componets/ProblemValidate.vue'
+import ProblemRedispatch from './componets/ProblemRedispatch.vue'
+import ProblemHang from './componets/ProblemHang.vue'
+import CheckUserList from './componets/CheckUserList.vue'
 export default {
   components: {
     OperRecords,
+    ProblemSolve,
+    ProblemRecheck,
+    ProblemValidate,
+    ProblemRedispatch,
+    ProblemHang,
+    CheckUserList,
   },
   data() {
     return {
+      id: null,
       IssueDetailData: {},
       extendAttribute: [], // 自定义属性
+      // 人员选择
+      userVisible: false,
+      personnelType: '',
     }
   },
   computed: {
     operationFilter() {
-      if (this.IssueDetailData.status==undefined) return []
+      if (this.IssueDetailData.status == undefined) return []
       let operationList = [
         {
           operName: '编辑',
@@ -268,19 +301,18 @@ export default {
           operIcon: 'delete',
         },
       ]
-      const operationAdd = [
-        [
+      const operationAdd = {
+        0: [
           {
             operName: '分发',
             operIcon: 'select',
           },
         ],
-        [
+        1: [
           {
             operName: '解决',
             operIcon: 'question-circle',
           },
-
           {
             operName: '转交',
             operIcon: 'export',
@@ -290,36 +322,55 @@ export default {
             operIcon: 'minus-circle',
           },
         ],
-        [
+        2: [
           {
             operName: '验证',
             operIcon: 'safety-certificate',
           },
           {
+            operName: '挂起',
+            operIcon: 'minus-circle',
+          },
+          {
+            operName: '复核',
+            operIcon: 'reconciliation',
+          },
+        ],
+        3: [
+          {
+            operName: '挂起',
+            operIcon: 'select',
+          },
+          {
             operName: '转交',
             operIcon: 'export',
           },
         ],
-        [
+        4: [
           {
-            operName: '转交',
-            operIcon: 'export',
+            operName: '重开启',
+            operIcon: 'key',
+          },
+        ],
+        5: [
+          {
+            operName: '重开启',
+            operIcon: 'key',
+          },
+        ],
+        6: [],
+        7: [
+          {
+            operName: '验证',
+            operIcon: 'safety-certificate',
           },
           {
             operName: '挂起',
             operIcon: 'minus-circle',
           },
         ],
-        [],
-        [
-          {
-            operName: '分发',
-            operIcon: 'select',
-          },
-        ],
-      ]
+      }
       const addList = operationAdd[Number(this.IssueDetailData.status)]
-      console.log(addList)
       const back = {
         operName: '返回',
         operIcon: 'rollback',
@@ -329,10 +380,13 @@ export default {
     },
   },
   created() {
-    const id = this.$route.query.id
-    if (id) {
-      this.getIssueDetail(id)
+    this.id = this.$route.query.id
+    if (this.id) {
+      this.getIssueDetail()
     }
+  },
+  provide() {
+    return { getProblemList: this.getIssueDetail }
   },
   methods: {
     moduleContent(text) {
@@ -366,6 +420,20 @@ export default {
       return data.name
     },
 
+    // 人员选择
+    changePersonnel(value) {
+      this.personnelType = value
+    },
+    checkUserArray(checkUser) {
+      console.log(checkUser)
+      const perArray = checkUser.map((item) => {
+        return item.name
+      })
+      console.log(checkUser)
+      this.$refs.redispatchProblem.form.executor = Number(checkUser[0].id)
+      this.$refs.redispatchProblem.form.executorName = perArray.join()
+    },
+
     // 操作类型
     operationType(operName) {
       switch (operName) {
@@ -374,6 +442,31 @@ export default {
           break
         case '删除':
           this.problemDelect(this.IssueDetailData)
+          break
+        case '编辑':
+          this.$router.push({ path: '/problemAdd', query: { editId: this.IssueDetailData.id } })
+          break
+        case '分发':
+          // this.$store.commit('SET_CHECK_RECORD', record)
+          this.$router.push({ path: '/problemDistribure', query: { distributeId: this.IssueDetailData.id } })
+          break
+        case '解决':
+          this.$refs.problemSolve.initSolv(this.IssueDetailData, false)
+          break
+        case '复核':
+          this.$refs.recheckProblem.recheckForm(this.IssueDetailData, false)
+          break
+        case '验证':
+          this.$refs.validateProblem.initValidate(this.IssueDetailData, false)
+          break
+        case '转交':
+          this.$refs.redispatchProblem.initRedispatch(this.IssueDetailData, false)
+          break
+        case '挂起':
+          this.$refs.hangProblem.initHang(this.IssueDetailData, false)
+          break
+        case '重开启':
+          this.problemOpen(this.IssueDetailData)
           break
         default:
           break
@@ -399,10 +492,33 @@ export default {
         onCancel() {},
       })
     },
+    //  重新开启
+    problemOpen(record) {
+      const { id } = record
+      const _this = this
+      this.$confirm({
+        content: '确定重新开启',
+        onOk() {
+          IssueReOpen({ id })
+            .then((res) => {
+              if (res.success) {
+                _this.$message.success('重开启成功')
+                _this.getIssueDetail()
+              } else {
+                _this.$message.warning(res.message)
+              }
+            })
+            .catch(() => {
+              _this.$message.error('重开启失败')
+            })
+        },
+        onCancel() {},
+      })
+    },
 
     // 获取详情
-    getIssueDetail(id) {
-      IssueDetail({ id })
+    getIssueDetail() {
+      IssueDetail({ id: this.id })
         .then((res) => {
           if (res.success) {
             this.IssueDetailData = res.data
@@ -431,13 +547,10 @@ export default {
       })
       return newExtendAttribute
     },
-
+    // 自定义数据渲染
     checkAttArray(fieldCode, value, check = false) {
-      console.log(fieldCode)
-      console.log('value', value)
       const attArray = this.$options.filters['dictData'](fieldCode)
       const ValueObj = attArray.find((item) => item.code == value)
-      console.log(attArray, ValueObj)
       if (!check) return ValueObj?.name ?? ''
       const newAttArray = attArray.map((item) => {
         return { label: item.name, value: item.code }
@@ -464,6 +577,9 @@ export default {
     }
     .li_content {
       text-indent: 2em;
+      /deep/ img {
+        width: 100%;
+      }
     }
   }
   .title {

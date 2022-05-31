@@ -26,8 +26,6 @@ const constantRouterComponents = {
   // 默认首页
   'Console': () => import('@/views/system/index/welcome'),
 
-  // 问题管理测试
-  'problemTest': () => import('../views/main/SsuIssue/problemMan.vue'),
   // 问题详情
   'problemInfo': () => import('../views/main/SsuIssue/problemInfo.vue'),
   // 问题新增
@@ -148,19 +146,11 @@ const userAccount = [
 
   // 问题页面重构页面（未动态引入）
   {
-    'name': 'problemManagement',
-    'path': '/problemManagement',
-    'pid': 0,
-    'id': 183183,
-    'meta': { title: '问题记录管理', icon: null, show: true, target: '', link: null },
-    'component': 'problemTest'
-  },
-  {
     'name': 'problemInfo',
     'path': '/problemInfo',
     'pid': 0,
     'id': 183183,
-    'meta': { title: '问题详情', icon: null, show: true, target: '', link: null },
+    'meta': { title: '问题详情', icon: null, show: false, target: '', link: null },
     'component': 'problemInfo'
   },
   {
@@ -168,7 +158,7 @@ const userAccount = [
     'path': '/problemAdd',
     'pid': 0,
     'id': 183183,
-    'meta': { title: '问题新增', icon: null, show: true, target: '', link: null },
+    'meta': { title: '问题新增', icon: null, show: false, target: '', link: null },
     'component': 'problemAdd'
   },
   {
@@ -176,7 +166,7 @@ const userAccount = [
     'path': '/problemDistribure',
     'pid': 0,
     'id': 183183,
-    'meta': { title: '问题分发', icon: null, show: true, target: '', link: null },
+    'meta': { title: '问题分发', icon: null, show: false, target: '', link: null },
     'component': 'problemDistribure'
   },
 

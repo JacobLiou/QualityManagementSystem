@@ -1,7 +1,7 @@
-<!--
+<!--issueData
  * @Author: 林伟群
  * @Date: 2022-05-12 20:57:21
- * @LastEditTime: 2022-05-26 17:47:43
+ * @LastEditTime: 2022-05-31 20:33:13
  * @LastEditors: 林伟群
  * @Description: 表格
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
@@ -18,7 +18,8 @@
       :data-source="issueData"
       :pagination="false"
       @change="handleTableChange"
-      :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 446px)' }"
+      :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
+      size="middle"
     >
       <div slot="checkbox" slot-scope="text, record, index">
         <a-checkbox @change="onceCheck(text, record, index)" :checked="record.checkbox"> </a-checkbox>
@@ -61,21 +62,46 @@
         @showSizeChange="changePageSize"
       />
     </section>
-    <!-- 问题挂起弹窗 -->
-    <HangProblem ref="hangProblem"></HangProblem>
-    <!-- 问题分发 -->
-    <Distribute :distributeVisible="distributeVisible" :distributeRecord="distributeRecord"></Distribute>
+    <!-- 问题解决弹窗 -->
+    <ProblemSolve ref="problemSolve"></ProblemSolve>
+    <!-- 问题复核 -->
+    <ProblemRecheck ref="recheckProblem"></ProblemRecheck>
+    <!-- 问题验证 -->
+    <ProblemValidate ref="validateProblem"></ProblemValidate>
+    <!-- 问题转交 -->
+    <ProblemRedispatch ref="redispatchProblem" @changePersonnel="changePersonnel"></ProblemRedispatch>
+    <!-- 问题挂起 -->
+    <ProblemHang ref="hangProblem"></ProblemHang>
+    <!-- 批量转交 -->
+    <ProblemBatchRedispatch ref="batchRedispatchProblem" @changePersonnel="changePersonnel"></ProblemBatchRedispatch>
+    <!-- 选择人员 -->
+    <CheckUserList
+      class="checkUser"
+      :userVisible="userVisible"
+      :personnelType="personnelType"
+      @checkUserArray="checkUserArray"
+    ></CheckUserList>
   </section>
 </template>
 
 <script>
-import { IssueDelete, IssueExport, Downloadfile } from '@/api/modular/main/SsuIssueManage'
-import HangProblem from './HangProblem.vue'
-import Distribute from './Distribute.vue'
+import { IssueDelete, IssueExport, Downloadfile, IssueReOpen } from '@/api/modular/main/SsuIssueManage'
+import ProblemSolve from './ProblemSolve.vue'
+import ProblemRecheck from './ProblemRecheck.vue'
+import ProblemValidate from './ProblemValidate.vue'
+import ProblemRedispatch from './ProblemRedispatch.vue'
+import ProblemHang from './ProblemHang.vue'
+import ProblemBatchRedispatch from './ProblemBatchRedispatch.vue'
+import CheckUserList from './CheckUserList.vue'
 export default {
   components: {
-    HangProblem,
-    Distribute,
+    ProblemSolve,
+    ProblemRecheck,
+    ProblemValidate,
+    ProblemRedispatch,
+    CheckUserList,
+    ProblemHang,
+    ProblemBatchRedispatch,
   },
   props: {
     columns: {
@@ -137,10 +163,12 @@ export default {
           operIcon: 'delete',
         },
       ],
-      distributeVisible: false, // 分发组件
-      distributeRecord: {}, // 分发内容
+      // 人员选择
+      userVisible: false,
+      personnelType: '',
     }
   },
+  inject: ['getProblemList'],
   watch: {
     issueList: {
       handler() {
@@ -166,6 +194,22 @@ export default {
     this.isMoblile()
   },
   methods: {
+    changePersonnel(value) {
+      this.personnelType = value
+    },
+    // 人员选择
+    checkUserArray(checkUser) {
+      const perArray = checkUser.map((item) => {
+        return item.name
+      })
+      if (this.personnelType == 'batcheExecutor') {
+        this.$refs.batchRedispatchProblem.form.executor = Number(checkUser[0].id)
+        this.$refs.batchRedispatchProblem.form.executorName = perArray.join()
+        return
+      }
+      this.$refs.redispatchProblem.form.executor = Number(checkUser[0].id)
+      this.$refs.redispatchProblem.form.executorName = perArray.join()
+    },
     operationFilter(state) {
       let operationList = [
         {
@@ -197,7 +241,6 @@ export default {
             operName: '解决',
             operIcon: 'question-circle',
           },
-
           {
             operName: '转交',
             operIcon: 'export',
@@ -213,28 +256,47 @@ export default {
             operIcon: 'safety-certificate',
           },
           {
-            operName: '转交',
-            operIcon: 'export',
+            operName: '挂起',
+            operIcon: 'minus-circle',
+          },
+          {
+            operName: '复核',
+            operIcon: 'reconciliation',
           },
         ],
         3: [
           {
+            operName: '挂起',
+            operIcon: 'select',
+          },
+          {
             operName: '转交',
             operIcon: 'export',
+          },
+        ],
+        4: [
+          {
+            operName: '重开启',
+            operIcon: 'key',
+          },
+        ],
+        5: [
+          {
+            operName: '重开启',
+            operIcon: 'key',
+          },
+        ],
+        6: [],
+        7: [
+          {
+            operName: '验证',
+            operIcon: 'safety-certificate',
           },
           {
             operName: '挂起',
             operIcon: 'minus-circle',
           },
         ],
-        4: [],
-        5: [
-          {
-            operName: '分发',
-            operIcon: 'select',
-          },
-        ],
-        6: [],
       }
       const addList = operationAdd[String(state)]
       const newOperationList = [...addList, ...operationList]
@@ -292,9 +354,6 @@ export default {
         case '删除':
           this.problemDelect(record)
           break
-        case '挂起':
-          this.$refs.hangProblem.edit(record)
-          break
         case '详情':
           this.$router.push({
             path: '/problemInfo',
@@ -307,9 +366,30 @@ export default {
           this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
           this.$router.push({ path: '/problemAdd', query: { editId: record.id } })
           break
+        case '复制':
+          this.$router.push({ path: '/problemAdd', query: { editId: record.id, copyAdd: 1 } })
+          break
         case '分发':
-          this.$store.commit('SET_CHECK_RECORD', record)
+          // this.$store.commit('SET_CHECK_RECORD', record)
           this.$router.push({ path: '/problemDistribure', query: { distributeId: record.id } })
+          break
+        case '解决':
+          this.$refs.problemSolve.initSolv(record)
+          break
+        case '复核':
+          this.$refs.recheckProblem.recheckForm(record)
+          break
+        case '验证':
+          this.$refs.validateProblem.initValidate(record)
+          break
+        case '转交':
+          this.$refs.redispatchProblem.initRedispatch(record)
+          break
+        case '挂起':
+          this.$refs.hangProblem.initHang(record)
+          break
+        case '重开启':
+          this.problemOpen(record)
           break
         default:
           break
@@ -320,18 +400,45 @@ export default {
     problemDelect(record) {
       const { id } = record
       const _this = this
-      console.log(this.$parent.$parent.$parent.getProblemList())
       this.$confirm({
         content: '确定删除该问题',
         onOk() {
-          IssueDelete({ id }).then((res) => {
-            if (res.success) {
-              _this.$message.success('删除成功')
-              _this.$parent.$parent.$parent.getProblemList()
-            } else {
+          IssueDelete({ id })
+            .then((res) => {
+              if (res.success) {
+                _this.$message.success('删除成功')
+                _this.getProblemList()
+              } else {
+                _this.$message.warning(res.message)
+              }
+            })
+            .catch(() => {
               _this.$message.error('删除失败')
-            }
-          })
+            })
+        },
+        onCancel() {},
+      })
+    },
+
+    //  重新开启
+    problemOpen(record) {
+      const { id } = record
+      const _this = this
+      this.$confirm({
+        content: '确定重新开启',
+        onOk() {
+          IssueReOpen({ id })
+            .then((res) => {
+              if (res.success) {
+                _this.$message.success('重开启成功')
+                _this.getProblemList()
+              } else {
+                _this.$message.warning(res.message)
+              }
+            })
+            .catch(() => {
+              _this.$message.error('重开启失败')
+            })
         },
         onCancel() {},
       })
@@ -339,7 +446,13 @@ export default {
 
     // 选中转发
     checkForward() {
-      // TODO
+      const checkIssue = this.issueData.filter((item) => {
+        return item.checkbox == true
+      })
+      const redispatchIssueList = checkIssue.filter((item) => {})
+      console.log(checkIssue)
+      // TODO筛选转交的数据
+      // this.$refs.batchRedispatchProblem.initRedispatch()
     },
 
     // 选中导出

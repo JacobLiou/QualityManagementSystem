@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-18 11:07:28
- * @LastEditTime: 2022-05-18 11:12:47
+ * @LastEditTime: 2022-05-31 15:01:25
  * @LastEditors: 林伟群
  * @Description: 历史记录组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\OperRecords.vue
@@ -9,7 +9,7 @@
 <template>
   <section class="info">
     <div class="title">历史记录</div>
-    <a-row :gutter="[24, 12]">
+    <a-row :gutter="[24, 12]" v-if="!isModal">
       <a-col :xl="12" :xs="24"
         ><ul v-if="this.operationRecords != ''">
           <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
@@ -30,28 +30,49 @@
         </a-steps>
       </a-col>
     </a-row>
+    <section v-else>
+      <ul v-if="this.operationRecords != ''">
+        <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
+          {{ index + 1 }}. {{ item.operationTime }}, 由 <b>{{ item.operatorName }}</b>
+          {{ 'issue_operation_type' | dictType(item.operationTypeId) }}
+        </li>
+      </ul>
+    </section>
   </section>
 </template>
 
 <script>
 import { IssueOperationPage } from '@/api/modular/main/SsuIssueManage'
 export default {
+  props: {
+    id: [String, Number],
+    isModal: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
-      record: {},
       operationRecords: [], // 操作记录
     }
   },
-  created() {
-    // checkRecord选中的要实时更新
-    this.record = this.$store.state.record.checkRecord
-    this.getIssueOperationPage()
+  watch: {
+    id: {
+      handler() {
+        if (this.id) {
+          this.getIssueOperationPage()
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
     // 获取历史记录
     getIssueOperationPage() {
-      this.record.issueId = this.record.id
-      IssueOperationPage(this.record)
+      const parameter = {
+        issueId: this.id,
+      }
+      IssueOperationPage(parameter)
         .then((res) => {
           if (res.success) {
             const operationRecords = res.data.rows
