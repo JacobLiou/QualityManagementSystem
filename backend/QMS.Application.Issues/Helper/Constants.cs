@@ -49,7 +49,7 @@ namespace QMS.Application.Issues.Helper
         };
 
         public const string ERROR_MSG_CHECK_SOLVE = "当前问题未指定负责人处理，不允许进行处理操作";
-        public const string ERROR_MSG_CHECK_VALIDATE = "当前问题不是已处理状态，不允许进行验证操作";
+        public const string ERROR_MSG_CHECK_VALIDATE = "当前问题不是已复核状态，不允许进行验证操作";
         public const string ERROR_MSG_CHECK_HANGUP = "当前问题已关闭，不允许进行挂起操作";
         public const string ERROR_MSG_CHECK_REDISPATCH = "当前问题为已开启或已挂起、关闭，不允许进行重分派操作";
         public const string ERROR_MSG_CHECK_DISPATCH = "当前问题不为已开启或已挂起，不允许进行分派操作";

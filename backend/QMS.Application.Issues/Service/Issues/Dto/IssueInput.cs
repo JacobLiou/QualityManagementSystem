@@ -255,6 +255,30 @@ namespace QMS.Application.Issues
             //issue.Verifier = this.Verifier;
             //issue.VerifierPlace = this.VerifierPlace;
 
+            if (this.CurrentAssignment != null)
+            {
+                switch (issue.Status)
+                {
+                    case Core.Enum.EnumIssueStatus.Created:
+                    case Core.Enum.EnumIssueStatus.Solved:
+                        issue.Dispatcher = this.CurrentAssignment;
+                        break;
+                    case Core.Enum.EnumIssueStatus.Dispatched:
+                    case Core.Enum.EnumIssueStatus.UnSolve:
+                        issue.Executor = this.CurrentAssignment;
+                        break;
+                    case Core.Enum.EnumIssueStatus.Closed:
+                    case Core.Enum.EnumIssueStatus.HasHangUp:
+                    case Core.Enum.EnumIssueStatus.HasTemporary:
+                        break;
+                    case Core.Enum.EnumIssueStatus.HasRechecked:
+                        issue.Verifier = this.CurrentAssignment;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             return true;
         }
 

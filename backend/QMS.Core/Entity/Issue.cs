@@ -113,7 +113,7 @@ namespace QMS.Core.Entity
 
         public void DoReCheck(bool pass)
         {
-            this.Status = pass ? EnumIssueStatus.Solved : EnumIssueStatus.Dispatched;
+            this.Status = pass ? EnumIssueStatus.HasRechecked : EnumIssueStatus.Dispatched;
 
             this.CurrentAssignment = pass ? this.CreatorId : this.Executor;
         }
