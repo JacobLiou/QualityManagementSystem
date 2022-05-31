@@ -26,7 +26,7 @@ export default {
   props: {
     title: {
       type: String,
-      default: '首航质量管理平台',
+      default: '质量管理平台',
       required: false
     },
     showTitle: {
