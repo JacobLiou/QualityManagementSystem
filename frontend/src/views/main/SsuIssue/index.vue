@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-05-31 19:25:00
+ * @LastEditTime: 2022-06-01 10:09:05
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -328,7 +328,7 @@ export default {
   },
   created() {
     this.getColumnDis()
-    console.log(this.$store.state)
+    console.log(this.$store.state, 'store')
   },
   provide() {
     return { getProblemList: this.getProblemList }
@@ -390,6 +390,11 @@ export default {
     async getProblemList() {
       try {
         this.spinning = true
+        const { backQueryParam } = this.$store.state.record
+        if (backQueryParam.PageSize) {
+          this.queryParam = backQueryParam
+          this.$store.commit('SET_BACK_QP', {})
+        }
         const problemRes = await IssuePage(this.queryParam)
         if (problemRes.code == 200) {
           this.totalNum = problemRes.data.totalRows

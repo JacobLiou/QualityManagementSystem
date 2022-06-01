@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 20:18:02
- * @LastEditTime: 2022-05-31 20:46:03
+ * @LastEditTime: 2022-06-01 09:34:29
  * @LastEditors: 林伟群
  * @Description: 批量转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemBatchRedispatch.vue
@@ -53,9 +53,6 @@ export default {
     initRedispatch(record) {
       this.visible = true
       this.checkRecord = record
-      //   this.form.id = record.id
-      //   this.form.title = record.title
-      //   this.isShow = isShow
     },
     // 人员选择
     changePersonnel(value) {

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-05-31 17:06:04
+ * @LastEditTime: 2022-06-01 09:50:42
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -593,7 +593,6 @@ export default {
             this.$router.replace({
               path: '/problemManagement',
             })
-            this.$store.commit('SET_ADD_FORM', {})
           } else {
             this.$message.warning(res.message)
           }
@@ -624,7 +623,6 @@ export default {
             //     this.$message.error('附件信息保存失败：' + res.message)
             //   })
             this.$router.back()
-            this.$store.commit('SET_ADD_FORM', {})
           } else {
             this.$message.warning(res.message)
           }

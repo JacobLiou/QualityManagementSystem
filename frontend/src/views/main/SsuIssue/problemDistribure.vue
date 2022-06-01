@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-05-26 19:54:32
+ * @LastEditTime: 2022-06-01 09:37:32
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -399,10 +399,7 @@ export default {
                 //   .catch(() => {
                 //     this.$message.error('附件信息保存失败：' + res.message)
                 //   })
-                this.$router.replace({
-                  path: '/problemManagement',
-                })
-                this.$store.commit('SET_ADD_FORM', {})
+                this.$router.back()
               } else {
                 this.$message.warning(res.message)
               }

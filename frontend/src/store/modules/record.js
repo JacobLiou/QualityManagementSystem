@@ -1,7 +1,7 @@
 /*
  * @Author: 林伟群
  * @Date: 2022-05-17 17:13:32
- * @LastEditTime: 2022-05-23 20:59:19
+ * @LastEditTime: 2022-06-01 10:04:29
  * @LastEditors: 林伟群
  * @Description: 请输入文件功能类型
  * @FilePath: \frontend\src\store\modules\record.js
@@ -15,7 +15,7 @@ const record = {
         personnelType: '', // 选择人的类型
         isCheck: false, // 是否选中
         backPath: "", // 返回的路径
-        storageAddform: {}, // 问题新增暂存
+        backQueryParam: {}, // 页面跳转保留参数
     },
     mutations: {
         SET_CHECK_RECORD: (state, data) => {
@@ -33,11 +33,12 @@ const record = {
         SET_CHECK_PATH: (state, data) => {
             state.backPath = data
         },
-        SET_ADD_FORM: (state, data) => {
-            state.storageAddform = data
-        },
         SET_EDIT_PROBLRM: (state, data) => {
             state.editProblem = data
+        },
+        SET_BACK_QP: (state, data) => {
+            console.log(data, 'data');
+            state.backQueryParam = data
         }
     },
 

@@ -355,15 +355,17 @@ export default {
           this.problemDelect(record)
           break
         case '详情':
+          this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
           this.$router.push({
             path: '/problemInfo',
             query: { id: record.id },
           })
-          this.$store.commit('SET_CHECK_RECORD', record)
+          // this.$store.commit('SET_CHECK_RECORD', record)
           break
         case '编辑':
-          this.$store.commit('SET_CHECK_RECORD', record)
-          this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
+          // this.$store.commit('SET_CHECK_RECORD', record)
+          // this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
+          this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
           this.$router.push({ path: '/problemAdd', query: { editId: record.id } })
           break
         case '复制':
@@ -371,6 +373,7 @@ export default {
           break
         case '分发':
           // this.$store.commit('SET_CHECK_RECORD', record)
+          this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
           this.$router.push({ path: '/problemDistribure', query: { distributeId: record.id } })
           break
         case '解决':
@@ -449,10 +452,18 @@ export default {
       const checkIssue = this.issueData.filter((item) => {
         return item.checkbox == true
       })
-      const redispatchIssueList = checkIssue.filter((item) => {})
       console.log(checkIssue)
-      // TODO筛选转交的数据
-      // this.$refs.batchRedispatchProblem.initRedispatch()
+      const redispatchIssueList = checkIssue.filter((item) => {
+        if (item.status == 1 || item.status == 3) {
+          return item
+        }
+      })
+      console.log(redispatchIssueList)
+      if (redispatchIssueList.length == 0) {
+        this.$message.warning('所选问题不可转交')
+      } else {
+        this.$refs.batchRedispatchProblem.initRedispatch(redispatchIssueList)
+      }
     },
 
     // 选中导出
