@@ -1,4 +1,5 @@
 ﻿using Furion.Extras.Admin.NET.Service;
+using Furion.JsonSerialization;
 using QMS.Application.Issues.Helper;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Query
@@ -9,22 +10,27 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// 解决版本
         /// </summary>
         public string SolveVersion { get; set; }
+
         /// <summary>
         /// 验证情况
         /// </summary>
         public string Result { get; set; }
+
         /// <summary>
         /// 批次
         /// </summary>
         public string Batch { get; set; }
+
         /// <summary>
         /// 验证数量
         /// </summary>
         public int? Count { get; set; }
+
         /// <summary>
         /// 备注
         /// </summary>
         public string Comment { get; set; }
+
         /// <summary>
         /// 问题详情
         /// </summary>
@@ -47,10 +53,12 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// 解决措施
         /// </summary>
         public string Measures { get; set; }
+
         /// <summary>
         /// 挂起原因
         /// </summary>
         public string HangupReason { get; set; }
+
         /// <summary>
         /// 原因分析
         /// </summary>
@@ -65,18 +73,32 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
             this.ProjectName = issue.ProjectId.GetNameByProjectId();
             this.Module = issue.Module;
             this.IssueClassification = issue.IssueClassification;
+            this.DispatcherId = issue.Dispatcher;
             if (issue.Dispatcher != null)
             {
                 this.DispatcherName = issue.Dispatcher.GetNameByEmpId();
             }
             this.Consequence = issue.Consequence;
             this.Source = issue.Source;
+
+            this.DiscoverId = issue.Discover;
+
             this.DiscoverName = issue.Discover.GetNameByEmpId();
             this.DiscoverTime = issue.DiscoverTime;
             this.Status = issue.Status;
             this.CreatorName = issue.CreatorId.GetNameByEmpId();
             this.CreateTime = issue.CreateTime;
             this.CCList = issue.CCs;
+            if (!string.IsNullOrEmpty(issue.CCs))
+            {
+                var list = JSON.Deserialize<List<long>>(issue.CCs);
+                this.CCListName = JSON.Serialize(list.Select<long, string>(Id => Id.GetNameByEmpId()).ToList());
+            }
+            if (issue.CurrentAssignment != null)
+            {
+                this.CurrentAssignment = issue.CurrentAssignment;
+                this.CurrentAssignmentName = issue.CurrentAssignment.GetNameByEmpId();
+            }
         }
 
         // 公共问题属性
@@ -116,6 +138,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public virtual Core.Enum.EnumIssueClassification IssueClassification { get; set; }
 
         /// <summary>
+        /// 分发人ID
+        /// </summary>
+        public virtual long? DispatcherId { get; set; }
+
+        /// <summary>
         /// 分发人
         /// </summary>
         public virtual string DispatcherName { get; set; }
@@ -131,7 +158,12 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public virtual Core.Enum.EnumIssueSource? Source { get; set; }
 
         /// <summary>
-        /// 发现人
+        /// 发现人ID
+        /// </summary>
+        public virtual long? DiscoverId { get; set; }
+
+        /// <summary>
+        /// 发现人名称
         /// </summary>
         public virtual string DiscoverName { get; set; }
 
@@ -156,8 +188,23 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public virtual DateTime? CreateTime { get; set; }
 
         /// <summary>
-        /// 被抄送人，可选多个
+        /// 被抄送人ID列表，可选多个
         /// </summary>
         public virtual string CCList { get; set; }
+
+        /// <summary>
+        /// 被抄送人名称列表
+        /// </summary>
+        public virtual string CCListName { get; set; }
+
+        /// <summary>
+        /// 当前指派给ID
+        /// </summary>
+        public virtual long? CurrentAssignment { get; set; }
+
+        /// <summary>
+        /// 当前指派给名称
+        /// </summary>
+        public virtual string CurrentAssignmentName { get; set; }
     }
 }

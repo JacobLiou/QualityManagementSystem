@@ -1,0 +1,21 @@
+﻿{
+  "QYWechatConfiguration": { //企业微信相关参数
+    "Appid": "ww44dc5ededfe4a954",
+    "Corpsecret": "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY",
+    "Agentid": "1000017",
+    "Status": "web_login@gyoss9",
+    "CacheHour": 2,
+    "RedirectUrl": "https://open.work.weixin.qq.com/wwopen/sso/qrConnect", //企业微信重定向至登录界面
+    "AccessTokenUrl": "https://qyapi.weixin.qq.com/cgi-bin/gettoken", //企业微信获取access_token信息
+    "UserIdUrl": "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo", //获取扫码用户ID
+    "UserInfoUrl": "https://qyapi.weixin.qq.com/cgi-bin/user/get", //获取扫码用户信息
+    "SendMessageUrl": "https://qyapi.weixin.qq.com/cgi-bin/message/send", //企业微信发送信息URL
+    "WebOAuthUrl": "https://open.weixin.qq.com/connect/oauth2/authorize", //网页授权链接
+    "DepartmentListUrl": "https://qyapi.weixin.qq.com/cgi-bin/department/list", //获取部门列表
+    "DepartmentUserUrl": "https://qyapi.weixin.qq.com/cgi-bin/user/list", //获取部门下的用户列表
+    "LoginUrl": "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister" //企业微信重定向至登录界面
+  },
+  "TenantId": 294133718835269, //默认租户ID，现在租户对应的数据库还没迁移，只能先数据库新增后更新在配置文件中  
+  "SysPos": 294140294819910, //默认职位ID，现在职位暂时没有太大的作用，完全没法在系统中体现，只能先数据库新增后更新在配置文件中
+  "Role": 294140654301253 //默认角色ID
+}

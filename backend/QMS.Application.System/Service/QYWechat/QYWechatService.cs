@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.System
 {
@@ -24,9 +23,11 @@ namespace QMS.Application.System
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
         private readonly IRepository<SysOauthUser> _sysOauthUserRep; // 用户表仓储
         private readonly ISysEmpService _sysEmpService; // 系统员工服务
+
         private readonly string LoginUrl = "http://qms.sofarsolar.com:8002/user/login";
 
-        public QYWechatService(IHttpContextAccessor httpContextAccessor, QYWeChatOAuth qyWechatOAuth, IRepository<SysUser> sysUser, IRepository<SysOauthUser> sysOauth, ISysEmpService sysEmpService)
+        public QYWechatService(IHttpContextAccessor httpContextAccessor, QYWeChatOAuth qyWechatOAuth, IRepository<SysUser> sysUser,
+            IRepository<SysOauthUser> sysOauth, ISysEmpService sysEmpService)
         {
             _httpContext = httpContextAccessor.HttpContext;
             _qyWechatOAuth = qyWechatOAuth;
@@ -154,6 +155,18 @@ namespace QMS.Application.System
         public string QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
         {
             return _qyWechatOAuth.QYWechatSendMessage(touser, toparty, totag, title, description, url).Result;
+        }
+
+        /// <summary>
+        /// 企业微信通讯录同步（将公司部门及用户添加到系统中）
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("system/qyWechat/getalluser")]
+        public async Task GetAllUser()
+        {
+            QYTokenModel token = await _qyWechatOAuth.GetAccessTokenAsync();
+            await _qyWechatOAuth.GetAllDepartment(token.AccessToken);
+            await _qyWechatOAuth.GetAllDepartmentUsers(token.AccessToken);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace QMS.Application.System
     /// </summary>
     public class PhoneVerify : ITransient, IPhoneVerify
     {
-        private readonly ICacheService<string> _cache;
+        private readonly ICacheService _cache;
         private readonly IRepository<SysUser> _sysUserRep; // 用户表仓储
         private readonly ILoginVerify _login;
         private readonly int CacheMinute = 1;
@@ -21,7 +21,7 @@ namespace QMS.Application.System
         private readonly string Pwd = "sh@668";                  //接口密码
         private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
 
-        public PhoneVerify(ICacheService<string> cache, IRepository<SysUser> sysUser, ILoginVerify loginVerify)
+        public PhoneVerify(ICacheService cache, IRepository<SysUser> sysUser, ILoginVerify loginVerify)
         {
             _cache = cache;
             _sysUserRep = sysUser;
@@ -77,7 +77,7 @@ namespace QMS.Application.System
         public CommonOutput VerifyPhoneNums(string nums)
         {
             CommonOutput output = new CommonOutput();
-            var code = _cache.GetCache(CacheKeys.CACHE_PHONE_CODE);     //获取缓存
+            var code = _cache.GetCache<string>(CacheKeys.CACHE_PHONE_CODE);     //获取缓存
             if (code == null || code.Result == null || string.IsNullOrEmpty(code.Result))
             {
                 output.Success = false;

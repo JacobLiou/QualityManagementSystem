@@ -69,6 +69,17 @@ namespace QMS.Application.System
 
         [JsonPropertyName("avatar")]
         public string Avatar { get; set; }
+
+        /// <summary>
+        /// 部门ID
+        /// </summary>
+        [JsonPropertyName("main_department")]
+        public int OrgId { get; set; }
+
+        /// <summary>
+        /// 租户ID
+        /// </summary>
+        public long TenantId { get; set; }
     }
 
     public static class QYUserInfoModelExtensions

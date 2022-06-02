@@ -27,12 +27,12 @@ namespace QMS.Application.System
     {
         private readonly IRepository<SysOrg> _sysOrgRep;  // 组织机构表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 组织机构表仓储
-        private readonly ICacheService<SysUser> _cacheService;
+        private readonly ICacheService _cacheService;
         private readonly IRepository<SysUser> _sysUser;
         private readonly ISysEmpService _sysEmpService;
         private readonly int CacheMinute = 30;
 
-        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService<SysUser> cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
+        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
         {
             _sysOrgRep = sysOrgRep;
             _sysEmpRep = sysEmpRep;
@@ -263,7 +263,7 @@ namespace QMS.Application.System
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SysUser obj in products.Values)
             {
-                var cacheProduct = _cacheService.GetCache(CoreCommonConst.USERID + obj.Id);
+                var cacheProduct = _cacheService.GetCache<SysUser>(CoreCommonConst.USERID + obj.Id);
                 if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);

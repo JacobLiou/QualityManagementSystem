@@ -27,12 +27,12 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProductUser> _ssuProductUserRep;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly ICacheService<SsuProduct> _cacheService;
+        private readonly ICacheService _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProductService(
             IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService<SsuProduct> cacheService
+            ISysEmpService sysEmpService, ICacheService cacheService
         )
         {
             _ssuProductRep = ssuProductRep;
@@ -199,7 +199,7 @@ namespace QMS.Application.System
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SsuProduct obj in products.Values)
             {
-                var cacheProduct = _cacheService.GetCache(CoreCommonConst.PRODUCTID + obj.Id);
+                var cacheProduct = _cacheService.GetCache<SsuProduct>(CoreCommonConst.PRODUCTID + obj.Id);
                 if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);

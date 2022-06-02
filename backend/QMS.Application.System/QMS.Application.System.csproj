@@ -9,7 +9,7 @@
 
 
   <ItemGroup>
-    <Content Include="applicationsettings.System.json">
+    <Content Include="ApplicationSystem.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

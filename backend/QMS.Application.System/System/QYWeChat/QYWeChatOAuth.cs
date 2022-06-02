@@ -1,4 +1,5 @@
-﻿using Furion.DatabaseAccessor;
+﻿using Furion;
+using Furion.DatabaseAccessor;
 using Furion.DataEncryption;
 using Furion.DependencyInjection;
 using Furion.EventBus;
@@ -9,6 +10,8 @@ using Furion.JsonSerialization;
 using Furion.RemoteRequest.Extensions;
 using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace QMS.Application.System
 {
@@ -17,49 +20,58 @@ namespace QMS.Application.System
     /// </summary>
     public class QYWeChatOAuth : IQYWeChatOAuth, ITransient
     {
-        private readonly ICacheService<string> _cache;
+        private readonly ICacheService _cache;
         private readonly IRepository<SysUser> _sysUserRep;  // 用户表仓储
         private readonly IRepository<SysOauthUser> _sysOauthUserRep;  // oauth用户表仓储
         private readonly IRepository<SysEmp> _sysEmpRep;  // 职员表仓储
         private readonly IRepository<SysEmpPos> _sysEmpPosRep;  // 员工职位表仓储
+        private readonly IRepository<SysOrg> _sysOrgRep;  // 部门表仓储
         private readonly ILoginVerify _login;
         private readonly IRepository<SysUserRole> _sysUserRole;
+        private readonly IConfiguration _configuration;
 
-        //企业微信重定向至登录界面
-        private readonly string RedirectUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect";
+        ////企业微信重定向至登录界面
+        //private readonly string RedirectUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect";
 
-        //企业微信获取access_token信息
-        private readonly string AccessTokenUrl = "https://qyapi.weixin.qq.com/cgi-bin/gettoken";
+        ////企业微信获取access_token信息
+        //private readonly string AccessTokenUrl = "https://qyapi.weixin.qq.com/cgi-bin/gettoken";
 
-        //获取扫码用户ID
-        private readonly string UserIdUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo";
+        ////获取扫码用户ID
+        //private readonly string UserIdUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo";
 
-        //获取扫码用户信息
-        private readonly string UserInfoUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/get";
+        ////获取扫码用户信息
+        //private readonly string UserInfoUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/get";
 
-        //企业微信发送信息URL
-        private readonly string SendMessageUrl = " https://qyapi.weixin.qq.com/cgi-bin/message/send";
+        ////企业微信发送信息URL
+        //private readonly string SendMessageUrl = " https://qyapi.weixin.qq.com/cgi-bin/message/send";
 
-        //网页授权链接
-        private readonly string WebOAuthUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
+        ////网页授权链接
+        //private readonly string WebOAuthUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
 
-        private readonly string Appid = "ww44dc5ededfe4a954";
-        private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
-        private readonly string Agentid = "1000017";
-        private readonly string Status = "web_login@gyoss9";
-        private readonly long DefaultOrgId = 142307070910547;    //默认组织机构ID
-        private readonly string DefaultOrgName = "首航新能源";   //默认组织机构名称
-        private readonly long Role = 142307070910557;            //默认角色
-        private readonly long TenantId = 142307070918781;        //默认租户ID
-        private readonly long SysPos = 142307070910554;          //默认员工职位ID
+        ////获取部门列表
+        //private readonly string DepartmentListUrl = "https://qyapi.weixin.qq.com/cgi-bin/department/list";
 
-        //private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
-        private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
+        ////获取部门下的用户列表
+        //private readonly string DepartmentUserUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/list";
 
-        private readonly int CacheHour = 2;
+        //private readonly string Appid = "ww44dc5ededfe4a954";
+        //private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
+        //private readonly string Agentid = "1000017";
+        //private readonly string Status = "web_login@gyoss9";
+        //private readonly long DefaultOrgId = 142307070910547;    //默认组织机构ID
+        //private readonly string DefaultOrgName = "首航新能源";   //默认组织机构名称
+        //private readonly long Role = 142307070910557;            //默认角色
+        //private readonly long TenantId = 142307070918781;        //默认租户ID
+        //private readonly long SysPos = 142307070910554;          //默认员工职位ID
 
-        public QYWeChatOAuth(ICacheService<string> cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
-            ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole, IRepository<SysEmpPos> sysEmpPosRep)
+        ////private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
+        //private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
+
+        //private readonly int CacheHour = 2;
+
+        public QYWeChatOAuth(ICacheService cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
+            ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole, IRepository<SysEmpPos> sysEmpPosRep, IRepository<SysOrg> sysOrgRep,
+            IConfiguration configuration)
         {
             _cache = cache;
             _sysUserRep = user;
@@ -68,6 +80,8 @@ namespace QMS.Application.System
             _login = loginVerify;
             _sysUserRole = sysUserRole;
             _sysEmpPosRep = sysEmpPosRep;
+            _sysOrgRep = sysOrgRep;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -78,12 +92,12 @@ namespace QMS.Application.System
         {
             var param = new Dictionary<string, string>()
             {
-                ["appid"] = Appid,
-                ["agentid"] = Agentid,
-                ["redirect_uri"] = LoginUrl,
-                ["state"] = Status
+                ["appid"] = _configuration["QYWechatConfiguration:Appid"],
+                ["agentid"] = _configuration["QYWechatConfiguration:Agentid"],
+                ["redirect_uri"] = _configuration["QYWechatConfiguration:LoginUrl"],
+                ["state"] = _configuration["QYWechatConfiguration:Status"]
             };
-            return $"{RedirectUrl}?{param.ToQueryString()}#wechat_redirect";
+            return $"{_configuration["QYWechatConfiguration:RedirectUrl"]}?{param.ToQueryString()}#wechat_redirect";
         }
 
         /// <summary>
@@ -93,7 +107,7 @@ namespace QMS.Application.System
         public async Task<QYTokenModel> GetAccessTokenAsync()
         {
             QYTokenModel accessTokenModel = new QYTokenModel();
-            var result = _cache.GetCache(Appid).Result;
+            var result = _cache.GetCache<string>(_configuration["QYWechatConfiguration:Appid"]).Result;
             if (!string.IsNullOrEmpty(result))
             {
                 accessTokenModel.ErrMsg = "ok";
@@ -103,13 +117,13 @@ namespace QMS.Application.System
             }
             var param = new Dictionary<string, string>()
             {
-                ["corpid"] = Appid,
-                ["corpsecret"] = Corpsecret
+                ["corpid"] = _configuration["QYWechatConfiguration:Appid"],
+                ["corpsecret"] = _configuration["QYWechatConfiguration:Corpsecret"]
             };
-            accessTokenModel = await $"{AccessTokenUrl}?{param.ToQueryString()}".GetAsAsync<QYTokenModel>();
+            accessTokenModel = await $"{_configuration["QYWechatConfiguration:AccessTokenUrl"]}?{param.ToQueryString()}".GetAsAsync<QYTokenModel>();
             if (accessTokenModel.HasError())
                 throw Oops.Oh($"{accessTokenModel.ErrMsg}");
-            await _cache.SetCacheByHours(Appid, accessTokenModel.AccessToken, CacheHour);
+            await _cache.SetCacheByHours(_configuration["QYWechatConfiguration:Appid"], accessTokenModel.AccessToken, Convert.ToInt32(_configuration["QYWechatConfiguration:CacheHour"]));
             return accessTokenModel;
         }
 
@@ -126,7 +140,7 @@ namespace QMS.Application.System
                 ["access_token"] = accessToken,
                 ["code"] = code
             };
-            var userIdModel = await $"{UserIdUrl}?{param.ToQueryString()}".GetAsAsync<QYUserIdModel>();
+            var userIdModel = await $"{_configuration["QYWechatConfiguration:UserIdUrl"]}?{param.ToQueryString()}".GetAsAsync<QYUserIdModel>();
             if (userIdModel.HasError())
                 throw Oops.Oh($"{userIdModel.ErrMsg}");
             return userIdModel;
@@ -145,7 +159,7 @@ namespace QMS.Application.System
                 ["access_token"] = accessToken,
                 ["userid"] = userId
             };
-            var userInfoModel = await $"{UserInfoUrl}?{paramUserInfo.ToQueryString()}".GetAsAsync<QYUserInfoModel>();
+            var userInfoModel = await $"{_configuration["QYWechatConfiguration:UserInfoUrl"]}?{paramUserInfo.ToQueryString()}".GetAsAsync<QYUserInfoModel>();
             if (userInfoModel.HasError())
                 throw Oops.Oh($"{userInfoModel.ErrMsg}");
             return userInfoModel;
@@ -165,7 +179,7 @@ namespace QMS.Application.System
                 var user = qYUserInfo.Adapt<SysUser>();
                 user.Password = MD5Encryption.Encrypt("123456");
                 user.Status = 0;
-                user.TenantId = TenantId;
+                user.TenantId = Convert.ToInt64(_configuration["TenantId"]);
                 var newUser = _sysUserRep.InsertNow(user);
                 sysUser = newUser.Entity;
             }
@@ -177,7 +191,7 @@ namespace QMS.Application.System
                 var NewOauthUser = qYUserInfo.Adapt<SysOauthUser>();
                 NewOauthUser.OpenId = sysUser.Id.ToString();
                 NewOauthUser.Uuid = sysUser.Account;
-                _sysOauthUserRep.InsertNowAsync(NewOauthUser);
+                _sysOauthUserRep.InsertNow(NewOauthUser);
             }
             //如果职员表上不存在对应的记录则新增
             var emp = _sysEmpRep.DetachedEntities.Where(u => u.Id.Equals(sysUser.Id)).FirstOrDefault();
@@ -186,9 +200,9 @@ namespace QMS.Application.System
                 //新增职员表
                 var NewEmp = qYUserInfo.Adapt<SysEmp>();
                 NewEmp.Id = sysUser.Id;
-                NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
-                NewEmp.OrgName = DefaultOrgName;
-                _sysEmpRep.InsertNowAsync(NewEmp);
+                //NewEmp.OrgId = DefaultOrgId;        //深圳首航默认ID
+                //NewEmp.OrgName = DefaultOrgName;
+                _sysEmpRep.InsertNow(NewEmp);
             }
             //如果员工职位表不存在对应的记录则新增
             var empPos = _sysEmpPosRep.DetachedEntities.Where(u => u.SysEmpId.Equals(sysUser.Id)).FirstOrDefault();
@@ -197,8 +211,8 @@ namespace QMS.Application.System
                 //新增员工职位表
                 var newEmpPos = new SysEmpPos();
                 newEmpPos.SysEmpId = sysUser.Id;
-                newEmpPos.SysEmpId = SysPos;
-                _sysEmpPosRep.InsertNowAsync(newEmpPos);
+                newEmpPos.SysPosId = Convert.ToInt64(_configuration["SysPos"]);
+                _sysEmpPosRep.InsertNow(newEmpPos);
             }
 
             //如果角色表上不存在对应的记录则新增
@@ -208,8 +222,8 @@ namespace QMS.Application.System
                 //新增用户对应的角色记录
                 var NewUserRole = new SysUserRole();
                 NewUserRole.SysUserId = sysUser.Id;
-                NewUserRole.SysRoleId = Role;   //默认角色ID
-                _sysUserRole.InsertNowAsync(NewUserRole);
+                NewUserRole.SysRoleId = Convert.ToInt64(_configuration["Role"]);   //默认角色ID
+                _sysUserRole.InsertNow(NewUserRole);
             }
             return sysUser;
         }
@@ -263,13 +277,13 @@ namespace QMS.Application.System
             //构建从企业微信卡片消息跳转到平台的URL
             var paramUrl = new Dictionary<string, string>()
             {
-                ["appid"] = Appid,
+                ["appid"] = _configuration["QYWechatConfiguration:Appid"],
                 ["redirect_uri"] = url,
                 ["response_type"] = "code",
                 ["scope"] = "snsapi_base",
                 ["state"] = "FromQYWechat"
             };
-            url = $"{WebOAuthUrl}?{paramUrl.ToQueryString()}#wechat_redirect";
+            url = $"{_configuration["QYWechatConfiguration:WebOAuthUrl"]}?{paramUrl.ToQueryString()}#wechat_redirect";
 
             message.Touser = touser;
             message.Toparty = toparty;
@@ -282,11 +296,87 @@ namespace QMS.Application.System
                 ["url"] = url,
                 ["btntxt"] = "更多"
             };
-            message.Agentid = Convert.ToInt32(Agentid);
-            var messResule = await $"{SendMessageUrl}?access_token={token}".SetBody(JSON.Serialize(message)).PostAsAsync<QYWechatResult>();
+            message.Agentid = Convert.ToInt32(_configuration["QYWechatConfiguration:Agentid"]);
+            var messResule = await $"{_configuration["QYWechatConfiguration:SendMessageUrl"]}?access_token={token}".SetBody(JSON.Serialize(message)).PostAsAsync<QYWechatResult>();
             if (messResule.Errcode != 0)
                 throw Oops.Oh($"{messResule.Errmsg}");
             return $"发送信息成功,消息ID为{messResule.Msgid}";
+        }
+
+        /// <summary>
+        /// 获取全部部门并新增
+        /// </summary>
+        /// <returns></returns>
+        public async Task GetAllDepartment(string AccessToken)
+        {
+            //获取部门列表
+            var DepartmentList = await $"{_configuration["QYWechatConfiguration:DepartmentListUrl"]}?access_token={AccessToken}".PostAsAsync<QYWechatDepartmentList>();
+
+            //构造父部门链
+            SetPidsChain(DepartmentList.DepartmentDetailList, new List<int>() { 1 }, new List<int>() { 0 });
+
+            //公司企业微信上没有对应的英文名称可以作为code使用，此处采用id+order拼接的方式来作为code值
+            //设置默认租户ID
+            DepartmentList.DepartmentDetailList.ForEach(u => { u.Code = u.Id.ToString() + u.Sort; u.TenantId = Convert.ToInt64(_configuration["TenantId"]); });
+
+            //按照部门列表新增部门记录
+            var departList = DepartmentList.DepartmentDetailList.AsQueryable().ProjectToType<SysOrg>().ToList();
+            await _sysOrgRep.InsertNowAsync(departList);
+        }
+
+        /// <summary>
+        /// 递归构造部门的父部门链
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="pids"></param>
+        /// <param name="idChains"></param>
+        /// <returns></returns>
+        private bool SetPidsChain(List<QYWechatDepartmentDetail> list, List<int> pids, List<int> idChains)
+        {
+            foreach (int id in pids)
+            {
+                var model = list.Where(u => u.Id.Equals(id)).FirstOrDefault();
+                if (model != null)
+                {
+                    string parentIds = string.Join("", idChains.Select(u => "[" + u + "],"));
+                    model.Pids = parentIds;
+                }
+
+                var newPids = list.Where(u => u.Pid == id).Select(u => u.Id).ToList();
+                if (newPids != null && newPids.Count > 0)
+                {
+                    idChains.Add(id);
+                    SetPidsChain(list, newPids, idChains);
+                    idChains.Remove(id);
+                }
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// 获取全部部门用户并新增
+        /// </summary>
+        /// <param name="AccessToken"></param>
+        /// <returns></returns>
+        public async Task GetAllDepartmentUsers(string AccessToken)
+        {
+            //获取用户列表
+            var param = new Dictionary<string, string>()
+            {
+                ["access_token"] = AccessToken,
+                ["department_id"] = "1",  //从根部门开始
+                ["fetch_child"] = "1"    //递归查询部门下的所有用户
+            };
+            var userList = await $"{_configuration["QYWechatConfiguration:DepartmentUserUrl"]}?{param.ToQueryString()}".PostAsAsync<QYWechatDepartmentUserList>();
+
+            //循环新增每一个用户
+            userList.UserList.ToList().ForEach(u =>
+            {
+                var user = _sysUserRep.DetachedEntities.IgnoreQueryFilters().Where(x => x.Account.Equals(u.Account) || x.Phone.Equals(u.Phone)
+                || x.Email.Equals(u.Email)).FirstOrDefault();
+                QYWechatRegister(u, user);
+            });
         }
     }
 }

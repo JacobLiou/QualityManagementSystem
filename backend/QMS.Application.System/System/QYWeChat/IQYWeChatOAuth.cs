@@ -19,5 +19,9 @@ namespace QMS.Application.System
         SysUser QYWechatRegister(QYUserInfoModel qYUserInfo, SysUser sysUser);
 
         string QYWechatLogin(SysUser user);
+
+        Task GetAllDepartment(string AccessToken);
+
+        Task GetAllDepartmentUsers(string AccessToken);
     }
 }

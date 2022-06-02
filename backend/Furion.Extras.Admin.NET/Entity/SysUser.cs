@@ -31,14 +31,14 @@ namespace Furion.Extras.Admin.NET
         /// 昵称
         /// </summary>
         [Comment("昵称")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string NickName { get; set; }
 
         /// <summary>
         /// 姓名
         /// </summary>
         [Comment("姓名")]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string Name { get; set; }
 
         /// <summary>

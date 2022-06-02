@@ -11,5 +11,7 @@ namespace QMS.Application.System
         public const string CachedUserGroup = "CachedUserGroup";
 
         public const string CACHE_PHONE_CODE = "phone_num";
+
+        public const string CACHE_ALL_KEY = "allkey";
     }
 }

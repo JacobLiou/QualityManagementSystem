@@ -64,6 +64,7 @@ namespace QMS.Application.Issues
         }
 
         #region CRUD
+
         private async Task AddAttributeValuesBatch(string extendAttribute)
         {
             if (!string.IsNullOrEmpty(extendAttribute))
@@ -206,17 +207,27 @@ namespace QMS.Application.Issues
             {
                 await this._issueDetailRep.UpdateNowAsync(issueDetail);
 
-                // 新增扩展属性时
-                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
-
-                foreach (var item in list)
+                if (!string.IsNullOrEmpty(input.ExtendAttribute))
                 {
-                    item.IssueId = input.Id;
+                    // 新增扩展属性时
+                    List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+
+                    foreach (var item in list)
+                    {
+                        item.IssueId = input.Id;
+                    }
+
+                    var attrs = JSON.Serialize(list);
+
+                    await this.UpdateAttributeValuesBatch(attrs);
                 }
-
-                var attrs = JSON.Serialize(list);
-
-                await this.UpdateAttributeValuesBatch(attrs);
+                else
+                {
+                    if (this._issueAttrValueRep.Any(val => val.IssueNum == input.Id))
+                    {
+                        await this._issueAttrValueRep.DeleteNowAsync(this._issueAttrValueRep.Where(val => val.IssueNum == input.Id));
+                    }
+                }
             }
 
             await IssueLogger.Log(
@@ -238,8 +249,10 @@ namespace QMS.Application.Issues
         {
             Helper.Helper.CheckInput(input);
 
+            Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
-            Issue issue = await this._issueRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+
             OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
 
             outputDetailIssue.SetCommon(issue);
@@ -276,9 +289,11 @@ namespace QMS.Application.Issues
 
             return outputDetailIssue;
         }
-        #endregion
+
+        #endregion CRUD
 
         #region 流程管理
+
         /// <summary>
         /// 挂起后重新开启问题
         /// </summary>
@@ -482,9 +497,11 @@ namespace QMS.Application.Issues
                 $"问题重分发给【{input[0].Executor.GetNameByEmpId()}】"
             );
         }
-        #endregion
+
+        #endregion 流程管理
 
         #region 分页查询及导出
+
         /// <summary>
         /// 根据保存的项目id和产品id调用第三方服务获取对应的名称
         /// </summary>
@@ -554,21 +571,27 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Creator:
                     querable = querable.Where(item => item.CreatorId == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.AssignToMe:
                     querable = querable.Where(item => item.CurrentAssignment == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.Executor:
                     querable = querable.Where(item => item.Executor == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.Solved:
                     querable = querable.Where(item => item.Status == EnumIssueStatus.Solved);
                     break;
+
                 case EnumQueryCondition.Unsolve:
                     querable = querable.Where(item => item.Status == EnumIssueStatus.UnSolve);
                     break;
+
                 case EnumQueryCondition.Closed:
                     querable = querable.Where(item => item.Status == EnumIssueStatus.Closed);
                     break;
+
                 case EnumQueryCondition.Hangup:
                     querable = querable.Where(item => item.Status == EnumIssueStatus.HasHangUp);
                     break;
@@ -691,6 +714,7 @@ namespace QMS.Application.Issues
                                         (issue, detail) => new ExportIssueDto(issue, detail)
                                       );
         }
+
         private void AddFilter(BaseQueryModel input, IQueryable<ExportIssueDto> querable)
         {
             switch (input.QueryCondition)
@@ -698,21 +722,27 @@ namespace QMS.Application.Issues
                 case EnumQueryCondition.Creator:
                     querable = querable.Where(item => item.CreatorId == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.AssignToMe:
                     querable = querable.Where(item => item.DispatcherId == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.Executor:
                     querable = querable.Where(item => item.ExecutorId == Helper.Helper.GetCurrentUser());
                     break;
+
                 case EnumQueryCondition.Solved:
                     querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.Solved);
                     break;
+
                 case EnumQueryCondition.Unsolve:
                     querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.UnSolve);
                     break;
+
                 case EnumQueryCondition.Closed:
                     querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.Closed);
                     break;
+
                 case EnumQueryCondition.Hangup:
                     querable = querable.Where(item => item.IssueStatus == EnumIssueStatus.HasHangUp);
                     break;
@@ -748,9 +778,11 @@ namespace QMS.Application.Issues
 
             return await Helper.Helper.ExportExcel(colls);
         }
-        #endregion
+
+        #endregion 分页查询及导出
 
         #region 问题数据导入
+
         /// <summary>
         /// 下载Excel以方便导入问题数据
         /// </summary>
@@ -805,17 +837,21 @@ namespace QMS.Application.Issues
                 await this.Add(issue);
             }
         }
-        #endregion
+
+        #endregion 问题数据导入
 
         #region 问题相关附件的信息保存和获取
+
         public class AttachmentIssue
         {
             public List<AttachmentModel> Attachments { get; set; }
+
             /// <summary>
             /// 问题编号
             /// </summary>
             public long IssueId { get; set; }
         }
+
         /// <summary>
         /// 附件上传后通知问题表保存附件id
         /// 20220511 逻辑改动：由原来的后端上传并保存Id信息改为前端上传、后端保存Id
@@ -868,9 +904,11 @@ namespace QMS.Application.Issues
 
             return list;
         }
-        #endregion
+
+        #endregion 问题相关附件的信息保存和获取
 
         #region 分发操作
+
         /// <summary>
         /// 分派
         /// </summary>
@@ -976,9 +1014,11 @@ namespace QMS.Application.Issues
                 //await this._issueAttrValueRep.Context.SaveChangesAsync();
             }
         }
-        #endregion
+
+        #endregion 分发操作
 
         #region 问题列表列名管理
+
         /// <summary>
         /// 获取问题列表列名
         /// </summary>
@@ -1003,9 +1043,10 @@ namespace QMS.Application.Issues
             await Helper.Helper.SetUserColumns(this._issueColumnDisplayRep, JSON.Serialize(input));
         }
 
-        #endregion
+        #endregion 问题列表列名管理
 
         #region 问题统计
+
         /// <summary>
         /// 问题统计数据
         /// </summary>
@@ -1057,6 +1098,7 @@ namespace QMS.Application.Issues
 
             return list;
         }
-        #endregion
+
+        #endregion 问题统计
     }
 }

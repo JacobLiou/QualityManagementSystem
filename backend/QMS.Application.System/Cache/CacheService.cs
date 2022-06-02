@@ -13,7 +13,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 自定义缓存服务类
     /// </summary>
-    public class CacheService<T> : IDynamicApiController, ICacheService<T>, ITransient
+    public class CacheService : IDynamicApiController, ICacheService, ITransient
     {
         private readonly IDistributedCache _cache;
 
@@ -32,12 +32,21 @@ namespace QMS.Application.System
         /// <param name="minutes"></param>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public async Task SetCache(string cacheKey, T value, int hours, int minutes, int seconds)
+        public async Task SetCache<T>(string cacheKey, T value, int hours, int minutes, int seconds)
         {
+            string json = "";
             TimeSpan time = new TimeSpan(hours, minutes, seconds);
             DistributedCacheEntryOptions option = new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = time };
-            var json = JSON.Serialize(value);
+            if (typeof(T) == typeof(string))
+            {
+                json = value.ToString();
+            }
+            else
+            {
+                json = JSON.Serialize(value);
+            }
             await _cache.SetStringAsync(cacheKey, json, option);
+            //await _cache.SetObjectAsync(cacheKey, value, option);
         }
 
         /// <summary>
@@ -48,7 +57,7 @@ namespace QMS.Application.System
         /// <param name="value"></param>
         /// <param name="hours"></param>
         /// <returns></returns>
-        public async Task SetCacheByHours(string cacheKey, T value, int hours)
+        public async Task SetCacheByHours<T>(string cacheKey, T value, int hours)
         {
             await SetCache(cacheKey, value, hours, 0, 0);
         }
@@ -61,7 +70,7 @@ namespace QMS.Application.System
         /// <param name="value"></param>
         /// <param name="minutes"></param>
         /// <returns></returns>
-        public async Task SetCacheByMinutes(string cacheKey, T value, int minutes)
+        public async Task SetCacheByMinutes<T>(string cacheKey, T value, int minutes)
         {
             await SetCache(cacheKey, value, 0, minutes, 0);
         }
@@ -73,7 +82,7 @@ namespace QMS.Application.System
         /// <param name="value"></param>
         /// <param name="seconds"></param>
         /// <returns></returns>
-        public async Task SetCacheBySecond(string cacheKey, T value, int seconds)
+        public async Task SetCacheBySecond<T>(string cacheKey, T value, int seconds)
         {
             await SetCache(cacheKey, value, 0, 0, seconds);
         }
@@ -84,25 +93,65 @@ namespace QMS.Application.System
         /// <param name="cacheKey"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public async Task SetCache(string cacheKey, T value)
+        public async Task SetCache<T>(string cacheKey, T value)
         {
-            var json = JSON.Serialize(value);
+            string json = "";
+            if (typeof(T) == typeof(string))
+            {
+                json = value.ToString();
+            }
+            else
+            {
+                json = JSON.Serialize(value);
+            }
             await _cache.SetStringAsync(cacheKey, json);
+            //await _cache.SetObjectAsync(cacheKey, value);
         }
 
         /// <summary>
-        /// 获取缓存-引用类型
+        /// 获取缓存
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public async Task<T> GetCache(string cacheKey)
+        public async Task<T> GetCache<T>(string cacheKey)
         {
             var value = await _cache.GetStringAsync(cacheKey);
-            if (value == null)
+            if (typeof(T) == typeof(string))
             {
-                value = "";
+                return (T)Convert.ChangeType(value, typeof(T));
             }
-            return JSON.Deserialize<T>(value);
+            if (!string.IsNullOrEmpty(value))
+            {
+                return JSON.Deserialize<T>(value);
+            }
+            return default(T);
+            //return await _cache.GetObjectAsync<T>(cacheKey);
+        }
+
+        /// <summary>
+        /// 批量删除缓存键值
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public async Task RemoveCache(IEnumerable<string> keys)
+        {
+            foreach (string key in keys.Distinct())
+            {
+                _cache.RemoveAsync(key);
+            }
+        }
+
+        /// <summary>
+        /// 更新缓存键值
+        /// </summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        public async Task RefreshCache(IEnumerable<string> keys)
+        {
+            foreach (string key in keys.Distinct())
+            {
+                _cache.RefreshAsync(key);
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using Furion.DynamicApiController;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.System.Service.Version
 {
@@ -46,7 +47,7 @@ namespace QMS.Application.System.Service.Version
         /// <param name="version"></param>
         /// <returns></returns>
         [HttpPost("system/version/addversion")]
-        public async Task AddVersion(string type, string version)
+        public async Task AddVersion([Required] string type, [Required] string version)
         {
             var ver = _sysVersion.DetachedEntities.Where(u => u.Type.Equals(type) && u.Version.Equals(version)).FirstOrDefault();
             if (ver == null)
