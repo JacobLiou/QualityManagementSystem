@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-05-20 17:28:19
+ * @LastEditTime: 2022-06-02 13:50:34
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
@@ -53,7 +53,7 @@
             >
             </a-table>
             <section class="list_button">
-              <a-button type="primary" @click="userDefine" class="button1">确定</a-button>
+              <a-button type="primary" @click="userDefine" class="button1" :disabled="isDisabled">确定</a-button>
               <a-button @click="userCancel">返回</a-button>
             </section>
           </a-spin>
@@ -124,14 +124,15 @@ export default {
       tabLoading: false,
       checkUser: [],
       visible: false,
+      isDisabled: true,
     }
   },
   computed: {
     rowSelection() {
-      console.log(this.personnelType)
       return {
         onChange: (selectedRowKeys, selectedRows) => {
           this.checkUser = selectedRows
+          this.isDisabled = this.checkUser.length === 0
         },
         type: this.personnelType == 'ccList' ? 'checkbox' : 'radio',
       }
@@ -369,8 +370,9 @@ export default {
     // 确定
     userDefine() {
       this.$emit('checkUserArray', this.checkUser)
-      this.userData = []
+      // this.userData = []
       this.checkUser = []
+      this.isDisabled = this.checkUser.length === 0
       this.visible = false
     },
     // 返回

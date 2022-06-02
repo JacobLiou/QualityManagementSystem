@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-01 09:50:42
+ * @LastEditTime: 2022-06-02 15:13:54
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -107,9 +107,9 @@
             @focus="attributDateType('discoverTime')"
           />
         </a-form-model-item>
-        <a-form-model-item label="抽送" prop="ccListNmae">
-          <section class="from_chilen">
-            <a-input v-model="form.ccListNmae" placeholder="请选择抽送人" disabled />
+        <a-form-model-item label="抄送" prop="ccListName">
+          <section class="from_chilen" :title="form.ccListName">
+            <a-input v-model="form.ccListName" placeholder="请选择抄送人" disabled />
             <a-button @click="changePersonnel('ccList')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -126,6 +126,7 @@
                 v-model="attribuForm[attItem.fieldCode]"
                 v-for="item in checkAttArray(attItem.fieldCode, true)"
                 :key="item.label"
+                @change="attribuCheck"
               >
                 <a-radio :value="item.value"> {{ item.label }} </a-radio>
               </a-radio-group>
@@ -136,7 +137,7 @@
                 style="width: 100%"
                 :placeholder="attItem | placeholderName"
                 format="YYYY-MM-DD"
-                :v-model="attribuForm[attItem.fieldCode]"
+                v-model="attribuForm[attItem.fieldCode]"
                 @change="attributDate"
                 @focus="attributDateType(attItem.fieldCode)"
               />
@@ -147,9 +148,9 @@
             </section>
             <!-- 复选框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'enum' && attItem.fieldName == '样机说明'">
-              <a-checkbox-group v-model="attribuForm[attItem.fieldCode]">
-                <a-row style="width: 100%" :gutter="[2, 2]">
-                  <a-col :span="8" v-for="(item, index) in checkAttArray(attItem.fieldCode, true)" :key="index">
+              <a-checkbox-group v-model="attribuForm[attItem.fieldCode]" @change="attribuCheck">
+                <a-row style="width: 100%" :gutter="[2, 6]">
+                  <a-col :span="10" v-for="(item, index) in checkAttArray(attItem.fieldCode, true)" :key="index">
                     <a-checkbox :value="item.value">
                       {{ item.label }}
                     </a-checkbox>
@@ -163,13 +164,11 @@
                 style="width: 100%"
                 v-model="attribuForm[attItem.fieldCode]"
                 :placeholder="attItem | placeholderName"
+                @change="attribuCheck"
               >
-                <a-select-option
-                  v-for="item in checkAttArray(attItem.fieldCode)"
-                  :key="item.code"
-                  :value="Number(item.code)"
-                  >{{ item.name }}</a-select-option
-                >
+                <a-select-option v-for="item in checkAttArray(attItem.fieldCode)" :key="item.code" :value="item.code">{{
+                  item.name
+                }}</a-select-option>
               </a-select>
             </section>
             <!-- 整数输入框 -->
@@ -251,8 +250,8 @@ export default {
         discover: '', // 发现人
         discoverName: '', // 发现人名字
         discoverTime: null, // 发现日期
-        ccList: [], // 抽送人
-        ccListNmae: '', // 抽送人名字
+        ccList: [], // 抄送人
+        ccListName: '', // 抄送人名字
         description: '', // 详情
         extendAttribute: '', // 新增字段
       },
@@ -271,7 +270,7 @@ export default {
       issueClassificationData: [], // 问题分类list
       consequenceData: [], // 问题性质
       sourceData: [], // 问题来源
-      ccListData: [], // 抽送人数组
+      ccListData: [], // 抄送人数组
       discoverData: [], // 发现人数组
       dispatcherData: [], // 分发人数组
       userVisible: false, // 抽屉显示
@@ -285,13 +284,12 @@ export default {
       attachment: {}, // 附件参数
       isEdit: false, // 问题编辑
       status: -1, // 状态
-      oldDescription: '',
+      // oldDescription: '', // 编辑时旧的描述
       copyAdd: 0, // 是否为复制
     }
   },
   created() {
     const id = this.$route.query.editId
-    console.log(this.$route.query)
     this.copyAdd = this.$route.query.copyAdd
     if (id) {
       // 编辑
@@ -334,7 +332,7 @@ export default {
         .then((res) => {
           if (res.success) {
             this.form.description = res.data.description
-            this.oldDescription = res.data.description
+            // this.oldDescription = res.data.description
             this.initEditData(res.data)
             if (!res.data.extendAttribute) return
             const extendAttributeS = JSON.parse(res.data.extendAttribute)
@@ -342,14 +340,17 @@ export default {
             this.extendAttributeList = extendAttributeS.filter((item) => {
               return Boolean(item.value)
             })
+            this.$forceUpdate()
             this.extendAttributeList.forEach((item) => {
               if (item.fieldName == '样机说明') {
                 const arrTrue = item.value.indexOf(',')
-                this.attribuForm[item.fieldCode] = arrTrue == -1 ? item.value : item.value.split(',')
+                this.attribuForm[item.fieldCode] = arrTrue == -1 ? [] : item.value.split(',')
               } else {
                 this.attribuForm[item.fieldCode] = item.value
               }
             })
+            // console.log('extendAttributeList', extendAttributeList)
+            // console.log('attribuForm', this.attribuForm)
             this.initCheckAttr = this.extendAttributeList.map((item) => {
               const { value, issueId, ...newItem } = item
               return JSON.stringify(newItem)
@@ -357,29 +358,34 @@ export default {
           }
         })
         .catch(() => {
-          this.$message.warning('描述获取失败')
+          this.$message.error('描述获取失败')
         })
+    },
+    // 动态属性渲染
+    attribuCheck() {
+      this.$forceUpdate()
     },
     // 编辑数据初始化
     initEditData(checkRecord) {
+      console.log(checkRecord)
       this.form.id = checkRecord.id
       this.form.title = checkRecord.title
       this.form.projectId = checkRecord.projectId // 项目编号
       this.form.productId = checkRecord.productId // 产品编号
       this.form.module = checkRecord.module // 模块
       this.form.issueClassification = checkRecord.issueClassification // 问题分类
-      this.form.dispatcher = checkRecord.dispatcher // 分发人ID（指派人）
+      this.form.dispatcher = checkRecord.dispatcherId // 分发人ID（指派人）
       this.form.dispatcherName = checkRecord.dispatcherName // 分发人名字
       this.form.consequence = checkRecord.consequence // 性质
       this.form.source = checkRecord.source // 问题来源
-      this.form.discover = checkRecord.discover // 发现人
+      this.form.discover = checkRecord.discoverId // 发现人
       this.form.discoverName = checkRecord.discoverName // 发现人名字
       this.form.discoverTime = checkRecord.discoverTime // 发现日期
-      this.form.ccList = checkRecord.copyTo // 抽送人
-      this.form.ccListNmae = checkRecord.copyToName?.join() // 抽送人名字
+      this.form.ccList = JSON.parse(checkRecord.ccList) // 抄送人
+      this.form.ccListName = JSON.parse(checkRecord.ccListName)?.join() // 抄送人名字
       this.status = checkRecord.status
-      this.form.currentAssignment = null
-      this.form.currentAssignmentName = ''
+      this.form.currentAssignment = checkRecord.currentAssignment
+      this.form.currentAssignmentName = checkRecord.currentAssignmentName
     },
     // 列表初始化
     initList() {
@@ -475,7 +481,7 @@ export default {
           this.form.discoverName = perArray.join()
           this.form.discover = Number(checkUser[0].id)
           break
-        case 'ccList': // 抽送
+        case 'ccList': // 抄送
           this.ccListData = checkUser
           perArray = checkUser.map((item) => {
             return item.name
@@ -483,7 +489,7 @@ export default {
           this.form.ccList = checkUser.map((item) => {
             return Number(item.id)
           })
-          this.form.ccListNmae = perArray.join()
+          this.form.ccListName = perArray.join()
           break
         case 'currentAssignment': // 指派
           this.ccListData = checkUser
@@ -492,7 +498,7 @@ export default {
           })
           this.form.currentAssignmentName = perArray.join()
           this.form.currentAssignment = Number(checkUser[0].id)
-          console.log(this.form)
+          this.$forceUpdate()
           break
         default:
           perArray = checkUser.map((item) => {
@@ -502,9 +508,9 @@ export default {
           this.attribuForm[customAttribu] = Number(checkUser[0].id)
           this.attribuForm[this.personnelType] = perArray.join()
           this.$forceUpdate()
-          console.log(this.attribuFormChange())
           break
       }
+      this.$forceUpdate()
     },
 
     // 附件上传
@@ -550,19 +556,19 @@ export default {
       }
       const newEAL = this.extendAttributeList.map((item) => {
         const fieldCode = item.fieldCode
-        const fieldDataType = item.fieldDataType
+        // const fieldDataType = item.fieldDataType
         const fieldName = item.fieldName
-        if (fieldDataType == 'long') {
-          item.value = this.attribuForm[fieldCode + 'customNameId']
+        // if (fieldDataType == 'long') {
+        //   item.value = this.attribuForm[fieldCode + 'customNameId']
+        // } else {
+        if (fieldName === '样机说明') {
+          // item.value = JSON.stringify(this.attribuForm[fieldCode])
+          item.value = this.attribuForm[fieldCode].join()
+          console.log(item.value)
         } else {
-          if (fieldName === '样机说明') {
-            // item.value = JSON.stringify(this.attribuForm[fieldCode])
-            item.value = this.attribuForm[fieldCode].join()
-            console.log(item.value)
-          } else {
-            item.value = this.attribuForm[fieldCode]
-          }
+          item.value = this.attribuForm[fieldCode]
         }
+        // }
         item.issueId = item.issueId ?? 0
         return item
       })
@@ -590,9 +596,7 @@ export default {
             //   .catch(() => {
             //     this.$message.error('附件信息保存失败：' + res.message)
             //   })
-            this.$router.replace({
-              path: '/problemManagement',
-            })
+            this.$router.back()
           } else {
             this.$message.warning(res.message)
           }
@@ -635,7 +639,10 @@ export default {
     // 重置
     resetForm() {
       this.$refs.ruleForm.resetFields()
-      this.form.description = this.oldDescription
+      // this.form.description = this.oldDescription
+      this.extendAttributeList = [] // 新增的属性
+      this.initCheckAttr = []
+      this.attribuForm = {} // 新增属性表单
     },
     // 暂存
     onStorage() {

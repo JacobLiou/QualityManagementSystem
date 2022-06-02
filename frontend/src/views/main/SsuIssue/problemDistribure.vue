@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-01 09:37:32
+ * @LastEditTime: 2022-06-02 15:17:35
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -59,9 +59,9 @@
             @focus="attributDateType('forecastSolveTime')"
           />
         </a-form-model-item>
-        <a-form-model-item label="抽送" prop="ccListNmae">
+        <a-form-model-item label="抄送" prop="ccListName">
           <section class="from_chilen">
-            <a-input v-model="form.ccListNmae" placeholder="请选择抽送人" disabled />
+            <a-input v-model="form.ccListName" placeholder="请选择抄送人" disabled :title="form.ccListName" />
             <a-button @click="changePersonnel('ccList')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -78,6 +78,7 @@
                 v-model="attribuForm[attItem.fieldCode]"
                 v-for="item in checkAttArray(attItem.fieldCode, true)"
                 :key="item.label"
+                @change="attribuCheck"
               >
                 <a-radio :value="item.value"> {{ item.label }} </a-radio>
               </a-radio-group>
@@ -88,7 +89,7 @@
                 style="width: 100%"
                 :placeholder="attItem | placeholderName"
                 format="YYYY-MM-DD"
-                :v-model="attribuForm[attItem.fieldCode]"
+                v-model="attribuForm[attItem.fieldCode]"
                 @change="attributDate"
                 @focus="attributDateType(attItem.fieldCode)"
               />
@@ -99,7 +100,7 @@
             </section>
             <!-- 复选框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'enum' && attItem.fieldName == '样机说明'">
-              <a-checkbox-group v-model="attribuForm[attItem.fieldCode]">
+              <a-checkbox-group v-model="attribuForm[attItem.fieldCode]" @change="attribuCheck">
                 <a-row style="width: 100%" :gutter="[2, 2]">
                   <a-col :span="8" v-for="(item, index) in checkAttArray(attItem.fieldCode, true)" :key="index">
                     <a-checkbox :value="item.value">
@@ -115,13 +116,11 @@
                 style="width: 100%"
                 v-model="attribuForm[attItem.fieldCode]"
                 :placeholder="attItem | placeholderName"
+                @change="attribuCheck"
               >
-                <a-select-option
-                  v-for="item in checkAttArray(attItem.fieldCode)"
-                  :key="item.code"
-                  :value="Number(item.code)"
-                  >{{ item.name }}</a-select-option
-                >
+                <a-select-option v-for="item in checkAttArray(attItem.fieldCode)" :key="item.code" :value="item.code">{{
+                  item.name
+                }}</a-select-option>
               </a-select>
             </section>
             <!-- 整数输入框 -->
@@ -192,8 +191,8 @@ export default {
         executor: null, // 执行人id
         executorName: '', // 执行人名字
         // 下边不是必传字段
-        ccList: [], // 抽送人
-        ccListNmae: '', // 抽送人名字
+        ccList: [], // 抄送人
+        ccListName: '', // 抄送人名字
         extendAttribute: '', // 新增字段
       },
       rules: {
@@ -272,15 +271,16 @@ export default {
     },
     // 初始化form
     initForm(value) {
+      console.log(value, 'value')
       this.form.id = value.id
       this.form.title = value.title // 问题简述，
       this.form.forecastSolveTime = value.forecastSolveTime // 预计完成时间
       this.form.issueClassification = value.issueClassification // 问题分类
       this.form.consequence = value.consequence // 性质
-      this.form.executor = value.executor // 执行人id
+      this.form.executor = value.executor // 执行人idF
       this.form.executorName = value.executorName // 执行人名字
-      this.form.ccList = value.copyTo // 抽送人
-      this.form.ccListNmae = value.copyToName?.join() // 抽送人名字
+      this.form.ccList = JSON.parse(value.ccList) // 抄送人
+      this.form.ccListName = JSON.parse(value.ccListName)?.join() // 抄送人名字
       this.module = value.module
     },
     // 动态属性选择按钮操作
@@ -291,6 +291,11 @@ export default {
         return { label: item.name, value: item.code }
       })
       return newAttArray
+    },
+
+    // 动态属性渲染
+    attribuCheck() {
+      this.$forceUpdate()
     },
 
     // 选择人员
@@ -310,14 +315,14 @@ export default {
           this.form.executorName = perArray.join()
           this.form.executor = Number(checkUser[0].id)
           break
-        case 'ccList': // 抽送指派人
+        case 'ccList': // 抄送指派人
           perArray = checkUser.map((item) => {
             return item.name
           })
           this.form.ccList = checkUser.map((item) => {
             return Number(item.id)
           })
-          this.form.ccListNmae = perArray.join()
+          this.form.ccListName = perArray.join()
           break
         default:
           perArray = checkUser.map((item) => {
@@ -380,7 +385,7 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.form.extendAttribute = this.attribuFormChange()
-          const { ccListNmae, executorName, ...form } = this.form
+          const { ccListName, executorName, ...form } = this.form
           IssueDispatch(form)
             .then((res) => {
               if (res.success) {
@@ -424,15 +429,15 @@ export default {
         const fieldCode = item.fieldCode
         const fieldDataType = item.fieldDataType
         const fieldName = item.fieldName
-        if (fieldDataType == 'long') {
-          item.value = this.attribuForm[fieldCode]
+        // if (fieldDataType == 'long') {
+        //   item.value = this.attribuForm[fieldCode]
+        // } else {
+        if (fieldName === '样机说明') {
+          item.value = this.attribuForm[fieldCode].join()
         } else {
-          if (fieldName === '样机说明') {
-            item.value = this.attribuForm[fieldCode].join()
-          } else {
-            item.value = this.attribuForm[fieldCode]
-          }
+          item.value = this.attribuForm[fieldCode]
         }
+        // }
         item.issueId = item.issueId ?? 0
         return item
       })

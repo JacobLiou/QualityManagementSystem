@@ -14,6 +14,7 @@ import { quillEditor, Quill } from 'vue-quill-editor'
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
+
 // 设置字体大小
 const fontSizeStyle = Quill.import('attributors/style/size') // 引入这个后会把样式写在style上
 fontSizeStyle.whitelist = ['12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px']
@@ -29,16 +30,17 @@ const toolbarOptions = [
   [{ color: [] }, { background: [] }], // 字体颜色、字体背景颜色-----[{ color: [] }, { background: [] }]
   [{ align: [] }], // 对齐方式-----[{ align: [] }]
   [{ size: fontSizeStyle.whitelist }], // 字体大小-----[{ size: ['small', false, 'large', 'huge'] }]
-  [{ font: fonts }], // 字体种类-----[{ font: [] }]
+  [{ font: Font.whitelist }], // 字体种类-----[{ font: [] }]
   [{ header: [1, 2, 3, 4, 5, 6, false] }], // 标题
-  [{ direction: 'ltl' }], // 文本方向-----[{'direction': 'rtl'}]
+  // [{ direction: 'ltl' }], // 文本方向-----[{'direction': 'rtl'}]
   [{ direction: 'rtl' }], // 文本方向-----[{'direction': 'rtl'}]
   [{ indent: '-1' }, { indent: '+1' }], // 缩进-----[{ indent: '-1' }, { indent: '+1' }]
   [{ list: 'ordered' }, { list: 'bullet' }], // 有序、无序列表-----[{ list: 'ordered' }, { list: 'bullet' }]
   [{ script: 'sub' }, { script: 'super' }], // 上标/下标-----[{ script: 'sub' }, { script: 'super' }]
   ['blockquote', 'code-block'], // 引用  代码块-----['blockquote', 'code-block']
-  ['clean'], // 清除文本格式-----['clean']
-  ['link', 'image', 'video'], // 链接、图片、视频-----['link', 'image', 'video']
+  // ['clean'], // 清除文本格式-----['clean']
+  ['image'], // 链接、图片、视频-----['link', 'image', 'video']
+  // ['link', 'image', 'video'], // 链接、图片、视频-----['link', 'image', 'video']
 ]
 export default {
   name: 'VueQuillEditor',
@@ -107,16 +109,14 @@ export default {
   },
 }
 </script>
-<style lang="less" scoped>
-/deep/.ql-container.ql-snow {
-  min-height: 200px !important;
-}
+<style lang="less" >
 .vue-quill-editor {
   .quill-editor {
     line-height: normal;
     .ql-container.ql-snow {
       line-height: normal !important;
       font-size: 14px;
+      min-height: 200px;
     }
     .ql-snow {
       .ql-tooltip[data-mode='link']::before {
