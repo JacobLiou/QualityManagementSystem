@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 09:56:36
- * @LastEditTime: 2022-05-31 17:26:49
+ * @LastEditTime: 2022-06-06 17:05:56
  * @LastEditors: 林伟群
  * @Description: 解决问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSolve.vue
@@ -114,6 +114,7 @@ import { IssueAttachmentSaveId, IssueExecute } from '@/api/modular/main/SsuIssue
 import { getalltypelist, addversion } from '@/api/modular/system/versionManage'
 import OperRecords from './OperRecords.vue'
 import ProblemUplod from './ProblemUplod.vue'
+import qs from 'qs'
 export default {
   components: {
     OperRecords,
@@ -219,7 +220,7 @@ export default {
     preserveVersion() {
       this.$refs.versionForm.validate((valid) => {
         if (valid) {
-          addversion(this.versionForm)
+          addversion(qs.stringify(this.versionForm))
             .then((res) => {
               if (res.success) {
                 this.$message.success('版本创建成功')
