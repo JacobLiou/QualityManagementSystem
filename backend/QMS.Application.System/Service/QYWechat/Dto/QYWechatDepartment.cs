@@ -35,7 +35,7 @@ namespace QMS.Application.System
         /// 部门ID
         /// </summary>
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// 部门名称

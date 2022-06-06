@@ -312,15 +312,18 @@ namespace QMS.Application.System
             //获取部门列表
             var DepartmentList = await $"{_configuration["QYWechatConfiguration:DepartmentListUrl"]}?access_token={AccessToken}".PostAsAsync<QYWechatDepartmentList>();
 
+            //筛选不存在系统中的部门列表
+            var newDepartLIst = DepartmentList.DepartmentDetailList.Where(u => !_sysOrgRep.DetachedEntities.IgnoreQueryFilters().Select(t => t.Id).Contains(u.Id));
+
             //构造父部门链
-            SetPidsChain(DepartmentList.DepartmentDetailList, new List<int>() { 1 }, new List<int>() { 0 });
+            SetPidsChain(newDepartLIst.ToList(), new List<long>() { 1 }, new List<int>() { 0 });
 
             //公司企业微信上没有对应的英文名称可以作为code使用，此处采用id+order拼接的方式来作为code值
             //设置默认租户ID
-            DepartmentList.DepartmentDetailList.ForEach(u => { u.Code = u.Id.ToString() + u.Sort; u.TenantId = Convert.ToInt64(_configuration["TenantId"]); });
+            newDepartLIst.ToList().ForEach(u => { u.Code = u.Id.ToString() + u.Sort; u.TenantId = Convert.ToInt64(_configuration["TenantId"]); });
 
             //按照部门列表新增部门记录
-            var departList = DepartmentList.DepartmentDetailList.AsQueryable().ProjectToType<SysOrg>().ToList();
+            var departList = newDepartLIst.AsQueryable().ProjectToType<SysOrg>().ToList();
             await _sysOrgRep.InsertNowAsync(departList);
         }
 
@@ -331,7 +334,7 @@ namespace QMS.Application.System
         /// <param name="pids"></param>
         /// <param name="idChains"></param>
         /// <returns></returns>
-        private bool SetPidsChain(List<QYWechatDepartmentDetail> list, List<int> pids, List<int> idChains)
+        private bool SetPidsChain(List<QYWechatDepartmentDetail> list, List<long> pids, List<int> idChains)
         {
             foreach (int id in pids)
             {
