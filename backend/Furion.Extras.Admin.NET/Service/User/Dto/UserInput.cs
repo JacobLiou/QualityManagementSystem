@@ -70,7 +70,7 @@ namespace Furion.Extras.Admin.NET.Service
         /// <summary>
         /// 搜索状态（字典 0正常 1停用 2删除）
         /// </summary>
-        public CommonStatus SearchStatus { get; set; } = CommonStatus.ENABLE;
+        public List<CommonStatus> SearchStatus { get; set; } = new List<CommonStatus>() { CommonStatus.ENABLE, CommonStatus.DISABLE };
 
         public List<long> GrantMenuIdList { get; set; }
         public List<long> GrantRoleIdList { get; set; }

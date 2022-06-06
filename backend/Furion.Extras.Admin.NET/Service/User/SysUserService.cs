@@ -67,7 +67,7 @@ namespace Furion.Extras.Admin.NET.Service
                                                                                     x.n.u.Phone.Contains(input.SearchValue)))
                                          .Where(!string.IsNullOrEmpty(pid), x => (x.n.e.OrgId == long.Parse(pid) ||
                                                                             x.o.Pids.Contains($"[{pid.Trim()}]")))
-                                         .Where(input.SearchStatus >= 0, x => x.n.u.Status == input.SearchStatus)
+                                         .Where(x => input.SearchStatus.Contains(x.n.u.Status))
                                          .Where(x => x.n.u.AdminType != AdminType.SuperAdmin)//排除超级管理员
                                          .Where(!CurrentUserInfo.IsSuperAdmin && dataScopes.Count > 0, x => dataScopes.Contains(x.n.e.OrgId))
                                          .Select(u => u.n.u.Adapt<UserOutput>())
