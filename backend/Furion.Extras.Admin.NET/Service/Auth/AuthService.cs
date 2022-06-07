@@ -31,11 +31,11 @@ namespace Furion.Extras.Admin.NET.Service
         private readonly IClickWordCaptcha _captchaHandle; // 验证码服务
         private readonly ISysConfigService _sysConfigService; // 验证码服务
         private readonly IEventPublisher _eventPublisher;
-
+        private readonly ISysCacheService _cache;
         public AuthService(IRepository<SysUser> sysUserRep, IHttpContextAccessor httpContextAccessor,
             ISysUserService sysUserService, ISysEmpService sysEmpService, ISysRoleService sysRoleService,
             ISysMenuService sysMenuService, ISysAppService sysAppService, IClickWordCaptcha captchaHandle,
-            ISysConfigService sysConfigService, IEventPublisher eventPublisher)
+            ISysConfigService sysConfigService, IEventPublisher eventPublisher, ISysCacheService cache)
         {
             _sysUserRep = sysUserRep;
             _httpContextAccessor = httpContextAccessor;
@@ -47,6 +47,7 @@ namespace Furion.Extras.Admin.NET.Service
             _captchaHandle = captchaHandle;
             _sysConfigService = sysConfigService;
             _eventPublisher = eventPublisher;
+            _cache = cache;
         }
 
         /// <summary>
@@ -104,6 +105,58 @@ namespace Furion.Extras.Admin.NET.Service
 
             return accessToken;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("/emailLogin")]
+        [AllowAnonymous]
+        public string EmailLoginAsync([Required] EmailLoginInput input)
+        {
+
+            // 判断用户名和密码是否正确 忽略全局过滤器
+            var user = _sysUserRep
+                .Where(u => u.Email.Equals(input.Email) && !u.IsDeleted, false, true)
+                .FirstOrDefault();
+            _ = user ?? throw Oops.Oh(ErrorCode.D1024);
+
+            var cacheCaptcha = _cache.GetStringAsync(CommonConst.CACHE_PHONE_CODE).Result;
+            if (!input.Captcha.Equals(cacheCaptcha))
+                throw Oops.Oh(ErrorCode.D1025);
+
+            // 验证账号是否被冻结
+            if (user.Status == CommonStatus.DISABLE)
+                throw Oops.Oh(ErrorCode.D1017);
+
+            // 员工信息
+            var empInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
+
+            // 生成Token令牌
+            //var accessToken = await _jwtBearerManager.CreateTokenAdmin(user);
+            var accessToken = JWTEncryption.Encrypt(new Dictionary<string, object>
+            {
+                {ClaimConst.CLAINM_USERID, user.Id},
+                {ClaimConst.TENANT_ID, user.TenantId},
+                {ClaimConst.CLAINM_ACCOUNT, user.Account},
+                {ClaimConst.CLAINM_NAME, user.Name},
+                {ClaimConst.CLAINM_SUPERADMIN, user.AdminType},
+                {ClaimConst.CLAINM_ORGID, empInfo.OrgId},
+                {ClaimConst.CLAINM_ORGNAME, empInfo.OrgName},
+            });
+
+            // 设置Swagger自动登录
+            _httpContextAccessor.HttpContext.SigninToSwagger(accessToken);
+
+            // 生成刷新Token令牌
+            var refreshToken =
+                JWTEncryption.GenerateRefreshToken(accessToken, App.GetOptions<RefreshTokenSettingOptions>().ExpiredTime);
+
+            // 设置刷新Token令牌
+            _httpContextAccessor.HttpContext.Response.Headers["x-access-token"] = refreshToken;
+
+            return accessToken;
+        }
 
         /// <summary>
         /// 获取当前登录用户信息
@@ -111,7 +164,7 @@ namespace Furion.Extras.Admin.NET.Service
         /// <returns></returns>
         [HttpGet("/getLoginUser")]
         public async Task<LoginOutput> GetLoginUserAsync()
-        {            
+        {
             var user = _sysUserRep.FirstOrDefault(u => u.Id == CurrentUserInfo.UserId, false);
             if (user == null)
                 throw Oops.Oh(ErrorCode.D1011);
