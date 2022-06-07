@@ -27,6 +27,31 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public int? Count { get; set; }
 
         /// <summary>
+        /// 验证人ID
+        /// </summary>
+        public long? Verifier { get; set; }
+
+        /// <summary>
+        /// 验证人名称
+        /// </summary>
+        public string VerifierName { get; set; }
+
+        /// <summary>
+        /// 验证地点
+        /// </summary>
+        public string VerifierPlace { get; set; }
+
+        /// <summary>
+        /// 验证日期
+        /// </summary>
+        public DateTime? ValidateTime { get; set; }
+
+        /// <summary>
+        /// 验证状态
+        /// </summary>
+        public Core.Enum.ValidationStatus? ValidationStatus { get; set; }
+
+        /// <summary>
         /// 备注
         /// </summary>
         public string Comment { get; set; }
@@ -48,6 +73,21 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// [{"module": 0, "issueId":284932473958469,"fieldId":285613677277253,"fieldCode":"code", "fieldName":"中文代码", "value":"数据","fieldDataType":"string"}]
         /// </summary>
         public string ExtendAttribute { get; set; }
+
+        /// <summary>
+        /// 解决人ID
+        /// </summary>
+        public long? Executor { get; set; }
+
+        /// <summary>
+        /// 解决人名称
+        /// </summary>
+        public string ExecutorName { get; set; }
+
+        /// <summary>
+        /// 解决日期
+        /// </summary>
+        public DateTime? SolveTime { get; set; }
 
         /// <summary>
         /// 解决措施
@@ -99,6 +139,21 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
                 this.CurrentAssignment = issue.CurrentAssignment;
                 this.CurrentAssignmentName = issue.CurrentAssignment.GetNameByEmpId();
             }
+            if (issue.Verifier != null)
+            {
+                this.Verifier = issue.Verifier;
+                this.VerifierName = issue.Verifier.GetNameByEmpId();
+                this.VerifierPlace = issue.VerifierPlace;
+                this.ValidateTime = issue.ValidateTime;
+                this.ValidationStatus = (Core.Enum.ValidationStatus)issue.ValidationStatus;
+            }
+            if (issue.Executor != null)
+            {
+                this.Executor = issue.Executor;
+                this.ExecutorName = issue.Executor.GetNameByEmpId();
+            }
+            this.SolveTime = issue.SolveTime;
+            this.CloseTime = issue.CloseTime;
         }
 
         // 公共问题属性
@@ -186,6 +241,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// 提出日期
         /// </summary>
         public virtual DateTime? CreateTime { get; set; }
+
+        /// <summary>
+        /// 关闭日期
+        /// </summary>
+        public DateTime? CloseTime { get; set; }
 
         /// <summary>
         /// 被抄送人ID列表，可选多个

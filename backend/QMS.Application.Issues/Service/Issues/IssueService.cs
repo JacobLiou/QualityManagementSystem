@@ -932,7 +932,27 @@ namespace QMS.Application.Issues
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             await this._issueDetailRep.UpdateNowAsync(detail, null);
 
-            await this.UpdateAttributeValuesBatch(input.ExtendAttribute);
+            if (!string.IsNullOrEmpty(input.ExtendAttribute))
+            {
+                // 新增扩展属性时
+                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+
+                foreach (var item in list)
+                {
+                    item.IssueId = input.Id;
+                }
+
+                var attrs = JSON.Serialize(list);
+
+                await this.UpdateAttributeValuesBatch(attrs);
+            }
+            else
+            {
+                if (this._issueAttrValueRep.Any(val => val.IssueNum == input.Id))
+                {
+                    await this._issueAttrValueRep.DeleteNowAsync(this._issueAttrValueRep.Where(val => val.IssueNum == input.Id));
+                }
+            }
 
             await IssueLogger.Log(
                 this._issueOperateRep,
