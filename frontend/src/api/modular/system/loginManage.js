@@ -20,6 +20,15 @@ export function login(parameter) {
   })
 }
 
+export function loginForEmail(parameter) {
+  console.log(parameter);
+  return axios({
+    url: '/emailLogin',
+    method: 'post',
+    data: parameter
+  })
+}
+
 /**
  * @description: 获取企业微信登录扫描的url
  * @return {*}
@@ -101,17 +110,32 @@ export function getSmsCaptcha(parameter) {
   })
 }
 
+export function getEmailCaptcha(parameter) {
+  return axios({
+    url: '/system/login/getEmailCaptcha',
+    method: 'get',
+    params: parameter
+  })
+}
 /**
  * @description: 发送手机验证码
  * @return {*}
  */
 export function sendSmscode(parameter) {
   return axios({
-    url: "/system/register/sendsmscode",
+    url: "/system/register/sendemailcode",
     method: "post",
     data: parameter
   })
 }
+export function sendEmailcode(parameter) {
+  return axios({
+    url: "/system/register/sendemailcode",
+    method: "get",
+    data: parameter
+  })
+}
+
 
 // 用户注册
 export function userRegister(parameter) {

@@ -6,5 +6,7 @@
 
 
         Task<bool> SendEmail(IEnumerable<long> userId, string mailTitle, string mailContent);
+
+        string SendEmailCode(string email, int num);
     }
 }

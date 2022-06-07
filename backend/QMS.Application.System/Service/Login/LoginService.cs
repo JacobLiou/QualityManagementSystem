@@ -1,6 +1,7 @@
 ﻿using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.FriendlyException;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace QMS.Application.System
@@ -9,14 +10,16 @@ namespace QMS.Application.System
     /// 登录服务类
     /// </summary>
     [ApiDescriptionSettings(Name = "login")]
+    [AllowAnonymous]
     public class LoginService : IDynamicApiController, ITransient, ILoginService
     {
         private readonly IPhoneVerify _phone;
         private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
-
-        public LoginService(IPhoneVerify PhoneVerify)
+        private readonly IEmailApplpy _email;
+        public LoginService(IPhoneVerify PhoneVerify, IEmailApplpy email)
         {
             _phone = PhoneVerify;
+            _email = email;
         }
 
         /// <summary>
@@ -43,5 +46,12 @@ namespace QMS.Application.System
         {
             return _phone.SendSMSCode(phone, num);
         }
+        [HttpGet("system/login/getEmailCaptcha")]
+        public string getEmailCaptcha (string email)
+        {
+            return _email.SendEmailCode(email, 4);
+        }
+
+        
     }
 }

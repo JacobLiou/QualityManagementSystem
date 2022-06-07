@@ -16,20 +16,7 @@
           ]"
         ></a-input>
       </a-form-item>
-      <a-form-item>
-        <a-input
-          size="large"
-          type="text"
-          placeholder="邮箱"
-          v-decorator="[
-            'email',
-            {
-              rules: [{ required: true, type: 'email', message: '请输入邮箱地址' }],
-              validateTrigger: ['change', 'blur'],
-            },
-          ]"
-        ></a-input>
-      </a-form-item>
+      
 
       <a-popover
         placement="rightTop"
@@ -84,28 +71,21 @@
           ]"
         ></a-input>
       </a-form-item>
-
       <a-form-item>
         <a-input
           size="large"
-          placeholder="11 位手机号"
+          type="text"
+          placeholder="邮箱"
           v-decorator="[
-            'mobile',
+            'email',
             {
-              rules: [
-                { required: true, message: '请输入正确的手机号', pattern: /^1[3456789]\d{9}$/ },
-                { validator: this.handlePhoneCheck },
-              ],
+              rules: [{ required: true, type: 'email', message: '请输入邮箱地址' }],
               validateTrigger: ['change', 'blur'],
             },
           ]"
-        >
-          <a-select slot="addonBefore" size="large" defaultValue="+86">
-            <a-select-option value="+86">+86</a-select-option>
-            <a-select-option value="+87">+87</a-select-option>
-          </a-select>
-        </a-input>
+        ></a-input>
       </a-form-item>
+     
       <!--<a-input-group size="large" compact>
             <a-select style="width: 20%" size="large" defaultValue="+86">
               <a-select-option value="+86">+86</a-select-option>
@@ -134,9 +114,9 @@
           <a-button
             class="getCaptcha"
             size="large"
-            :disabled="state.smsSendBtn"
+            :disabled="state.emailSendBtn"
             @click.stop.prevent="getCaptcha"
-            v-text="(!state.smsSendBtn && '获取验证码') || state.time + ' s'"
+            v-text="(!state.emailSendBtn && '获取验证码') || state.time + ' s'"
           ></a-button>
         </a-col>
       </a-row>
@@ -160,7 +140,7 @@
 
 <script>
 import { mixinDevice } from '@/utils/mixin.js'
-import { getSmsCaptcha, sendSmscode, userRegister } from '@/api/modular/system/loginManage'
+import { getEmailCaptcha, sendEmailcode, userRegister } from '@/api/modular/system/loginManage'
 
 const levelNames = {
   0: '低',
@@ -190,7 +170,7 @@ export default {
 
       state: {
         time: 60,
-        smsSendBtn: false,
+        emailSendBtn: false,
         passwordLevel: 0,
         passwordLevelChecked: false,
         percent: 10,
@@ -293,35 +273,30 @@ export default {
         $notification,
       } = this
 
-      validateFields(['mobile'], { force: true }, (err, values) => {
+      validateFields(['email'], { force: true }, (err, values) => {
         if (!err) {
-          state.smsSendBtn = true
+          state.emailSendBtn = true
 
           const interval = window.setInterval(() => {
             if (state.time-- <= 0) {
               state.time = 60
-              state.smsSendBtn = false
+              state.emailSendBtn = false
               window.clearInterval(interval)
             }
           }, 1000)
 
           const hide = $message.loading('验证码发送中..', 0)
-          console.log({ mobile: values.mobile })
+          console.log({ email: values.email })
 
-          sendSmscode({ phone: values.mobile, num: 4 })
+          getEmailCaptcha({ email: values.email})
             .then((res) => {
               setTimeout(hide, 2500)
-              $notification['success']({
-                message: '提示',
-                description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-                duration: 8,
-              })
             })
             .catch((err) => {
               setTimeout(hide, 1)
               clearInterval(interval)
               state.time = 60
-              state.smsSendBtn = false
+              state.emailSendBtn = false
               this.requestFailed(err)
             })
         }

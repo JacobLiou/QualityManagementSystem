@@ -153,6 +153,17 @@ namespace Furion.Extras.Admin.NET
         D1023,
 
         /// <summary>
+        /// 邮箱不存在
+        /// </summary>
+        [ErrorCodeItemMetadata("邮箱不存在")]
+        D1024,
+        /// <summary>
+        /// 验证码错误
+        /// </summary>
+        [ErrorCodeItemMetadata("验证码错误")]
+        D1025,
+
+        /// <summary>
         /// 父机构不存在
         /// </summary>
         [ErrorCodeItemMetadata("父机构不存在")]

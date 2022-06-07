@@ -51,5 +51,7 @@
         /// 系统管理员角色编码
         /// </summary>
         public const string SYS_MANAGER_ROLE_CODE = "sys_manager_role";
+
+        public const string CACHE_PHONE_CODE = "phone_num";
     }
 }

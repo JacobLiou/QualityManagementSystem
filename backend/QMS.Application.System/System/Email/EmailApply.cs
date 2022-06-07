@@ -19,10 +19,13 @@ namespace QMS.Application.System
         private readonly string MailAccount = "platformservice@sofarsolar.com";              //邮箱账号
         private readonly string Pwd = "yxs123456#";                                           //邮箱密码
         private readonly string NickName = "质量平台通知服务";                              //邮件发送名称
-
-        public EmailApplpy(IRepository<SysUser> sysUserRep)
+        private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
+        private readonly ICacheService _cache;
+        private readonly int CacheMinute = 1;
+        public EmailApplpy(IRepository<SysUser> sysUserRep, ICacheService cache)
         {
             _sysUserRep = sysUserRep;
+            _cache = cache;
         }
 
         /// <summary>
@@ -98,5 +101,47 @@ namespace QMS.Application.System
                 throw Oops.Oh("SendMails Error：" + e.Error.ToString());
             }
         }
+
+        /// <summary>
+        /// 发送邮箱验证码
+        /// </summary>
+        /// <param name="email">邮箱</param>
+        /// <param name="num">验证码个数</param>
+        /// <returns></returns>
+        public string SendEmailCode(string email, int num = 4)
+        {
+            if (num <= 0)
+            {
+                num = 4;
+            }
+            IList<string> list = new List<string>();
+            list.Add(email);
+            string code = GetRandomNums(num);
+            string context = String.Format(Context, code);
+            CommonOutput output = new CommonOutput();
+            output.Success = SendEmail(list, context, context).Result;
+            output.Message = "发送成功！";
+            return output.Message;
+        }
+
+        /// <summary>
+        /// 生成一定长度的随机数字串，默认值为4位
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public string GetRandomNums(int length = 4)
+        {
+            var chars = new StringBuilder();
+            char[] character = { '0', '1', '2', '3', '4', '5', '6', '8', '9' };
+            Random rnd = new();
+            // 生成验证码字符串
+            for (int i = 0; i < length; i++)
+            {
+                chars.Append(character[rnd.Next(character.Length)]);
+            }
+            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
+            return chars.ToString();
+        }
+
     }
 }

@@ -48,7 +48,7 @@
             </a-input>
           </a-form-item>
         </a-tab-pane>
-        <a-tab-pane key="tab2" tab="手机号登录">
+        <a-tab-pane key="tab2" tab="邮箱登录">
           <a-alert
             v-if="isLoginError"
             type="error"
@@ -60,12 +60,12 @@
             <a-input
               size="large"
               type="text"
-              placeholder="手机号"
+              placeholder="邮箱地址"
               v-decorator="[
-                'mobile',
+                'email',
                 {
-                  rules: [{ required: true, pattern: /^1[34578]\d{9}$/, message: '请输入正确的手机号' }],
-                  validateTrigger: 'change',
+                  rules: [{ required: true, type: 'email', message: '请输入邮箱地址' }],
+                  validateTrigger: ['change', 'blur'],
                 },
               ]"
             >
@@ -93,9 +93,9 @@
               <a-button
                 class="getCaptcha"
                 tabindex="-1"
-                :disabled="state.smsSendBtn"
+                :disabled="state.emailSendBtn"
                 @click.stop.prevent="getCaptcha"
-                v-text="(!state.smsSendBtn && '获取验证码') || state.time + ' s'"
+                v-text="(!state.emailSendBtn && '获取验证码') || state.time + ' s'"
               ></a-button>
             </a-col>
           </a-row>
@@ -154,7 +154,7 @@
 import Vue from 'vue'
 import TwoStepCaptcha from '@/components/tools/TwoStepCaptcha'
 import { mapActions } from 'vuex'
-import { getSmsCaptcha, getCaptchaOpen, qiWeChatLoginUrl } from '@/api/modular/system/loginManage'
+import { getEmailCaptcha, getCaptchaOpen, qiWeChatLoginUrl, loginForEmail } from '@/api/modular/system/loginManage'
 import Verify from '@/components/verifition/Verify'
 import { ACCESS_TOKEN } from '@/store/mutation-types'
 
@@ -178,7 +178,7 @@ export default {
         loginBtn: false,
         // login type: 0 email, 1 username, 2 telephone
         loginType: 0,
-        smsSendBtn: false,
+        emailSendBtn: false,
       },
       accountLoginErrMsg: '',
       tenantOpen: false,
@@ -261,34 +261,53 @@ export default {
       } = this
 
       state.loginBtn = true
-      const validateFieldsKey = customActiveKey === 'tab1' ? ['account', 'password'] : ['mobile', 'captcha']
+      const validateFieldsKey = customActiveKey === 'tab1' ? ['account', 'password'] : ['email', 'captcha']
       if (this.tenantOpen) {
         validateFieldsKey.push('tenantCode')
       }
+
+  
+
       validateFields(validateFieldsKey, { force: true }, (err, values) => {
         this.loginParams = values
         if (!err) {
-          // 是否开启验证码
-          if (this.captchaOpen) {
-            this.$refs.verify.show()
-            state.loginBtn = false
-            return
-          }
-          const loginParams = { ...values }
-          delete loginParams.account
-          loginParams[!state.loginType ? 'account' : 'account'] = values.account
-          loginParams.password = values.password
-          if (this.tenantOpen) {
-            loginParams.tenantCode = values.tenantCode
-          }
-          Login(loginParams)
-            .then((res) => {
-              this.loginSuccess(res)
-            })
-            .catch((err) => this.requestFailed(JSON.stringify(err)))
-            .finally(() => {
+
+          if(customActiveKey === 'tab1'){
+            // 是否开启验证码
+            if (this.captchaOpen) {
+              this.$refs.verify.show()
               state.loginBtn = false
-            })
+              return
+            }
+            const loginParams = { ...values }
+            delete loginParams.account
+            loginParams[!state.loginType ? 'account' : 'account'] = values.account
+            loginParams.password = values.password
+            if (this.tenantOpen) {
+              loginParams.tenantCode = values.tenantCode
+            }
+            Login(loginParams)
+              .then((res) => {
+                this.loginSuccess(res)
+              })
+              .catch((err) => this.requestFailed(JSON.stringify(err)))
+              .finally(() => {
+                state.loginBtn = false
+              })
+          }else{
+            const loginParams = { ...values }
+            delete loginParams.account
+            loginParams.email = values.email
+            loginParams.captcha = values.captcha
+              loginForEmail(loginParams)
+              .then((res)=>{
+                 this.loginSuccess(res)
+              }).catch((err) => this.requestFailed(JSON.stringify(err)))
+              .finally(() => {
+                state.loginBtn = false
+              })
+              
+            } 
         } else {
           setTimeout(() => {
             state.loginBtn = false
@@ -315,33 +334,29 @@ export default {
         state,
       } = this
 
-      validateFields(['mobile'], { force: true }, (err, values) => {
+      validateFields(['email'], { force: true }, (err, values) => {
         if (!err) {
-          state.smsSendBtn = true
+          state.emailSendBtn = true
 
           const interval = window.setInterval(() => {
             if (state.time-- <= 0) {
               state.time = 60
-              state.smsSendBtn = false
+              state.emailSendBtn = false
               window.clearInterval(interval)
             }
           }, 1000)
 
           const hide = this.$message.loading('验证码发送中..', 0)
-          getSmsCaptcha({ mobile: values.mobile })
+          getEmailCaptcha({ email: values.email })
             .then((res) => {
               setTimeout(hide, 2500)
-              this.$notification['success']({
-                message: '提示',
-                description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-                duration: 8,
-              })
+              
             })
             .catch((err) => {
               setTimeout(hide, 1)
               clearInterval(interval)
               state.time = 60
-              state.smsSendBtn = false
+              state.emailSendBtn = false
               this.requestFailed(err)
             })
         }
