@@ -118,13 +118,7 @@
               <span class="li_title">发现日期：</span>
               <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
             </div>
-          </a-col>
-          <a-col :xl="12" :xs="24"
-            ><div class="info-li">
-              <span class="li_title">发现日期：</span>
-              <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
-            </div>
-          </a-col>
+          </a-col>          
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题来源：</span>

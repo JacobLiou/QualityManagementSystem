@@ -1,3 +1,4 @@
+using Furion.DataValidation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Furion.Extras.Admin.NET.Service
@@ -193,11 +194,13 @@ namespace Furion.Extras.Admin.NET.Service
         /// <summary>
         /// 邮箱
         /// </summary>
+        [DataValidation(ValidationTypes.EmailAddress, ErrorMessage = "请正确填写邮箱地址")]
         public string Email { get; set; }
 
         /// <summary>
         /// 手机
         /// </summary>
+        [DataValidation(ValidationTypes.PhoneNumber, ErrorMessage = "请正确填写手机号码")]
         public string Phone { get; set; }
 
         /// <summary>

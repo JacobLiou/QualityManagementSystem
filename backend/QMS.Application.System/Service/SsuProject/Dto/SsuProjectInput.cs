@@ -1,4 +1,5 @@
-﻿using Furion.Extras.Admin.NET;
+﻿using Furion.DataValidation;
+using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -14,17 +15,17 @@ namespace QMS.Application.System
         /// 项目名称
         /// </summary>
         public virtual string ProjectName { get; set; }
-        
+
         /// <summary>
         /// 项目负责人
         /// </summary>
         public virtual long DirectorId { get; set; }
-        
+
         /// <summary>
         /// 排序
         /// </summary>
+        [DataValidation(ValidationTypes.Integer, ErrorMessage = "排序值应大于等于0")]
         public virtual int Sort { get; set; }
-        
     }
 
     public class AddSsuProjectInput : SsuProjectInput
@@ -42,11 +43,9 @@ namespace QMS.Application.System
         /// </summary>
         [Required(ErrorMessage = "项目编号不能为空")]
         public long Id { get; set; }
-        
     }
 
     public class QueryeSsuProjectInput : BaseId
     {
-
     }
 }
