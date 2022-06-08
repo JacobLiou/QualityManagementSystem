@@ -14,7 +14,6 @@ namespace QMS.Application.System
     /// <summary>
     /// 企业微信接口服务类
     /// </summary>
-    [AllowAnonymous]
     [ApiDescriptionSettings(Name = "qyWechat", Order = 160)]
     public class QYWechatService : IDynamicApiController, ITransient, IQYWechatService
     {
@@ -39,6 +38,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 发起授权
         /// </summary>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/login")]
         public Task QYWechatLogin()
         {
@@ -51,6 +51,7 @@ namespace QMS.Application.System
         /// 获取企业微信扫码登录URL
         /// </summary>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/qywechatloginurl")]
         public string QYWechatLoginUrl()
         {
@@ -62,6 +63,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="error_description"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/callBack")]
         public async Task QYWechatLoginCallback([FromQuery] string error_description = "")
         {
@@ -78,6 +80,7 @@ namespace QMS.Application.System
         /// <param name="token"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/getUserInfo")]
         public async Task<dynamic> GetWechatUserInfo([FromQuery] string token, [FromQuery] string userId)
         {
@@ -89,6 +92,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="code">企业微信登录扫码后从URL中获取的code值</param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/loginAndRegister")]
         public Task QYWechatLoginRegister([FromQuery] string code)
         {
@@ -105,6 +109,7 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpGet("system/qyWechat/qywechatgetlogintoken")]
         public string QYWechatGetLoginToken([FromQuery] string code)
         {
@@ -134,6 +139,7 @@ namespace QMS.Application.System
         /// <param name="description"></param>
         /// <param name="url"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost("system/qyWechat/sendMessageQYWechatID")]
         public string QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url)
         {
@@ -151,6 +157,7 @@ namespace QMS.Application.System
         /// <param name="description"></param>
         /// <param name="url"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost("system/qyWechat/sendMessageUserId")]
         public string QYWechatSendMessage(string touser, string toparty, string totag, string title, string description, string url)
         {
@@ -165,8 +172,8 @@ namespace QMS.Application.System
         public async Task GetAllUser()
         {
             QYTokenModel token = await _qyWechatOAuth.GetAccessTokenAsync();
-            //await _qyWechatOAuth.GetAllDepartment(token.AccessToken);
-            //await _qyWechatOAuth.GetAllDepartmentUsers(token.AccessToken);
+            await _qyWechatOAuth.GetAllDepartment(token.AccessToken);
+            await _qyWechatOAuth.GetAllDepartmentUsers(token.AccessToken);
         }
     }
 }
