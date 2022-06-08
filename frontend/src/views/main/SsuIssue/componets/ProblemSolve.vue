@@ -21,10 +21,10 @@
             placeholder="请输入问题简述"
           />
         </a-form-model-item>
-        <a-form-model-item label="实际完成时间" prop="solveTime">
+        <a-form-model-item label="解决时间" prop="solveTime">
           <a-date-picker
             style="width: 100%"
-            placeholder="请选择预计完成时间"
+            placeholder="请选择解决时间"
             v-model="form.solveTime"
             @change="attributDate"
             @focus="attributDateType('solveTime')"
@@ -138,6 +138,7 @@ export default {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         reason: [{ required: true, message: '请输入原因分析', trigger: 'blur' }],
         measures: [{ required: true, message: '请输入解决措施', trigger: 'blur' }],
+        solveTime:[{ required: true, message: '请输入解决日期', trigger: 'blur' }],
       },
       dateType: '',
       isVersion: false,
