@@ -140,7 +140,7 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">实际完成时间：</span>
-              <div class="li_content">{{ IssueDetailData.solveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.closeTime }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"

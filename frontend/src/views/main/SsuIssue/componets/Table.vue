@@ -223,11 +223,7 @@ export default {
         {
           operName: '编辑',
           operIcon: 'edit',
-        },
-        {
-          operName: '删除',
-          operIcon: 'delete',
-        },
+        }      
       ]
       const operationAdd = {
         0: [
@@ -235,30 +231,26 @@ export default {
             operName: '分发',
             operIcon: 'select',
           },
+          {
+          operName: '删除',
+          operIcon: 'delete',
+          },
+          {
+            operName: '转交',
+            operIcon: 'export',
+          },
+           {
+            operName: '挂起',
+            operIcon: 'minus-circle',
+          },
         ],
         1: [
           {
             operName: '解决',
             operIcon: 'question-circle',
           },
-          {
-            operName: '转交',
-            operIcon: 'export',
-          },
-          {
-            operName: '挂起',
-            operIcon: 'minus-circle',
-          },
         ],
-        2: [
-          {
-            operName: '验证',
-            operIcon: 'safety-certificate',
-          },
-          {
-            operName: '挂起',
-            operIcon: 'minus-circle',
-          },
+        2: [          
           {
             operName: '复核',
             operIcon: 'reconciliation',
@@ -266,12 +258,20 @@ export default {
         ],
         3: [
           {
-            operName: '挂起',
+            operName: '分发',
             operIcon: 'select',
+          },
+          {
+          operName: '删除',
+          operIcon: 'delete',
           },
           {
             operName: '转交',
             operIcon: 'export',
+          },
+          {
+            operName: '挂起',
+            operIcon: 'minus-circle',
           },
         ],
         4: [
@@ -286,16 +286,18 @@ export default {
             operIcon: 'key',
           },
         ],
-        6: [],
+        6: [
+           {
+            operName: '重开启',
+            operIcon: 'key',
+          },
+        ],
         7: [
           {
             operName: '验证',
             operIcon: 'safety-certificate',
           },
-          {
-            operName: '挂起',
-            operIcon: 'minus-circle',
-          },
+         
         ],
       }
       const addList = operationAdd[String(state)]
