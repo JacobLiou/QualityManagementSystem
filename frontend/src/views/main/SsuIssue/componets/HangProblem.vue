@@ -77,7 +77,7 @@ export default {
       setTimeout(() => {
         this.form.setFieldsValue({
           id: record.id,
-          title: record.title,
+          title: record.title,          
         })
       }, 100)
 

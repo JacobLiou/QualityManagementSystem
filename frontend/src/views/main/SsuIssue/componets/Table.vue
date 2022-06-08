@@ -219,11 +219,7 @@ export default {
         {
           operName: '详情',
           operIcon: 'file-done',
-        },
-        {
-          operName: '编辑',
-          operIcon: 'edit',
-        }      
+        },              
       ]
       const operationAdd = {
         0: [
@@ -232,16 +228,20 @@ export default {
             operIcon: 'select',
           },
           {
-          operName: '删除',
-          operIcon: 'delete',
+            operName: '删除',
+            operIcon: 'delete',
           },
           {
             operName: '转交',
             operIcon: 'export',
           },
-           {
+          {
             operName: '挂起',
             operIcon: 'minus-circle',
+          },
+          {
+            operName: '编辑',
+            operIcon: 'edit',
           },
         ],
         1: [
@@ -262,8 +262,8 @@ export default {
             operIcon: 'select',
           },
           {
-          operName: '删除',
-          operIcon: 'delete',
+            operName: '删除',
+            operIcon: 'delete',
           },
           {
             operName: '转交',
@@ -272,6 +272,10 @@ export default {
           {
             operName: '挂起',
             operIcon: 'minus-circle',
+          },
+          {
+            operName: '编辑',
+            operIcon: 'edit',
           },
         ],
         4: [
@@ -287,17 +291,20 @@ export default {
           },
         ],
         6: [
-           {
+          {
             operName: '重开启',
             operIcon: 'key',
+          },
+          {
+            operName: '编辑',
+            operIcon: 'edit',
           },
         ],
         7: [
           {
             operName: '验证',
             operIcon: 'safety-certificate',
-          },
-         
+          },         
         ],
       }
       const addList = operationAdd[String(state)]

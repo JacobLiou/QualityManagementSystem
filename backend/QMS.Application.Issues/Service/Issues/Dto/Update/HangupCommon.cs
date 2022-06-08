@@ -1,4 +1,6 @@
-﻿using QMS.Application.Issues.Helper;
+﻿using Furion;
+using Furion.Extras.Admin.NET;
+using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
@@ -23,6 +25,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         public bool SetIssue(Core.Entity.Issue issue)
         {
             Helper.Helper.Assert(issue.Status != Core.Enum.EnumIssueStatus.Closed, Constants.ERROR_MSG_CHECK_HANGUP);
+
+            Helper.Helper.Assert(App.User.FindFirst(ClaimConst.CLAINM_USERID)?.Value == issue.Dispatcher.ToString(), "当前用户不是分发用户，无法执行挂起操作");
 
             bool changed = false;
 
