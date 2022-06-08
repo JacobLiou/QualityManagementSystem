@@ -15,7 +15,7 @@ namespace QMS.Application.System
 
         Task<SsuProjectOutput> Get([FromQuery] QueryeSsuProjectInput input);
 
-        Task<List<SsuProjectOutput>> List();
+        Task<List<SsuProjectOutput>> Select();
 
         Task<PageResult<SsuProjectOutput>> Page([FromQuery] SsuProjectInput input);
 

@@ -14,7 +14,7 @@ namespace QMS.Application.System
 
         Task<SsuGroupOutput> Get([FromQuery] QueryeSsuGroupInput input);
 
-        Task<List<SsuGroupOutput>> List();
+        Task<List<SsuGroupOutput>> Select();
 
         Task<PageResult<SsuGroupOutput>> Page([FromQuery] SsuGroupInput input);
 

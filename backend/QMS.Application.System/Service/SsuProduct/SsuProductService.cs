@@ -127,8 +127,8 @@ namespace QMS.Application.System
         /// 获取产品列表
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/SsuProduct/list")]
-        public async Task<List<SsuProductOutput>> List()
+        [HttpGet("/SsuProduct/select")]
+        public async Task<List<SsuProductOutput>> Select()
         {
             return await _ssuProductRep.DetachedEntities.ProjectToType<SsuProductOutput>().ToListAsync();
         }

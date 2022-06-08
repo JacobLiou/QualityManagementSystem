@@ -20,7 +20,7 @@ export function SsuGroupPage(parameter) {
  */
 export function SsuGroupList(parameter) {
   return axios({
-    url: '/SsuGroup/list',
+    url: '/SsuGroup/select',
     method: 'get',
     params: parameter
   })

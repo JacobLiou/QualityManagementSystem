@@ -263,7 +263,8 @@ namespace QMS.Application.System
             //针对每个产品ID都做一次缓存，所以此处采用循环的方式
             foreach (SysUser obj in products.Values)
             {
-                var cacheProduct = _cacheService.GetCache<SysUser>(CoreCommonConst.USERID + obj.Id);
+                //人员表存在租户ID进行数据隔离，此处缓存需要租户ID做区分
+                var cacheProduct = _cacheService.GetCache<SysUser>(CoreCommonConst.USERID + GetTenantId() + obj.Id);
                 if (cacheProduct.Result != null)
                 {
                     Dcit.Add(obj.Id, cacheProduct.Result);
@@ -271,10 +272,20 @@ namespace QMS.Application.System
                 else
                 {
                     Dcit.Add(obj.Id, obj);
-                    await _cacheService.SetCacheByMinutes(CoreCommonConst.USERID + obj.Id, obj, CacheMinute);
+                    await _cacheService.SetCacheByMinutes(CoreCommonConst.USERID + GetTenantId() + obj.Id, obj, CacheMinute);
                 }
             }
             return Dcit;
+        }
+
+        /// <summary>
+        /// 获取租户Id缓存key值
+        /// </summary>
+        /// <returns></returns>
+        private string GetTenantId()
+        {
+            if (App.User == null) return string.Empty;
+            return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
         }
     }
 }

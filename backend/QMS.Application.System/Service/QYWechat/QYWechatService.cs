@@ -165,8 +165,8 @@ namespace QMS.Application.System
         public async Task GetAllUser()
         {
             QYTokenModel token = await _qyWechatOAuth.GetAccessTokenAsync();
-            await _qyWechatOAuth.GetAllDepartment(token.AccessToken);
-            await _qyWechatOAuth.GetAllDepartmentUsers(token.AccessToken);
+            //await _qyWechatOAuth.GetAllDepartment(token.AccessToken);
+            //await _qyWechatOAuth.GetAllDepartmentUsers(token.AccessToken);
         }
     }
 }

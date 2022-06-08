@@ -13,7 +13,7 @@ namespace QMS.Application.System
 
         Task<SsuProductOutput> Get([FromQuery] QueryeSsuProductInput input);
 
-        Task<List<SsuProductOutput>> List();
+        Task<List<SsuProductOutput>> Select();
 
         Task<PageResult<SsuProductOutput>> Page([FromQuery] SsuProductInput input);
 
