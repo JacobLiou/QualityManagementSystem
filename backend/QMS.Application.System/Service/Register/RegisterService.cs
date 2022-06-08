@@ -80,6 +80,7 @@ namespace QMS.Application.System
 
             user = input.Adapt<SysUser>();
             user.Password = MD5Encryption.Encrypt(user.Password);
+            user.TenantId = Convert.ToInt64(_configuration["TenantId"]);
             var newUser = _sysUserRep.InsertNow(user);
             if (newUser == null)
             {

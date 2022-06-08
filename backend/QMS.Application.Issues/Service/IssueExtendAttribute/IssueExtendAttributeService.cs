@@ -212,7 +212,7 @@ namespace QMS.Application.Issues
                                 Module = fieldStruct.Module,
                                 AttributeCode = fieldStruct.FieldCode,
                                 ValueType = fieldStruct.FieldDataType,
-                                CreateTime = now,
+                                CreatedTime = now,
                                 CreatorId = updateId,
                                 UpdateId = updateId,
                                 UpdateTime = now

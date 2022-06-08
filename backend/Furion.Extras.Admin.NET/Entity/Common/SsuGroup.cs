@@ -11,7 +11,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
     /// </summary>
     [Table("ssu_group")]
     [Comment("人员组表")]
-    public class SsuGroup : DEntityBase, IEntityTypeBuilder<SsuGroup, MasterDbContextLocator>
+    public class SsuGroup : DEntityTenant, IEntityTypeBuilder<SsuGroup, MasterDbContextLocator>
     {
 
         //[Key]

@@ -10,12 +10,12 @@ namespace QMS.Core.Entity
 {
     [Table("issue_ext_attr")]
     [Comment("问题扩展属性")]
-    public class IssueExtendAttribute : IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<IssueExtendAttribute, IssuesDbContextLocator>
+    public class IssueExtendAttribute :DEntityTenant, IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<IssueExtendAttribute, IssuesDbContextLocator>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Comment("字段编号")]
-        public long Id { get; set; }
+        public override long Id { get; set; }
 
         [Comment("模块编号")]
         public EnumModule Module { get; set; }

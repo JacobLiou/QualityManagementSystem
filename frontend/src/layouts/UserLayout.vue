@@ -16,11 +16,11 @@
       <route-view></route-view>
 
       <div class="footer">
-        <div class="links">
+        <!-- <div class="links">
           <a href="_self">帮助</a>
           <a href="_self">隐私</a>
           <a href="_self">条款</a>
-        </div>
+        </div> -->
         <div class="copyright">
           Copyright © 2022 <a target="_blank" href="_self">首航质量管理平台</a> All rights reserved. v1.0.0
         </div>
