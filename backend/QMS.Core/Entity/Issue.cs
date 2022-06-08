@@ -11,12 +11,8 @@ namespace QMS.Core.Entity
 
     [Table("issue")]
     [Comment("问题记录")]
-    public class Issue : BaseGenerateIdEntity, IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<Issue, IssuesDbContextLocator>
+    public class Issue : DEntityTenant, IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<Issue, IssuesDbContextLocator>
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Comment("问题编号")]
-        public override long Id { get; set; }
 
         [Comment("问题简述")]
         [MaxLength(200)]
@@ -189,8 +185,6 @@ namespace QMS.Core.Entity
             this.Status = EnumIssueStatus.HasHangUp;
         }
 
-        [Comment("软删除")]
-        public bool IsDeleted { get; set; } = false;
 
         public void Configure(EntityTypeBuilder<Issue> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
@@ -226,5 +220,7 @@ namespace QMS.Core.Entity
 
         [NotMapped]
         public IssueDetail SsuIssueDetail { get; set; }
+
+
     }
 }

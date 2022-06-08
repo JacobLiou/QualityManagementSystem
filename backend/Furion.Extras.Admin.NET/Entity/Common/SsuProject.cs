@@ -12,7 +12,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
     /// </summary>
     [Table("ssu_project")]
     [Comment("项目表")]
-    public class SsuProject : DEntityBase, IEntityTypeBuilder<SsuProject, MasterDbContextLocator>
+    public class SsuProject : DEntityTenant, IEntityTypeBuilder<SsuProject, MasterDbContextLocator>
     {
         //[Key]
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]

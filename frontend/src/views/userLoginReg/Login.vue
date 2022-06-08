@@ -102,12 +102,12 @@
         </a-tab-pane>
       </a-tabs>
 
-      <a-form-item>
+    <!--   <a-form-item>
         <a-checkbox v-decorator="['rememberMe', { valuePropName: 'checked' }]">记住我</a-checkbox>
         <router-link :to="{ name: 'recover', params: { user: 'aaa' } }" class="forge-password" style="float: right"
           >忘记密码</router-link
         >
-      </a-form-item>
+      </a-form-item> -->
 
       <a-form-item>
         <Verify

@@ -12,7 +12,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
     /// </summary>
     [Table("ssu_product")]
     [Comment("产品表")]
-    public class SsuProduct : DEntityBase, IEntityTypeBuilder<SsuProduct, MasterDbContextLocator>
+    public class SsuProduct : DEntityTenant, IEntityTypeBuilder<SsuProduct, MasterDbContextLocator>
     {
 
         //[Key]

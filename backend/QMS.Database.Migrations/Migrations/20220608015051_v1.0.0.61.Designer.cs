@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QMS.EntityFramework.Core;
 
 #nullable disable
 
-namespace QMS.Database.Migrations.Migrations
+namespace QMS.Database.Migrations.Migrations.IssuesDb
 {
     [DbContext(typeof(IssuesDbContext))]
-    partial class IssuesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220608015051_v1.0.0.61")]
+    partial class v10061
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,7 +25,7 @@ namespace QMS.Database.Migrations.Migrations
                 {
                     b.Property<long>("Id")
                         .HasColumnType("bigint")
-                        .HasComment("Id主键");
+                        .HasComment("问题编号");
 
                     b.Property<string>("CCs")
                         .HasColumnType("longtext")
@@ -40,19 +42,6 @@ namespace QMS.Database.Migrations.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("提出日期");
-
-                    b.Property<DateTimeOffset?>("CreatedTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("创建时间");
-
-                    b.Property<long?>("CreatedUserId")
-                        .HasColumnType("bigint")
-                        .HasComment("创建者Id");
-
-                    b.Property<string>("CreatedUserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasComment("创建者名称");
 
                     b.Property<long>("CreatorId")
                         .HasColumnType("bigint")
@@ -92,7 +81,7 @@ namespace QMS.Database.Migrations.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)")
-                        .HasComment("软删除标记");
+                        .HasComment("软删除");
 
                     b.Property<int>("IssueClassification")
                         .HasColumnType("int")
@@ -131,19 +120,6 @@ namespace QMS.Database.Migrations.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)")
                         .HasComment("问题简述");
-
-                    b.Property<DateTimeOffset?>("UpdatedTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("更新时间");
-
-                    b.Property<long?>("UpdatedUserId")
-                        .HasColumnType("bigint")
-                        .HasComment("修改者Id");
-
-                    b.Property<string>("UpdatedUserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasComment("修改者名称");
 
                     b.Property<DateTime?>("ValidateTime")
                         .HasColumnType("datetime(6)")
@@ -273,19 +249,6 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("datetime(6)")
                         .HasComment("创建时间");
 
-                    b.Property<DateTimeOffset?>("CreatedTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("创建时间");
-
-                    b.Property<long?>("CreatedUserId")
-                        .HasColumnType("bigint")
-                        .HasComment("创建者Id");
-
-                    b.Property<string>("CreatedUserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasComment("创建者名称");
-
                     b.Property<long>("CreatorId")
                         .HasColumnType("bigint")
                         .HasComment("创建人");
@@ -302,10 +265,6 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("int")
                         .HasComment("排序优先级");
 
-                    b.Property<long?>("TenantId")
-                        .HasColumnType("bigint")
-                        .HasComment("租户id");
-
                     b.Property<long>("UpdateId")
                         .HasColumnType("bigint")
                         .HasComment("更新人");
@@ -313,19 +272,6 @@ namespace QMS.Database.Migrations.Migrations
                     b.Property<DateTime>("UpdateTime")
                         .HasColumnType("datetime(6)")
                         .HasComment("提出日期");
-
-                    b.Property<DateTimeOffset?>("UpdatedTime")
-                        .HasColumnType("datetime(6)")
-                        .HasComment("更新时间");
-
-                    b.Property<long?>("UpdatedUserId")
-                        .HasColumnType("bigint")
-                        .HasComment("修改者Id");
-
-                    b.Property<string>("UpdatedUserName")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasComment("修改者名称");
 
                     b.Property<string>("ValueType")
                         .IsRequired()

@@ -10,7 +10,7 @@ namespace Furion.Extras.Admin.NET
     /// </summary>
     [Table("sys_file")]
     [Comment("文件信息表")]
-    public class SysFile : DEntityBase
+    public class SysFile : DEntityTenant
     {
         /// <summary>
         /// 文件存储位置（1:阿里云，2:腾讯云，3:minio，4:本地）
