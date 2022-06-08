@@ -41,6 +41,7 @@ namespace QMS.Application.System
                 num = 4;
             }
             string code = GetRandomNums(num);
+            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE + "_" + phone, code, CacheMinute);   //设置缓存时间为一分钟
             string context = String.Format(Context, code);
             CommonOutput output = SendSMS(phone, context);
             if (!output.Success)
@@ -65,7 +66,7 @@ namespace QMS.Application.System
             {
                 chars.Append(character[rnd.Next(character.Length)]);
             }
-            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
+
             return chars.ToString();
         }
 
@@ -74,10 +75,10 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="nums"></param>
         /// <returns></returns>
-        public CommonOutput VerifyPhoneNums(string nums)
+        public CommonOutput VerifyPhoneNums(string phone, string nums)
         {
             CommonOutput output = new CommonOutput();
-            var code = _cache.GetCache<string>(CacheKeys.CACHE_PHONE_CODE);     //获取缓存
+            var code = _cache.GetCache<string>(CacheKeys.CACHE_PHONE_CODE + "_" + phone);     //获取缓存
             if (code == null || code.Result == null || string.IsNullOrEmpty(code.Result))
             {
                 output.Success = false;
@@ -238,7 +239,7 @@ namespace QMS.Application.System
                 throw Oops.Oh($"验证码为空请重新输入");
             }
             //判断验证码是否正确
-            CommonOutput output = VerifyPhoneNums(captcha);
+            CommonOutput output = VerifyPhoneNums(phone, captcha);
             if (!output.Success)
             {
                 throw Oops.Oh($"{output.Message}");

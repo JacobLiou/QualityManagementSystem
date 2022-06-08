@@ -55,7 +55,7 @@ namespace QMS.Application.System
         {
             //判断验证码是否正确
             CommonOutput output = new CommonOutput();
-            output = _phone.VerifyPhoneNums(input.Captcha);
+            output = _phone.VerifyPhoneNums(input.Phone, input.Captcha);
             if (output.Success == false)
             {
                 throw Oops.Oh(output.Message);

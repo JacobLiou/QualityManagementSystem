@@ -118,6 +118,7 @@ namespace QMS.Application.System
             list.Add(email);
             string code = GetRandomNums(num);
             string context = String.Format(Context, code);
+            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE + "_" + email, code, CacheMinute);   //设置缓存时间为一分钟
             CommonOutput output = new CommonOutput();
             output.Success = SendEmail(list, context, context).Result;
             output.Message = "发送成功！";
@@ -139,7 +140,7 @@ namespace QMS.Application.System
             {
                 chars.Append(character[rnd.Next(character.Length)]);
             }
-            _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
+
             return chars.ToString();
         }
 
