@@ -110,8 +110,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuGroup/list")]
-        public async Task<List<SsuGroupOutput>> List()
+        [HttpGet("/SsuGroup/select")]
+        public async Task<List<SsuGroupOutput>> Select()
         {
             return await _ssuGroupRep.DetachedEntities.ProjectToType<SsuGroupOutput>().ToListAsync();
         }

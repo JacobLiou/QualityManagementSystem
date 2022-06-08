@@ -20,7 +20,7 @@ export function SsuProjectPage(parameter) {
  */
 export function SsuProjectList(parameter) {
   return axios({
-    url: '/SsuProject/list',
+    url: '/SsuProject/select',
     method: 'get',
     params: parameter
   })

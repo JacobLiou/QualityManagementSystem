@@ -21,7 +21,7 @@ export function SsuProductPage(parameter) {
  */
 export function SsuProductList(parameter) {
   return axios({
-    url: '/SsuProduct/list',
+    url: '/SsuProduct/select',
     method: 'get',
     params: parameter
   })

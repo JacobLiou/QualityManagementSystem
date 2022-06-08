@@ -127,8 +127,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("/SsuProject/list")]
-        public async Task<List<SsuProjectOutput>> List()
+        [HttpGet("/SsuProject/select")]
+        public async Task<List<SsuProjectOutput>> Select()
         {
             return await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
         }

@@ -1,5 +1,7 @@
-﻿using Furion.DependencyInjection;
+﻿using Furion;
+using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.Extras.Admin.NET;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using QMS.Application.Issues.Helper;
@@ -55,10 +57,21 @@ namespace QMS.Application.Issues
             await _cache.SetStringAsync(cacheKey, fieldStructDicStr, this.GetCacheEntryOptions(120));
         }
 
+        /// <summary>
+        /// 获取租户Id
+        /// </summary>
+        /// <returns></returns>
+        public string GetTenantId()
+        {
+            if (App.User == null) return string.Empty;
+            //这个Convert，嗯，有用
+            return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
+        }
+
         [NonAction]
         public async Task<string> GetUserName(long userId)
         {
-            var cacheKey = CoreCommonConst.USERID + userId;
+            var cacheKey = CoreCommonConst.USERID + this.GetTenantId() + userId;
 
             var res = await _cache.GetStringAsync(cacheKey);
             return res;
@@ -67,7 +80,7 @@ namespace QMS.Application.Issues
         [NonAction]
         public async Task SetUserName(long userId, string objStr)
         {
-            var cacheKey = CoreCommonConst.USERID + userId;
+            var cacheKey = CoreCommonConst.USERID + this.GetTenantId() + userId;
 
             await _cache.SetStringAsync(cacheKey, objStr, this.GetCacheEntryOptions());
         }
