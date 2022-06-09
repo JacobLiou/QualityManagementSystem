@@ -105,7 +105,7 @@ export default {
       columns: [
         {
           title: '序号',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'id',
           width: '10em',
@@ -226,7 +226,7 @@ export default {
           align: 'left',
           sorter: true,
           dataIndex: 'creatorName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '提出时间',
@@ -235,19 +235,13 @@ export default {
           dataIndex: 'createTime',
           width: '8em',
         },
-        {
-          title: '关闭时间',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'closeTime',
-          width: '8em',
-        },
+        
         {
           title: '发现人',
           align: 'left',
           sorter: true,
           dataIndex: 'discoverName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '发现时间',
@@ -261,7 +255,7 @@ export default {
           align: 'left',
           sorter: true,
           dataIndex: 'dispatcherName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '分发时间',
@@ -289,7 +283,7 @@ export default {
           align: 'left',
           sorter: true,
           dataIndex: 'executorName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '解决时间',
@@ -303,7 +297,7 @@ export default {
           align: 'left',
           sorter: true,
           dataIndex: 'verifierName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '验证地点',
@@ -318,6 +312,13 @@ export default {
           sorter: true,
           dataIndex: 'validateTime',
           width: '8em',
+        },
+        {
+          title: '实际完成时间',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'closeTime',
+          width: '10em',
         },
       ],
       columnsShow: [],

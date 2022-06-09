@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.Extensions.Configuration;
 using QMS.Core;
 using System.Linq.Expressions;
 using Yitter.IdGenerator;
@@ -20,15 +21,17 @@ namespace QMS.EntityFramework.Core
     {
         //缓存服务
         private readonly ISysCacheService _sysCacheService;
+        private readonly IConfiguration _configuration;
 
-        public IssuesDbContext(ISysCacheService sysCacheService, DbContextOptions<IssuesDbContext> options) : base(options)
+        public IssuesDbContext(ISysCacheService sysCacheService, IConfiguration configuration, DbContextOptions<IssuesDbContext> options) : base(options)
         {
             //缓存服务
             _sysCacheService = sysCacheService;
 
             // 启用实体数据更改监听
             EnabledEntityChangedListener = true;
-
+            //配置文件
+            _configuration = configuration;
             // 忽略空值更新
             InsertOrUpdateIgnoreNullValues = true;
         }
@@ -40,6 +43,9 @@ namespace QMS.EntityFramework.Core
         public object GetTenantId()
         {
             if (App.User == null) return null;
+            //{
+            //    return _configuration["TenantId"].ToString();
+            //}
             //这个Convert，嗯，有用
             return Convert.ToInt64(App.User.FindFirst(ClaimConst.TENANT_ID)?.Value);
         }
@@ -235,7 +241,7 @@ namespace QMS.EntityFramework.Core
             ParameterExpression parameterExpression = Expression.Parameter(metadata.ClrType, "u");
 
             // 租户过滤器
-            if (entityBuilder.Metadata.ClrType.BaseType.Name == typeof(DEntityTenant).Name)
+            if (entityBuilder.Metadata.ClrType.BaseType.Name == typeof(DEntityTenant).Name && App.User != null)
             {
                 if (metadata.FindProperty(onTableTenantId) != null)
                 {
