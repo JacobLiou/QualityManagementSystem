@@ -18,7 +18,7 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="产品" prop="productId">
+        <a-form-model-item label="产品">
           <a-select v-model="form.productId" placeholder="请选择产品">
             <a-select-option v-for="(item, index) in productData" :key="index" :value="item.id">{{
               item.productName
@@ -259,7 +259,6 @@ export default {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         dispatcherName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
         projectId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
-        productId: [{ required: true, message: '请选择产品编号', trigger: 'change' }],
         module: [{ required: true, message: '请选择模块', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
         consequence: [{ required: true, message: '请选择性质', trigger: 'change' }],
