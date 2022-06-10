@@ -254,7 +254,7 @@
 </template>
 
 <script>
-import { IssueDetail, IssueDelete } from '@/api/modular/main/SsuIssueManage'
+import { IssueDetail, IssueDelete,IssueReOpen } from '@/api/modular/main/SsuIssueManage'
 import OperRecords from './componets/OperRecords.vue'
 import ProblemSolve from './componets/ProblemSolve.vue'
 import ProblemRecheck from './componets/ProblemRecheck.vue'
@@ -506,6 +506,7 @@ export default {
       this.$confirm({
         content: '确定重新开启',
         onOk() {
+          console.log('yuxinsong')
           IssueReOpen({ id })
             .then((res) => {
               if (res.success) {

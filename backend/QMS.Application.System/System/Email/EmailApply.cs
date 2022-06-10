@@ -1,4 +1,5 @@
-﻿using Furion.DatabaseAccessor;
+﻿using Furion;
+using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
@@ -22,6 +23,7 @@ namespace QMS.Application.System
         private readonly string Context = "您好，您的验证码是：{0}【首航新能源】";    //手机验证码格式
         private readonly ICacheService _cache;
         private readonly int CacheMinute = 1;
+
         public EmailApplpy(IRepository<SysUser> sysUserRep, ICacheService cache)
         {
             _sysUserRep = sysUserRep;
@@ -35,10 +37,10 @@ namespace QMS.Application.System
         /// <param name="mailTitle">邮件标题</param>
         /// <param name="mailContent">邮件内容</param>
         /// <returns></returns>
-        public async Task<bool> SendEmail(IEnumerable<long> userId, string mailTitle, string mailContent)
+        public async Task<bool> SendEmail(IEnumerable<string> userId, string mailTitle, string mailContent)
         {
-            var mailTo = _sysUserRep.Where(u => userId.Contains(u.Id)).Select(u => u.Email).ToArray();
-            if (mailTo == null || mailTo.Length == 0)
+            var mailTo = _sysUserRep.DetachedEntities.Where(u => userId.Contains(u.Id.ToString())).Select(u => u.Email).ToList();
+            if (mailTo == null || mailTo.Count() == 0)
             {
                 throw Oops.Oh($"该用户不存在对应的邮箱");
             }
@@ -52,7 +54,7 @@ namespace QMS.Application.System
         /// <param name="mailTitle">发送邮件标题</param>
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
-        public async Task<bool> SendEmail(IEnumerable<string> mailTo, string mailTitle, string mailContent)
+        private async Task<bool> SendEmail(List<string> mailTo, string mailTitle, string mailContent)
         {
             try
             {
@@ -142,6 +144,5 @@ namespace QMS.Application.System
             _cache.SetCacheByMinutes(CacheKeys.CACHE_PHONE_CODE, chars.ToString(), CacheMinute);   //设置缓存时间为一分钟
             return chars.ToString();
         }
-
     }
 }

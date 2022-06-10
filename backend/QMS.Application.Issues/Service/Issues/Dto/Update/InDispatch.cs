@@ -14,31 +14,37 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
         /// </summary>
         [Required]
         public long Id { get; set; }
+
         /// <summary>
         /// 问题简述
         /// </summary>
         [Required]
         public string Title { get; set; }
+
         /// <summary>
         /// 预计完成时间
         /// </summary>
         [Required]
         public DateTime ForecastSolveTime { get; set; }
+
         /// <summary>
         /// 问题性质
         /// </summary>
         [Required]
         public EnumConsequence Consequence { get; set; }
+
         /// <summary>
         /// 问题分类
         /// </summary>
         [Required]
         public EnumIssueClassification IssueClassification { get; set; }
+
         /// <summary>
         /// 执行人
         /// </summary>
         [Required]
         public long Executor { get; set; }
+
         /// <summary>
         /// 抄送给
         /// </summary>
@@ -59,7 +65,8 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
 
         public bool SetIssue(Core.Entity.Issue issue)
         {
-            Helper.Helper.Assert(issue.Status == EnumIssueStatus.Created || issue.Status == EnumIssueStatus.HasHangUp, Constants.ERROR_MSG_CHECK_DISPATCH);
+            //已开启，已挂起，未解决状态下支持分发操作
+            Helper.Helper.Assert(issue.Status == EnumIssueStatus.Created || issue.Status == EnumIssueStatus.HasHangUp || issue.Status == EnumIssueStatus.UnSolve, Constants.ERROR_MSG_CHECK_DISPATCH);
 
             bool changed = false;
 
@@ -84,7 +91,6 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
 
         public bool SetIssueDetail(IssueDetail issueDetail)
         {
-
             return true;
         }
     }

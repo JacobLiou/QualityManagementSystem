@@ -38,10 +38,10 @@ namespace QMS.Application.System
         /// <param name="mailTitle">发送邮件标题</param>
         /// <param name="mailContent">发送邮件内容</param>
         /// <returns></returns>
-        [HttpPost("system/email/SendMessageUserId")]
-        public async Task<bool> SendMessage(IEnumerable<long> mailTo, string mailTitle, string mailContent)
-        {
-            return await _email.SendEmail(mailTo, mailTitle, mailContent);
-        }
+        //[HttpPost("system/email/SendMessageUserId")]
+        //public async Task<bool> SendMessage(IEnumerable<long> mailTo, string mailTitle, string mailContent)
+        //{
+        //    return await _email.SendEmail(mailTo, mailTitle, mailContent);
+        //}
     }
 }

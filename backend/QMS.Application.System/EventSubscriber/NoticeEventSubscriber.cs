@@ -1,16 +1,9 @@
-﻿using Furion.DatabaseAccessor;
-using Furion.DependencyInjection;
+﻿using Furion;
 using Furion.EventBus;
-using Furion.Extras.Admin.NET;
 using Furion.JsonSerialization;
 using Microsoft.Extensions.DependencyInjection;
 using QMS.Core;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QMS.Application.System.EventSubscriber
 {
@@ -35,8 +28,8 @@ namespace QMS.Application.System.EventSubscriber
         public async Task CreateNotice(EventHandlerExecutingContext context)
         {
             var notice = (NoticeContext)context.Source.Payload;
-            await SendWeChatMessage(notice);
-            await SendEmail(notice);
+            SendWeChatMessage(notice);
+            SendEmail(notice);
             // 写日志文件
             Log.Information("消息发送:" + JSON.Serialize(notice));
         }
