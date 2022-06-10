@@ -24,5 +24,9 @@ namespace QMS.Application.System
         Task<List<long>> GetUserDataScopeIdList();
 
         Task<Dictionary<long, SysUser>> GetUserList(IEnumerable<long> userIds);
+
+        Task<List<UserOutput>> GetOrgUser([FromQuery] long orgId);
+
+        Task<List<UserOutput>> GetFuzzyUsers([FromQuery] string name);
     }
 }

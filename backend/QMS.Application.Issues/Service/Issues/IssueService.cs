@@ -45,7 +45,9 @@ namespace QMS.Application.Issues
 
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
-        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8001/problemInfo?id=";
+        //private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8001/problemInfo?id=";
+        private readonly string ProblemInfoUrl = "http://172.16.16.33:8009/problemInfo?id=";
+
         private readonly string ProblemInfoTitle = "质量平台问题管理";
         private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
 
@@ -100,7 +102,7 @@ namespace QMS.Application.Issues
             {
                 issue.CCs = JSON.Serialize(input.CCList);
             }
-            Helper.Helper.Assert(issue.Dispatcher != null, "创建问题时必须要指定分发者!");
+            Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定当前指派人!");
             issue.SetCreate(input.IsTemporary);
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
@@ -126,7 +128,7 @@ namespace QMS.Application.Issues
             await this.AddAttributeValuesBatch(detail.ExtendAttribute);
 
             //问题新增，如果当前用户和分发人不一致，则发送消息给对应的分发人
-            if (!input.IsTemporary && Helper.Helper.GetCurrentUser() != issueEntity.Entity.Dispatcher)
+            if (!input.IsTemporary && issueEntity.Entity.Dispatcher != null && Helper.Helper.GetCurrentUser() != issueEntity.Entity.Dispatcher)
             {
                 this.SendNotice(issueEntity.Entity.Id.ToString(), issueEntity.Entity.Dispatcher.ToString(), issueEntity.Entity.Title);
             }
@@ -859,7 +861,7 @@ namespace QMS.Application.Issues
                     Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块),
                     Consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质),
                     IssueClassification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类),
-                    Dispatcher = Convert.ToInt64(item.分发人编号),
+                    //Dispatcher = Convert.ToInt64(item.分发人编号),
                     Source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源),
                     Discover = Convert.ToInt64(item.发现人编号),
                     DiscoverTime = Convert.ToDateTime(item.发现日期),

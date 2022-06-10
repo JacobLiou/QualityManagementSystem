@@ -287,5 +287,21 @@ namespace QMS.Application.System
             if (App.User == null) return string.Empty;
             return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
         }
+
+
+        #region 用户查找
+
+        /// <summary>
+        /// 根据用户名称模糊查找用户列表
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        [HttpGet("/SsuEmpOrg/getfuzzyusers")]
+        public async Task<List<UserOutput>> GetFuzzyUsers([FromQuery] string name)
+        {
+            return await _sysUser.DetachedEntities.Where(u => u.Name.Contains(name)).Select(u => u.Adapt<UserOutput>()).ToListAsync();
+        }
+
+        #endregion 用户查找
     }
 }
