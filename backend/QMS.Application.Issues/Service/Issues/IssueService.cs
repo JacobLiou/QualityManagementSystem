@@ -45,7 +45,9 @@ namespace QMS.Application.Issues
 
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
-        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8001/problemInfo?id=";
+        //private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8001/problemInfo?id=";
+        private readonly string ProblemInfoUrl = "http://172.16.16.33:8009/problemInfo?id=";
+
         private readonly string ProblemInfoTitle = "质量平台问题管理";
         private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
 
@@ -100,7 +102,7 @@ namespace QMS.Application.Issues
             {
                 issue.CCs = JSON.Serialize(input.CCList);
             }
-            Helper.Helper.Assert(issue.Dispatcher != null, "创建问题时必须要指定分发者!");
+            Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定当前指派人!");
             issue.SetCreate(input.IsTemporary);
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
@@ -126,9 +128,9 @@ namespace QMS.Application.Issues
             await this.AddAttributeValuesBatch(detail.ExtendAttribute);
 
             //问题新增，如果当前用户和分发人不一致，则发送消息给对应的分发人
-            if (!input.IsTemporary && Helper.Helper.GetCurrentUser() != issueEntity.Entity.Dispatcher)
+            if (!input.IsTemporary && issueEntity.Entity.Dispatcher != null && Helper.Helper.GetCurrentUser() != issueEntity.Entity.Dispatcher)
             {
-                this.SendNotice(issueEntity.Entity.Id.ToString(), issueEntity.Entity.Dispatcher.ToString());
+                this.SendNotice(issueEntity.Entity.Id.ToString(), issueEntity.Entity.Dispatcher.ToString(), issueEntity.Entity.Title);
             }
 
             await IssueLogger.Log(
@@ -227,7 +229,7 @@ namespace QMS.Application.Issues
             //如果当前指派人和当前用户不一致则发送消息给当前指派人
             if (input.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString());
+                this.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -315,7 +317,7 @@ namespace QMS.Application.Issues
             //如果当前用户和问题的分发人不一致，则重新开启后发送消息通知分发人
             if (Helper.Helper.GetCurrentUser() != common.Dispatcher)
             {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString());
+                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -354,12 +356,12 @@ namespace QMS.Application.Issues
             //问题复核有效，则问题流转至验证，如果验证人和当前用户不一致则发送消息给验证人
             if (pass && common.Verifier != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Verifier.ToString());
+                this.SendNotice(common.Id.ToString(), common.Verifier.ToString(), common.Title);
             }
             //问题复核无效，则问题重新流转至解决，如果解决人和当前用户不一致则发送消息给解决人
             if (!pass && common.Executor != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Executor.ToString());
+                this.SendNotice(common.Id.ToString(), common.Executor.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -398,7 +400,7 @@ namespace QMS.Application.Issues
             //如果当前用户和复核人（分发人）不一致，则发送消息给复核人（分发人）
             if (common.Dispatcher != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString());
+                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -437,7 +439,7 @@ namespace QMS.Application.Issues
             //问题验证无效，则问题重新流转至分发状态，分发人和当前用户不一致则发送消息分发人
             if (!pass && common.Dispatcher != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString());
+                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
             }
 
             EnumIssueOperationType enumIssueOperationType = pass ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
@@ -504,7 +506,7 @@ namespace QMS.Application.Issues
             //问题转交，如果转交人和当前用户不一致，则发送消息给转交人
             if (input.Executor != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), input.Executor.ToString());
+                this.SendNotice(common.Id.ToString(), input.Executor.ToString(), common.Title);
             }
         }
 
@@ -859,7 +861,7 @@ namespace QMS.Application.Issues
                     Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块),
                     Consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质),
                     IssueClassification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类),
-                    Dispatcher = Convert.ToInt64(item.分发人编号),
+                    //Dispatcher = Convert.ToInt64(item.分发人编号),
                     Source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源),
                     Discover = Convert.ToInt64(item.发现人编号),
                     DiscoverTime = Convert.ToDateTime(item.发现日期),
@@ -992,7 +994,7 @@ namespace QMS.Application.Issues
             //如果当前用户和解决人不一致，则发送消息给解决人
             if (issue.Executor != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), issue.Executor.ToString());
+                this.SendNotice(issue.Id.ToString(), issue.Executor.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -1170,13 +1172,14 @@ namespace QMS.Application.Issues
         /// <param name="issueId">问题详情ID</param>
         /// <param name="userId">接收消息用户</param>
         /// <returns></returns>
-        public async Task SendNotice(string issueId, string userId)
+        public async Task SendNotice(string issueId, string userId, string title)
         {
+            //构建消息格式
             var msg = new NoticeMsgInput()
             {
-                Url = ProblemInfoUrl + issueId,
+                Url = "<a href=\"" + ProblemInfoUrl + issueId + "\">" + title + "</a>",
                 Content = ProblemInfoContent,
-                Title = ProblemInfoTitle,
+                Title = ProblemInfoTitle + "-" + title,
                 UserIdList = new List<string>() { userId }
             };
             if (!string.IsNullOrEmpty(msg.Url))

@@ -475,6 +475,9 @@ export default {
           break
         case '重开启':
           this.problemOpen(this.IssueDetailData)
+          break      
+        case '复制':
+          this.$router.push({ path: '/problemAdd', query: { editId: this.IssueDetailData.id, copyAdd: 1 } })
           break
         default:
           break
@@ -506,8 +509,7 @@ export default {
       const _this = this
       this.$confirm({
         content: '确定重新开启',
-        onOk() {
-          console.log('yuxinsong')
+        onOk() {          
           IssueReOpen({ id })
             .then((res) => {
               if (res.success) {

@@ -241,16 +241,24 @@ namespace QMS.EntityFramework.Core
             ParameterExpression parameterExpression = Expression.Parameter(metadata.ClrType, "u");
 
             // 租户过滤器
-            if (entityBuilder.Metadata.ClrType.BaseType.Name == typeof(DEntityTenant).Name && App.User != null)
+            if (entityBuilder.Metadata.ClrType.BaseType.Name == typeof(DEntityTenant).Name)
             {
                 if (metadata.FindProperty(onTableTenantId) != null)
                 {
                     ConstantExpression constantExpression = Expression.Constant(onTableTenantId);
                     MethodCallExpression right = Expression.Call(Expression.Constant(dbContext), dbContext.GetType().GetMethod("GetTenantId"));
-                    finialExpression = Expression.AndAlso(finialExpression, Expression.Equal(Expression.Call(typeof(EF), "Property", new Type[1]
+
+                    var dbProperty = Expression.Call(typeof(EF), "Property", new Type[1]
                     {
                         typeof(object)
-                    }, parameterExpression, constantExpression), right));
+                    }, parameterExpression, constantExpression);
+
+                    var nullWhere = Expression.Constant(null);
+                    Expression conditionExpr = Expression.Condition(Expression.Equal(nullWhere, right)
+                        , Expression.AndAlso(finialExpression, Expression.NotEqual(dbProperty, nullWhere))
+                        , Expression.AndAlso(finialExpression, Expression.Equal(dbProperty, right)));
+
+                    finialExpression = conditionExpr.Reduce();
                 }
             }
 

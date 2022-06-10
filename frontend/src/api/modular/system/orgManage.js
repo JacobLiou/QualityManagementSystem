@@ -21,8 +21,8 @@ export function getOrgTree(parameter) {
 export function getOrgUserList(parameter) {
   return axios({
     url: '/SsuEmpOrg/getorguser',
-    method: 'post',
-    data: parameter
+    method: 'get',
+    params: parameter
   })
 }
 

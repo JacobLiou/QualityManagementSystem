@@ -27,7 +27,6 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// </summary>
         [ExcelColumnName("产品编号")]
         [ExcelColumnWidth(20)]
-        //[Required]
         public virtual long? ProductId { get; set; }
 
         /// <summary>
@@ -45,14 +44,22 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         [ExcelColumnWidth(20)]
         [Required]
         public virtual Core.Enum.EnumIssueClassification IssueClassification { get; set; }
-        
+
         /// <summary>
         /// 分发人
         /// </summary>
+        /// 新增时数据库不存储分发人数据，先暂时保留这个字段，但是将改字段设置成非必录，后续再删除
         [ExcelColumnName("分发人编号")]
         [ExcelColumnWidth(20)]
+        public virtual long? Dispatcher { get; set; }
+
+        /// <summary>
+        /// 当前指派给
+        /// </summary>
+        [ExcelColumnName("当前指派给")]
+        [ExcelColumnWidth(20)]
         [Required]
-        public virtual long Dispatcher { get; set; }
+        public long? CurrentAssignment { get; set; }
 
         /// <summary>
         /// 问题性质

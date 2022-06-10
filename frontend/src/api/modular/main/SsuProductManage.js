@@ -34,8 +34,8 @@ export function SsuProductList(parameter) {
 export function SsuProductusers(parameter) {
   return axios({
     url: "/SsuProduct/getproductusers",
-    method: 'post',
-    data: parameter
+    method: 'get',
+    params: parameter
   })
 }
 

@@ -138,8 +138,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="projectId">项目ID</param>
         /// <returns></returns>
-        [HttpPost("/SsuProject/getprojectuser")]
-        public async Task<List<UserOutput>> GetProjectUser(long projectId)
+        [HttpGet("/SsuProject/getprojectuser")]
+        public async Task<List<UserOutput>> GetProjectUser([FromQuery] long projectId)
         {
             List<UserOutput> list = new List<UserOutput>();
             var userIds = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);

@@ -251,7 +251,7 @@ namespace QMS.Application.System
         public async Task<string> QYWechatSendMessage(IEnumerable<string> touser, string toparty, string totag, string title, string description, string url)
         {
             //将用户ID转换成企业微信ID
-            var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).Select(u => u.Uuid).ToList();
+            var tourIds = _sysOauthUserRep.DetachedEntities.Where(u => touser.Contains(u.OpenId)).AsQueryable().Select(u => u.Uuid).ToList();
             if (tourIds == null || tourIds.Count == 0)
             {
                 throw Oops.Oh($"该用户不存在对应的企业微信ID");

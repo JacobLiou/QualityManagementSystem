@@ -59,6 +59,7 @@ import { SsuProductList, SsuProductusers } from '@/api/modular/main/SsuProductMa
 import { SsuProjectList, SsuProjectusers } from '@/api/modular/main/SsuProjectManage'
 import { getOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
 import { SsuGroupList, SsuGroupusers } from '@/api/modular/main/SsuGroupManage'
+import qs from 'qs'
 
 export default {
   data() {
@@ -268,7 +269,7 @@ export default {
     // 根据部门id获取人员列表
     getDepartmentUserList(key) {
       const id = key[0]
-      getOrgUserList({ id })
+      getOrgUserList({orgId:id})
         .then((res) => {
           console.log(res)
           if (res.success) {
@@ -286,7 +287,7 @@ export default {
     // 根据项目ID获取成员列表
     getProjectUserList(key) {
       const id = key[0]
-      SsuProjectusers({ id })
+      SsuProjectusers({projectId:id})
         .then((res) => {
           if (res.success) {
             this.userData = res.data
@@ -303,7 +304,7 @@ export default {
     // 根据产品id获取人员列表
     getproductuserList(key) {
       const id = key[0]
-      SsuProductusers({ id })
+      SsuProductusers({productId:id})
         .then((res) => {
           if (res.success) {
             this.userData = res.data
@@ -320,7 +321,7 @@ export default {
     // 根据人员ID获取人员列表
     getPersonnelUserList(key) {
       const id = key[0]
-      SsuGroupusers({ id })
+      SsuGroupusers({groupId:id})
         .then((res) => {
           if (res.success) {
             this.userData = res.data
