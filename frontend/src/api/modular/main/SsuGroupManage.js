@@ -32,8 +32,8 @@ export function SsuGroupList(parameter) {
 export function SsuGroupusers(parameter) {
   return axios({
     url: '/SsuGroup/getgroupusers',
-    method: 'post',
-    data: parameter
+    method: 'get',
+    params: parameter
   })
 }
 

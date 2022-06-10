@@ -33,8 +33,8 @@ export function SsuProjectList(parameter) {
 export function SsuProjectusers(parameter) {
   return axios({
     url: '/SsuProject/getprojectuser',
-    method: 'post',
-    data: parameter
+    method: 'get',
+    params: parameter
   })
 }
 

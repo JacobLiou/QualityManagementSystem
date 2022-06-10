@@ -138,8 +138,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="productId">产品ID</param>
         /// <returns></returns>
-        [HttpPost("/SsuProduct/getproductusers")]
-        public async Task<List<UserOutput>> GetProductUsers(long productId)
+        [HttpGet("/SsuProduct/getproductusers")]
+        public async Task<List<UserOutput>> GetProductUsers([FromQuery] long productId)
         {
             List<UserOutput> list = new List<UserOutput>();
             var userIds = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);

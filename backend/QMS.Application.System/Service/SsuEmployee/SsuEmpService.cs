@@ -224,8 +224,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="orgId"></param>
         /// <returns></returns>
-        [HttpPost("/SsuEmpOrg/getorguser")]
-        public async Task<List<UserOutput>> GetOrgUser(long orgId)
+        [HttpGet("/SsuEmpOrg/getorguser")]
+        public async Task<List<UserOutput>> GetOrgUser([FromQuery] long orgId)
         {
             List<UserOutput> list = new List<UserOutput>();
             //获取该组织机构下的所有机构

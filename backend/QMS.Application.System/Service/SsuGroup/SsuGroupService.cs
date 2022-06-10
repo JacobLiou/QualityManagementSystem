@@ -121,8 +121,8 @@ namespace QMS.Application.System
         /// </summary>
         /// <param name="groupId">人员组ID</param>
         /// <returns></returns>
-        [HttpPost("/SsuGroup/getgroupusers")]
-        public async Task<List<UserOutput>> GetGroupUsers(long groupId)
+        [HttpGet("/SsuGroup/getgroupusers")]
+        public async Task<List<UserOutput>> GetGroupUsers([FromQuery] long groupId)
         {
             List<UserOutput> list = new List<UserOutput>();
             var userIds = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
