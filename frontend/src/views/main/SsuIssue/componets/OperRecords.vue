@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-18 11:07:28
- * @LastEditTime: 2022-05-31 15:01:25
+ * @LastEditTime: 2022-06-10 19:30:10
  * @LastEditors: 林伟群
  * @Description: 历史记录组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\OperRecords.vue
@@ -76,7 +76,7 @@ export default {
         .then((res) => {
           if (res.success) {
             const operationRecords = res.data.rows
-            this.operationRecords = operationRecords.reverse()
+            this.operationRecords = operationRecords
           } else {
             this.$message.error('问题操作记录读取失败')
           }
@@ -101,7 +101,7 @@ export default {
   ul {
     margin-bottom: 2em;
     li {
-      margin: 2em 0;
+      margin-bottom: 3.1em;
       margin-left: -1em;
       list-style: none;
     }

@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-01 10:09:05
+ * @LastEditTime: 2022-06-10 17:37:15
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -18,6 +18,14 @@
         </a-col>
         <a-col :xxl="2" :xl="4" :md="4" :xs="6" class="list_button">
           <a-button type="primary" @click="handleAddProblem">新增</a-button></a-col
+        >
+        <a-col :xxl="2" :xl="4" :md="4" :xs="6" class="list_button">
+          <a-button @click="templateFile">
+            <a-tooltip title="模板下载" placement="top">
+              <a-icon type="download" />
+              模板下载
+            </a-tooltip></a-button
+          ></a-col
         >
         <a-col :xxl="2" :xl="4" :md="4" :xs="6" class="list_button">
           <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="false" name="file">
@@ -57,7 +65,13 @@
 import ProblemSelect from './componets/ProblemSelect.vue'
 import ListSet from './componets/ListSet.vue'
 import Table from './componets/Table.vue'
-import { SsuIssueColumnDis, IssuePage, IssueImport } from '@/api/modular/main/SsuIssueManage'
+import {
+  SsuIssueColumnDis,
+  IssuePage,
+  IssueImport,
+  IssueTemplate,
+  Downloadfile,
+} from '@/api/modular/main/SsuIssueManage'
 
 export default {
   components: { ProblemSelect, ListSet, Table },
@@ -235,7 +249,7 @@ export default {
           dataIndex: 'createTime',
           width: '8em',
         },
-        
+
         {
           title: '发现人',
           align: 'left',
@@ -450,6 +464,23 @@ export default {
       this.$router.push({
         path: '/problemAdd',
       })
+    },
+
+    // 模板下载
+    templateFile() {
+      IssueTemplate()
+        .then((res) => {
+          this.confirmLoading = false
+          Downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        })
+        .catch((err) => {
+          this.confirmLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
+        })
+        .finally((res) => {
+          this.confirmLoading = false
+        })
     },
 
     // 导入

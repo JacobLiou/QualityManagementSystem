@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-31 19:02:58
+ * @LastEditTime: 2022-06-10 18:50:11
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -118,7 +118,7 @@
               <span class="li_title">发现日期：</span>
               <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
             </div>
-          </a-col>          
+          </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题来源：</span>
@@ -170,7 +170,7 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证状态：</span>
-              <div class="li_content">{{ IssueDetailData.validateTime }}</div>
+              <div class="li_content">{{ statusContent(IssueDetailData.validationStatus) }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -254,7 +254,7 @@
 </template>
 
 <script>
-import { IssueDetail, IssueDelete,IssueReOpen } from '@/api/modular/main/SsuIssueManage'
+import { IssueDetail, IssueDelete, IssueReOpen } from '@/api/modular/main/SsuIssueManage'
 import OperRecords from './componets/OperRecords.vue'
 import ProblemSolve from './componets/ProblemSolve.vue'
 import ProblemRecheck from './componets/ProblemRecheck.vue'
@@ -289,7 +289,7 @@ export default {
         {
           operName: '复制',
           operIcon: 'copy',
-        },        
+        },
       ]
       const operationAdd = {
         0: [
@@ -320,7 +320,7 @@ export default {
             operIcon: 'question-circle',
           },
         ],
-        2: [          
+        2: [
           {
             operName: '复核',
             operIcon: 'reconciliation',
@@ -374,7 +374,7 @@ export default {
           {
             operName: '验证',
             operIcon: 'safety-certificate',
-          },         
+          },
         ],
       }
       const addList = operationAdd[Number(this.IssueDetailData.status)]
@@ -430,6 +430,7 @@ export default {
     // 人员选择
     changePersonnel(value) {
       this.personnelType = value
+      this.userVisible = !this.userVisible
     },
     checkUserArray(checkUser) {
       console.log(checkUser)
