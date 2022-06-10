@@ -246,15 +246,15 @@ namespace QMS.EntityFramework.Core
                     ConstantExpression constantExpression = Expression.Constant(onTableTenantId);
                     MethodCallExpression right = Expression.Call(Expression.Constant(dbContext), dbContext.GetType().GetMethod("GetTenantId"));
 
-                    var dbValue = Expression.Call(typeof(EF), "Property", new Type[1]
+                    var dbProperty = Expression.Call(typeof(EF), "Property", new Type[1]
                     {
                         typeof(object)
                     }, parameterExpression, constantExpression);
 
                     var nullWhere = Expression.Constant(null);
                     Expression conditionExpr = Expression.Condition(Expression.Equal(nullWhere, right)
-                        , Expression.AndAlso(finialExpression,Expression.NotEqual(dbValue, nullWhere))
-                        , Expression.AndAlso(finialExpression,Expression.Equal(dbValue, right)));
+                        , Expression.AndAlso(finialExpression,Expression.NotEqual(dbProperty, nullWhere))
+                        , Expression.AndAlso(finialExpression,Expression.Equal(dbProperty, right)));
                    
                    finialExpression = conditionExpr.Reduce();
                 }
