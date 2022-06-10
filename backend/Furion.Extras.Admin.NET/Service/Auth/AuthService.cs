@@ -121,7 +121,7 @@ namespace Furion.Extras.Admin.NET.Service
                 .FirstOrDefault();
             _ = user ?? throw Oops.Oh(ErrorCode.D1024);
 
-            var cacheCaptcha = _cache.GetStringAsync(CommonConst.CACHE_PHONE_CODE).Result;
+            var cacheCaptcha = _cache.GetStringAsync(CommonConst.CACHE_PHONE_CODE + "_" + input.Email).Result;
             if (!input.Captcha.Equals(cacheCaptcha))
                 throw Oops.Oh(ErrorCode.D1025);
 

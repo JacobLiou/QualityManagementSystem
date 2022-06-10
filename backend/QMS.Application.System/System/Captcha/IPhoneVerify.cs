@@ -4,7 +4,7 @@
     {
         string GetRandomNums(int length = 4);
 
-        CommonOutput VerifyPhoneNums(string nums);
+        CommonOutput VerifyPhoneNums(string phone, string nums);
 
         string PostSMS(string posturl, string postData);
 

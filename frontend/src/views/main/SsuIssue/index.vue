@@ -105,35 +105,35 @@ export default {
       columns: [
         {
           title: '序号',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'id',
           width: '10em',
         },
         {
           title: '标题',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'title',
           width: '20em',
         },
         {
           title: '项目',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'projectName',
           width: '8em',
         },
         {
           title: '产品',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'productName',
           width: '8em',
         },
         {
           title: '模块',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'module',
           width: '6em',
@@ -146,7 +146,7 @@ export default {
         },
         {
           title: '性质',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'consequence',
           width: '6em',
@@ -159,7 +159,7 @@ export default {
         },
         {
           title: '问题分类',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'issueClassification',
           width: '10em',
@@ -189,7 +189,7 @@ export default {
         },
         {
           title: '来源',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'source',
           scopedSlots: { customRender: 'sourcescopedSlots' },
@@ -203,7 +203,7 @@ export default {
         },
         {
           title: '状态',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'status',
           width: '6em',
@@ -216,17 +216,17 @@ export default {
         },
         {
           title: '当前指派',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'currentAssignName',
           width: '8em',
         },
         {
           title: '提出人',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'creatorName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '提出时间',
@@ -235,19 +235,13 @@ export default {
           dataIndex: 'createTime',
           width: '8em',
         },
-        {
-          title: '关闭时间',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'closeTime',
-          width: '8em',
-        },
+        
         {
           title: '发现人',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'discoverName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '发现时间',
@@ -258,10 +252,10 @@ export default {
         },
         {
           title: '分发人',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'dispatcherName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '分发时间',
@@ -286,10 +280,10 @@ export default {
         // },
         {
           title: '解决人',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'executorName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '解决时间',
@@ -300,14 +294,14 @@ export default {
         },
         {
           title: '验证人',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'verifierName',
-          width: '8em',
+          width: '6em',
         },
         {
           title: '验证地点',
-          align: 'center',
+          align: 'left',
           sorter: true,
           dataIndex: 'verifierPlace',
           width: '10em',
@@ -318,6 +312,13 @@ export default {
           sorter: true,
           dataIndex: 'validateTime',
           width: '8em',
+        },
+        {
+          title: '实际完成时间',
+          align: 'center',
+          sorter: true,
+          dataIndex: 'closeTime',
+          width: '10em',
         },
       ],
       columnsShow: [],

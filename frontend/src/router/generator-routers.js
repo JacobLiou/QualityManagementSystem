@@ -30,6 +30,8 @@ const constantRouterComponents = {
   'problemInfo': () => import('../views/main/SsuIssue/problemInfo.vue'),
   // 问题新增
   'problemAdd': () => import('../views/main/SsuIssue/problemAdd.vue'),
+  // 问题新增
+  'problemTable': () => import('../views/main/SsuIssue/index.vue'),
   // 问题分发
   "problemDistribure": () => import('../views/main/SsuIssue/problemDistribure.vue')
 }
@@ -160,6 +162,14 @@ const userAccount = [
     'id': 183183,
     'meta': { title: '问题新增', icon: null, show: false, target: '', link: null },
     'component': 'problemAdd'
+  },
+  {
+    'name': 'problemTable',
+    'path': '/problemTable',
+    'pid': 0,
+    'id': 183183,
+    'meta': { title: '问题管理', icon: null, show: false, target: '', link: null },
+    'component': 'problemTable'
   },
   {
     'name': 'problemDistribure',
