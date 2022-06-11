@@ -45,8 +45,8 @@ namespace QMS.Application.Issues
 
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
-        //private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8001/problemInfo?id=";
-        private readonly string ProblemInfoUrl = "http://172.16.16.33:8009/problemInfo?id=";
+        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8002/problemInfo?id=";
+
 
         private readonly string ProblemInfoTitle = "质量平台问题管理";
         private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
@@ -545,10 +545,10 @@ namespace QMS.Application.Issues
         /// <param name="issues"></param>
         private async Task<PageResult<OutputGeneralIssue>> UpdateProjectProductNames(PageResult<OutputGeneralIssue> issues)
         {
-            // 根据保存的项目id和产品id调用基础服务获取对应的名称
+            // 根据保存的项目id和产品id调用第三方服务获取对应的名称
             if (issues.TotalRows > 0)
             {
-                IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProjectName.StartsWith(Constants.PROJECT_MARK));
+                IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProjectName != null && issue.ProjectName.StartsWith(Constants.PROJECT_MARK));
                 IEnumerable<OutputGeneralIssue> products = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName != null && issue.ProductName.StartsWith(Constants.PRODUCT_MARK));
 
                 if (projects.Any())
