@@ -39,22 +39,8 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item ref="dispatcherName" label="当前指派" prop="dispatcherName" v-if="isStorage">
-          <section class="from_chilen">
-            <a-input
-              v-model="form.dispatcherName"
-              @blur="
-                () => {
-                  $refs.dispatcherName.onFieldBlur()
-                }
-              "
-              placeholder="请选择指派人"
-              disabled
-            />
-            <a-button @click="changePersonnel('dispatcher')"> 选择 </a-button>
-          </section>
-        </a-form-model-item>
-        <a-form-model-item label="当前指派" prop="currentAssignmentName" v-else>
+
+        <a-form-model-item label="当前指派" prop="currentAssignmentName" >
           <section class="from_chilen">
             <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled />
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
@@ -248,8 +234,8 @@ export default {
         productId: undefined, // 产品编号
         module: undefined, // 模块
         issueClassification: undefined, // 问题分类
-        dispatcher: undefined, // 分发人ID（指派人）
-        dispatcherName: '', // 分发人名字
+        currentAssignment: undefined, // 指派人ID
+        currentAssignmentName: '', // 指派人名字
         consequence: undefined, // 性质
         // 下边不是必传字段
         source: null, // 问题来源
@@ -263,7 +249,7 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        dispatcherName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
+        currentAssignmentName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
         projectId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
         module: [{ required: true, message: '请选择模块', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],

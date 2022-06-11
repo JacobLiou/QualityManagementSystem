@@ -4,7 +4,7 @@ namespace QMS.Application.Issues.Helper
 {
     internal class Constants
     {
-        public static readonly string URL_ROOT = "http://localhost:5566/";
+        public static readonly string URL_ROOT = "http://qms.sofarsolar.com:8001/";
 
         public static readonly string UPLOAD_FILE = Constants.URL_ROOT + "sysFileInfo/upload";
 

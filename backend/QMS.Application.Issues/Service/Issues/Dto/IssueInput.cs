@@ -140,6 +140,7 @@ namespace QMS.Application.Issues
         /// 详情
         /// </summary>
         public virtual string Description { get; set; }
+
         /// <summary>
         /// 原因
         /// </summary>
@@ -260,20 +261,26 @@ namespace QMS.Application.Issues
                 switch (issue.Status)
                 {
                     case Core.Enum.EnumIssueStatus.Created:
+                        break;
+
                     case Core.Enum.EnumIssueStatus.Solved:
                         issue.Dispatcher = this.CurrentAssignment;
                         break;
+
                     case Core.Enum.EnumIssueStatus.Dispatched:
                     case Core.Enum.EnumIssueStatus.UnSolve:
                         issue.Executor = this.CurrentAssignment;
                         break;
+
                     case Core.Enum.EnumIssueStatus.Closed:
                     case Core.Enum.EnumIssueStatus.HasHangUp:
                     case Core.Enum.EnumIssueStatus.HasTemporary:
                         break;
+
                     case Core.Enum.EnumIssueStatus.HasRechecked:
                         issue.Verifier = this.CurrentAssignment;
                         break;
+
                     default:
                         break;
                 }
@@ -298,6 +305,5 @@ namespace QMS.Application.Issues
 
     public class QueryeIssueInput : BaseId
     {
-
     }
 }
