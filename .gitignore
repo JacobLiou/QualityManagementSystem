@@ -388,3 +388,4 @@ FodyWeavers.xsd
 *.sln.iml
 /outputs
 /backend/QMS.Web.Entry/wwwroot/Upload/Default
+/backend/QMS.Web.Entry/LocalDb

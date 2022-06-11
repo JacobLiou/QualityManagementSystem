@@ -545,11 +545,11 @@ namespace QMS.Application.Issues
         /// <param name="issues"></param>
         private async Task<PageResult<OutputGeneralIssue>> UpdateProjectProductNames(PageResult<OutputGeneralIssue> issues)
         {
-            // 根据保存的项目id和产品id调用第三方服务获取对应的名称
+            // 根据保存的项目id和产品id调用基础服务获取对应的名称
             if (issues.TotalRows > 0)
             {
                 IEnumerable<OutputGeneralIssue> projects = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProjectName.StartsWith(Constants.PROJECT_MARK));
-                IEnumerable<OutputGeneralIssue> products = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName.StartsWith(Constants.PRODUCT_MARK));
+                IEnumerable<OutputGeneralIssue> products = issues.Rows.Where<OutputGeneralIssue>(issue => issue.ProductName != null && issue.ProductName.StartsWith(Constants.PRODUCT_MARK));
 
                 if (projects.Any())
                 {
