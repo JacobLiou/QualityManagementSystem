@@ -1,6 +1,7 @@
 ﻿using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.Extras.Admin.NET;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core;
@@ -14,10 +15,11 @@ namespace QMS.Application.System.Service.Version
     public class VersionServices : IDynamicApiController, ITransient, IVersionServices
     {
         public readonly IRepository<SysVersion> _sysVersion;
-
-        public VersionServices(IRepository<SysVersion> sysVersion)
+        public readonly IRepository<SysDictData> _sysDictDataRep;
+        public VersionServices(IRepository<SysVersion> sysVersion, IRepository<SysDictData> sysDictDataRep)
         {
             _sysVersion = sysVersion;
+            _sysDictDataRep = sysDictDataRep;
         }
 
         /// <summary>
@@ -27,7 +29,10 @@ namespace QMS.Application.System.Service.Version
         [HttpPost("system/version/getalltypelist")]
         public async Task<List<SysVersion>> GetAllTypeList()
         {
-            return await _sysVersion.DetachedEntities.Where(u => u.IsDeleted == false).ToListAsync();
+            return await _sysDictDataRep.DetachedEntities.Where(u => u.TypeId == input.TypeId)
+                .Where(u => u.Status != CommonStatus.DELETED)
+                .OrderBy(u => u.Sort)
+                .ToListAsync();
         }
 
         /// <summary>
