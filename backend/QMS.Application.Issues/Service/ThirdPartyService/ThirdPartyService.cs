@@ -14,11 +14,9 @@ namespace QMS.Application.Issues
 
     public class ThirdPartyService : IDynamicApiController, IScoped
     {
-        private readonly IHttpProxy _http;
         private readonly IHttpContextAccessor _contextAccessor;
-        public ThirdPartyService(IHttpProxy http, IHttpContextAccessor contextAccessor)
+        public ThirdPartyService(IHttpContextAccessor contextAccessor)
         {
-            _http = http;
             _contextAccessor = contextAccessor;
         }
 

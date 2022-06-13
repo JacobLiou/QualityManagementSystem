@@ -105,7 +105,7 @@ namespace QMS.Core.Entity
 
             this.Status = EnumIssueStatus.Dispatched;
 
-            this.CurrentAssignment = this.Executor;
+            //this.CurrentAssignment = this.Executor;
         }
 
         public void DoReCheck(bool pass)

@@ -353,13 +353,13 @@ namespace QMS.Application.Issues
                 await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
             }
 
-            //问题复核有效，则问题流转至验证，如果验证人和当前用户不一致则发送消息给验证人
-            if (pass && common.Verifier != Helper.Helper.GetCurrentUser())
+            //问题复核有效，则问题流转至验证，如果当前指派（验证人）和当前用户不一致则发送消息给验证人
+            if (pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(common.Id.ToString(), common.Verifier.ToString(), common.Title);
             }
-            //问题复核无效，则问题重新流转至解决，如果解决人和当前用户不一致则发送消息给解决人
-            if (!pass && common.Executor != Helper.Helper.GetCurrentUser())
+            //问题复核无效，则问题重新流转至解决，如果当前指派（解决人）和当前用户不一致则发送消息给解决人
+            if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(common.Id.ToString(), common.Executor.ToString(), common.Title);
             }
@@ -398,7 +398,7 @@ namespace QMS.Application.Issues
             await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
 
             //如果当前用户和复核人（分发人）不一致，则发送消息给复核人（分发人）
-            if (common.Dispatcher != Helper.Helper.GetCurrentUser())
+            if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
             }
@@ -436,8 +436,8 @@ namespace QMS.Application.Issues
             await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
 
             //问题验证有效，则问题变更成关闭状态不需要发送消息
-            //问题验证无效，则问题重新流转至分发状态，分发人和当前用户不一致则发送消息分发人
-            if (!pass && common.Dispatcher != Helper.Helper.GetCurrentUser())
+            //问题验证无效，则问题重新流转至分发状态，当前指派（分发人）和当前用户不一致则发送消息分发人
+            if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
             }
@@ -503,8 +503,8 @@ namespace QMS.Application.Issues
                 await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
             }
 
-            //问题转交，如果转交人和当前用户不一致，则发送消息给转交人
-            if (input.Executor != Helper.Helper.GetCurrentUser())
+            //问题转交，如果当前指派（转交人）和当前用户不一致，则发送消息给转交人
+            if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(common.Id.ToString(), input.Executor.ToString(), common.Title);
             }
@@ -958,15 +958,14 @@ namespace QMS.Application.Issues
 
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(分发人)");
+            Helper.Helper.Assert(input.CurrentAssignment != null && input.CurrentAssignment != 0, "分发时必须指定执行人");
 
             input.SetIssue(issue);
-            Helper.Helper.Assert(issue.Executor != null, "分发时必须指定执行人");
             issue.DoDispatch();
             await this._issueRep.UpdateNowAsync(issue);
 
-
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+            input.SetIssueDetail(detail);
             await this._issueDetailRep.UpdateNowAsync(detail, null);
 
             if (!string.IsNullOrEmpty(input.ExtendAttribute))
@@ -992,7 +991,7 @@ namespace QMS.Application.Issues
             }
 
             //如果当前用户和解决人不一致，则发送消息给解决人
-            if (issue.Executor != Helper.Helper.GetCurrentUser())
+            if (issue.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
                 this.SendNotice(issue.Id.ToString(), issue.Executor.ToString(), issue.Title);
             }

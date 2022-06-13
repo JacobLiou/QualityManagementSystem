@@ -42,8 +42,14 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
         /// <summary>
         /// 执行人
         /// </summary>
+        //[Required]
+        //public long Executor { get; set; }
+
+        /// <summary>
+        /// 当前指派
+        /// </summary>
         [Required]
-        public long Executor { get; set; }
+        public long? CurrentAssignment { get; set; }
 
         /// <summary>
         /// 抄送给
@@ -79,7 +85,8 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
 
             issue.IssueClassification = this.IssueClassification;
             issue.Consequence = this.Consequence;
-            issue.Executor = this.Executor;
+            issue.CurrentAssignment = this.CurrentAssignment;
+            //issue.Executor = this.Executor;
             if (this.CCList != null)
             {
                 issue.CCs = JSON.Serialize(this.CCList);
@@ -91,6 +98,7 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
 
         public bool SetIssueDetail(IssueDetail issueDetail)
         {
+            issueDetail.ExtendAttribute = this.ExtendAttribute;
             return true;
         }
     }
