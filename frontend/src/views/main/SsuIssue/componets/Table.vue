@@ -3,11 +3,11 @@
  * @Date: 2022-05-12 20:57:21
  * @LastEditTime: 2022-05-31 20:33:13
  * @LastEditors: 林伟群
- * @Description: 表格
+ * @Description: 表格   :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
 -->
 <template>
-  <section>
+  <section class="problem_table">
     <a-table
       :columns="columns"
       :row-key="
@@ -20,6 +20,7 @@
       @change="handleTableChange"
       :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
       size="middle"
+      :customRow="onCustomRow"
     >
       <div slot="checkbox" slot-scope="text, record, index">
         <a-checkbox @change="onceCheck(text, record, index)" :checked="record.checkbox"> </a-checkbox>
@@ -27,7 +28,7 @@
       <!-- 操作 -->
       <section slot="operation" class="table_operation" slot-scope="text, record">
         <a-dropdown :trigger="['click']" :getPopupContainer="(triggerNode) => triggerNode.parentNode">
-          <a class="ant-dropdown-link" @click="(e) => e.preventDefault()"> 更多 <a-icon type="down" /> </a>
+          <a class="ant-dropdown-link" @click.stop="(e) => e.preventDefault()"> 更多 <a-icon type="down" /> </a>
           <a-menu slot="overlay">
             <a-menu-item
               :key="item.currentKey"
@@ -194,6 +195,21 @@ export default {
     this.isMoblile()
   },
   methods: {
+    // 列表的点击态
+    onCustomRow(record) {
+      return {
+        on: {
+          click: () => {
+            this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
+            this.$router.push({
+              path: '/problemInfo',
+              query: { id: record.id },
+            })
+          },
+        },
+      }
+    },
+
     changePersonnel(value) {
       this.personnelType = value
     },
@@ -219,7 +235,7 @@ export default {
         {
           operName: '详情',
           operIcon: 'file-done',
-        },              
+        },
       ]
       const operationAdd = {
         0: [
@@ -250,7 +266,7 @@ export default {
             operIcon: 'question-circle',
           },
         ],
-        2: [          
+        2: [
           {
             operName: '复核',
             operIcon: 'reconciliation',
@@ -304,7 +320,7 @@ export default {
           {
             operName: '验证',
             operIcon: 'safety-certificate',
-          },         
+          },
         ],
       }
       const addList = operationAdd[String(state)]
@@ -509,6 +525,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.problem_table {
+  /deep/ .ant-table-body {
+    min-height: 360px;
+  }
+}
 .record_footer {
   margin-top: 1.5em;
   display: flex;
@@ -545,6 +566,9 @@ export default {
     .once_span {
       text-align: center;
     }
+  }
+  /deep/.ant-dropdown {
+    z-index: 1000;
   }
 }
 </style>

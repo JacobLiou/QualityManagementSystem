@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-06-02 13:50:34
+ * @LastEditTime: 2022-06-13 13:52:30
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
@@ -68,9 +68,8 @@
 <script>
 import { SsuProductList, SsuProductusers } from '@/api/modular/main/SsuProductManage'
 import { SsuProjectList, SsuProjectusers } from '@/api/modular/main/SsuProjectManage'
-import { getOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
+import { getSsuEmpOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
 import { SsuGroupList, SsuGroupusers } from '@/api/modular/main/SsuGroupManage'
-import qs from 'qs'
 
 export default {
   props: {
@@ -244,7 +243,7 @@ export default {
 
     // 获取部门列表
     getDepartmentList() {
-      getOrgTree()
+      getSsuEmpOrgTree()
         .then((res) => {
           if (res.success) {
             this.treeData = res.data
@@ -288,8 +287,8 @@ export default {
 
     // 根据部门id获取人员列表
     getDepartmentUserList(key) {
-      const id = key[0]      
-      getOrgUserList({orgId:id})
+      const id = key[0]
+      getOrgUserList({ orgId: id })
         .then((res) => {
           console.log(res)
           if (res.success) {
@@ -307,7 +306,7 @@ export default {
     // 根据项目ID获取成员列表
     getProjectUserList(key) {
       const id = key[0]
-      SsuProjectusers({projectId:id})
+      SsuProjectusers({ projectId: id })
         .then((res) => {
           if (res.success) {
             this.userData = res.data
@@ -324,7 +323,7 @@ export default {
     // 根据产品id获取人员列表
     getproductuserList(key) {
       const id = key[0]
-      SsuProductusers({productId:id})
+      SsuProductusers({ productId: id })
         .then((res) => {
           if (res.success) {
             this.userData = res.data
@@ -341,7 +340,7 @@ export default {
     // 根据人员ID获取人员列表
     getPersonnelUserList(key) {
       const id = key[0]
-      SsuGroupusers({groupId:id})
+      SsuGroupusers({ groupId: id })
         .then((res) => {
           if (res.success) {
             this.userData = res.data
