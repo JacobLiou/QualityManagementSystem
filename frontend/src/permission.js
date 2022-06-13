@@ -10,13 +10,35 @@ import { ACCESS_TOKEN, ALL_APPS_MENU } from '@/store/mutation-types'
 import { Modal, notification } from 'ant-design-vue' // NProgress Configuration
 import { timeFix } from '@/utils/util'/// es/notification
 import Enumerable from 'linq'
+import { qyWeLoginToken } from '@/api/modular/system/loginManage'
 
 NProgress.configure({ showSpinner: false })
 const whiteList = ['login', 'register', 'registerResult', 'wechat'] // no redirect whitelist
 // 无默认首页的情况
 const defaultRoutePath = '/welcome'
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  /**
+   * @description: 企业微信免登录
+   */
+  const { fullPath } = to
+  const fullpathState = fullPath.indexOf('&state=FromQYWechat')
+  if (fullpathState !== -1) {
+    const fullPathArray = fullPath.split('&')
+    const codeStr = fullPathArray[1]
+    const toPath = fullPathArray[0]
+    if (codeStr) {
+      const code = codeStr.split('=')[1]
+      const tokenRes = await qyWeLoginToken({ code })
+      if (tokenRes.success) {
+        // 登录成功后会重定向到welcome页面，再在welcome进行页面跳转
+        sessionStorage.setItem('to_path_to', toPath)
+        store.dispatch('dictTypeData');
+      } else {
+        sessionStorage.setItem('to_path_to', '')
+      }
+    }
+  }
   NProgress.start() // start progress bar
   to.meta && (typeof to.meta.title !== 'undefined' && setDocumentTitle(`${to.meta.title} - ${domTitle}`))
   if (Vue.ls.get(ACCESS_TOKEN)) {

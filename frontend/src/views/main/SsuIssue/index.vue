@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-10 17:37:15
+ * @LastEditTime: 2022-06-11 15:41:51
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -94,22 +94,22 @@ export default {
           queryName: '由我解决',
           key: 3,
         },
-        {
-          queryName: '待验证',
-          key: 4,
-        },
-        {
-          queryName: '未解决',
-          key: 5,
-        },
-        {
-          queryName: '已关闭',
-          key: 6,
-        },
-        {
-          queryName: '已挂起',
-          key: 7,
-        },
+        // {
+        //   queryName: '待验证',
+        //   key: 4,
+        // },
+        // {
+        //   queryName: '未解决',
+        //   key: 5,
+        // },
+        // {
+        //   queryName: '已关闭',
+        //   key: 6,
+        // },
+        // {
+        //   queryName: '已挂起',
+        //   key: 7,
+        // },
         // {
         //   queryName: '抄送给我',
         //   key: 8,

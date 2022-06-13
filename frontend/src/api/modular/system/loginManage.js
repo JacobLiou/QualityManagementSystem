@@ -40,6 +40,18 @@ export function qiWeChatLoginUrl() {
   })
 }
 
+/**
+ * @description: 企业微信登录获取token
+ * @return {*}
+ */
+export function qyWeLoginToken(parameter) {
+  return axios({
+    url: "/system/qyWechat/qywechatgetlogintoken",
+    method: "get",
+    params: parameter
+  })
+}
+
 
 /**
  * @description: 微信登录

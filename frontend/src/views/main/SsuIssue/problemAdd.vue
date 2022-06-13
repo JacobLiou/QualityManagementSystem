@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-02 15:13:54
+ * @LastEditTime: 2022-06-11 11:06:19
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -171,7 +171,13 @@
         </section>
         <section class="add_once">
           <a-form-item label="附件上传" :labelCol="labelCol2">
-            <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file">
+            <a-upload
+              :customRequest="customRequest"
+              :multiple="true"
+              :showUploadList="true"
+              name="file"
+              @change="handleChange"
+            >
               <a-button icon="upload">附件上传</a-button>
             </a-upload>
           </a-form-item>
@@ -271,6 +277,7 @@ export default {
       status: -1, // 状态
       // oldDescription: '', // 编辑时旧的描述
       copyAdd: 0, // 是否为复制
+      uploadInfo: {}, // 文件上传详情
     }
   },
   created() {
@@ -497,15 +504,19 @@ export default {
       }
       this.$forceUpdate()
     },
-
+    handleChange(info) {
+      this.uploadInfo = info
+    },
     // 附件上传
     customRequest(data) {
+      console.log(data)
       const { file } = data
       const formData = new FormData()
       formData.append('file', file)
       sysFileInfoUpload(formData).then((res) => {
         if (res.success) {
           this.$message.success('附件上传成功')
+          this.uploadInfo.file.status = 'done'
           this.attachment = {
             attachmentId: res.data,
             fileName: file.name,
@@ -513,9 +524,11 @@ export default {
           }
         } else {
           this.$message.error('上传失败：' + res.message)
+          this.uploadInfo.file.status = 'error'
         }
       })
     },
+
     // 提交
     onSubmit() {
       this.$refs.ruleForm.validate((valid) => {
@@ -566,21 +579,21 @@ export default {
       IssueAdd(form)
         .then((res) => {
           if (res.success) {
-            // const issueId = res.data.id
-            // const parameter = {
-            //   attachment: this.attachment,
-            //   issueId: issueId,
-            // }
+            const issueId = res.data.id
+            const parameter = {
+              attachment: this.attachment,
+              issueId: issueId,
+            }
             this.$message.success(this.form.isTemporary ? '问题暂存成功' : '问题增加成功')
-            // IssueAttachmentSaveId(parameter)
-            //   .then((res) => {
-            //     if (!res.success) {
-            //       this.$message.error('附件信息保存失败：' + res.message)
-            //     }
-            //   })
-            //   .catch(() => {
-            //     this.$message.error('附件信息保存失败：' + res.message)
-            //   })
+            IssueAttachmentSaveId(parameter)
+              .then((res) => {
+                if (!res.success) {
+                  this.$message.error('附件信息保存失败：' + res.message)
+                }
+              })
+              .catch(() => {
+                this.$message.error('附件信息保存失败：' + res.message)
+              })
             this.$router.back()
           } else {
             this.$message.warning(res.message)
