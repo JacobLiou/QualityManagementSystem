@@ -7,7 +7,7 @@
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
 -->
 <template>
-  <section class="problem_table">
+  <section :class="{ problem_table: isProblemTable }">
     <a-table
       :columns="columns"
       :row-key="
@@ -20,7 +20,6 @@
       @change="handleTableChange"
       :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
       size="middle"
-      :customRow="onCustomRow"
     >
       <div slot="checkbox" slot-scope="text, record, index">
         <a-checkbox @change="onceCheck(text, record, index)" :checked="record.checkbox"> </a-checkbox>
@@ -28,7 +27,7 @@
       <!-- 操作 -->
       <section slot="operation" class="table_operation" slot-scope="text, record">
         <a-dropdown :trigger="['click']" :getPopupContainer="(triggerNode) => triggerNode.parentNode">
-          <a class="ant-dropdown-link" @click.stop="(e) => e.preventDefault()"> 更多 <a-icon type="down" /> </a>
+          <a class="ant-dropdown-link" @click="(e) => e.preventDefault()"> 更多 <a-icon type="down" /> </a>
           <a-menu slot="overlay">
             <a-menu-item
               :key="item.currentKey"
@@ -189,27 +188,15 @@ export default {
     checkShow() {
       return this.indeterminate ? true : this.checkAll
     },
+    isProblemTable() {
+      return this.issueData.length !== 0
+    },
   },
 
   created() {
     this.isMoblile()
   },
   methods: {
-    // 列表的点击态
-    onCustomRow(record) {
-      return {
-        on: {
-          click: () => {
-            this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
-            this.$router.push({
-              path: '/problemInfo',
-              query: { id: record.id },
-            })
-          },
-        },
-      }
-    },
-
     changePersonnel(value) {
       this.personnelType = value
     },
@@ -374,7 +361,6 @@ export default {
 
     // 操作类型
     operationType(record, operName) {
-      console.log(record, operName)
       switch (operName) {
         case '删除':
           this.problemDelect(record)
@@ -477,13 +463,11 @@ export default {
       const checkIssue = this.issueData.filter((item) => {
         return item.checkbox == true
       })
-      console.log(checkIssue)
       const redispatchIssueList = checkIssue.filter((item) => {
         if (item.status == 1 || item.status == 3) {
           return item
         }
       })
-      console.log(redispatchIssueList)
       if (redispatchIssueList.length == 0) {
         this.$message.warning('所选问题不可转交')
       } else {
