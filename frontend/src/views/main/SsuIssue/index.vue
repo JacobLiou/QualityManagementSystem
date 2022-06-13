@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-13 11:00:47
+ * @LastEditTime: 2022-06-13 15:35:44
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -130,6 +130,26 @@ export default {
           sorter: true,
           dataIndex: 'title',
           width: '20em',
+          customRender: (text, row, index) => {
+            const openDrawer = () => {
+              this.$store.commit('SET_BACK_QP', this.queryParam)
+              this.$router.push({
+                path: '/problemInfo',
+                query: { id: row.id },
+              })
+            }
+            return (
+              <a
+                href="javascript:;"
+                style="color: '#2F66F9'; display: inline-block; width: 100%; height: 100%"
+                onClick={openDrawer}
+                title={text}
+                class="clickOutSideClass"
+              >
+                {text}
+              </a>
+            )
+          },
         },
         {
           title: '项目',
