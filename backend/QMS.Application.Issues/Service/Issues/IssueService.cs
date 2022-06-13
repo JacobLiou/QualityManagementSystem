@@ -127,10 +127,10 @@ namespace QMS.Application.Issues
             // 插入扩展字段数据
             await this.AddAttributeValuesBatch(detail.ExtendAttribute);
 
-            //问题新增，如果当前用户和分发人不一致，则发送消息给对应的分发人
-            if (!input.IsTemporary && issueEntity.Entity.Dispatcher != null && Helper.Helper.GetCurrentUser() != issueEntity.Entity.Dispatcher)
+            //问题新增，如果当前用户和当前指派(分发人)不一致，则发送消息给对应的分发人
+            if (!input.IsTemporary && Helper.Helper.GetCurrentUser() != input.CurrentAssignment)
             {
-                this.SendNotice(issueEntity.Entity.Id.ToString(), issueEntity.Entity.Dispatcher.ToString(), issueEntity.Entity.Title);
+                this.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
             }
 
             await IssueLogger.Log(
@@ -356,12 +356,12 @@ namespace QMS.Application.Issues
             //问题复核有效，则问题流转至验证，如果当前指派（验证人）和当前用户不一致则发送消息给验证人
             if (pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Verifier.ToString(), common.Title);
+                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
             //问题复核无效，则问题重新流转至解决，如果当前指派（解决人）和当前用户不一致则发送消息给解决人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Executor.ToString(), common.Title);
+                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -400,7 +400,7 @@ namespace QMS.Application.Issues
             //如果当前用户和复核人（分发人）不一致，则发送消息给复核人（分发人）
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
+                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -439,7 +439,7 @@ namespace QMS.Application.Issues
             //问题验证无效，则问题重新流转至分发状态，当前指派（分发人）和当前用户不一致则发送消息分发人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
+                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             EnumIssueOperationType enumIssueOperationType = pass ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
@@ -493,7 +493,7 @@ namespace QMS.Application.Issues
 
 
             input.SetIssue(common);
-            Helper.Helper.Assert(common.Executor != null, "重分发时必须指定执行人");
+            Helper.Helper.Assert(common.Executor != 0 && common.Executor != null, "重分发时必须指定执行人");
             common.DoDispatch();
             await this._issueRep.UpdateNowAsync(common, true);
 
@@ -506,7 +506,7 @@ namespace QMS.Application.Issues
             //问题转交，如果当前指派（转交人）和当前用户不一致，则发送消息给转交人
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), input.Executor.ToString(), common.Title);
+                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
         }
 
@@ -958,6 +958,7 @@ namespace QMS.Application.Issues
 
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
+            Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment == Helper.Helper.GetCurrentUser(), "当前指派人不是当前用户(分发人)");
             Helper.Helper.Assert(input.CurrentAssignment != null && input.CurrentAssignment != 0, "分发时必须指定执行人");
 
             input.SetIssue(issue);
@@ -993,7 +994,7 @@ namespace QMS.Application.Issues
             //如果当前用户和解决人不一致，则发送消息给解决人
             if (issue.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), issue.Executor.ToString(), issue.Title);
+                this.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -1176,7 +1177,7 @@ namespace QMS.Application.Issues
             //构建消息格式
             var msg = new NoticeMsgInput()
             {
-                Url = "<a href=\"" + ProblemInfoUrl + issueId + "\">" + title + "</a>",
+                Url = ProblemInfoUrl + issueId,
                 Content = ProblemInfoContent,
                 Title = ProblemInfoTitle + "-" + title,
                 UserIdList = new List<string>() { userId }
