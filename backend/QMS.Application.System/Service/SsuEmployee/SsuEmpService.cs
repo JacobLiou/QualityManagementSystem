@@ -229,7 +229,7 @@ namespace QMS.Application.System
         {
             List<UserOutput> list = new List<UserOutput>();
             //获取该组织机构下的所有机构
-            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains(orgId.ToString())).Select(u => u.Id).ToList();
+            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains("[" + orgId.ToString() + "]")).Select(u => u.Id).ToList();
             //机构列表加入自身
             orgIds.Add(orgId);
             //获取机构对应的所有人员
