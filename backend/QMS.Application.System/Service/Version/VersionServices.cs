@@ -29,10 +29,7 @@ namespace QMS.Application.System.Service.Version
         [HttpPost("system/version/getalltypelist")]
         public async Task<List<SysVersion>> GetAllTypeList()
         {
-            return await _sysDictDataRep.DetachedEntities.Where(u => u.TypeId == input.TypeId)
-                .Where(u => u.Status != CommonStatus.DELETED)
-                .OrderBy(u => u.Sort)
-                .ToListAsync();
+            return await _sysVersion.DetachedEntities.Where(u => u.IsDeleted == false).ToListAsync();
         }
 
         /// <summary>
