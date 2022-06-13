@@ -27,7 +27,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
         public bool SetIssue(Core.Entity.Issue issue)
         {
-            Helper.Helper.Assert(issue.Status != Core.Enum.EnumIssueStatus.Created && issue.Status != Core.Enum.EnumIssueStatus.Closed && issue.Status != Core.Enum.EnumIssueStatus.HasHangUp, Constants.ERROR_MSG_CHECK_REDISPATCH);
+            Helper.Helper.Assert(issue.Status != Core.Enum.EnumIssueStatus.Created || issue.Status != Core.Enum.EnumIssueStatus.Closed || issue.Status != Core.Enum.EnumIssueStatus.HasHangUp, Constants.ERROR_MSG_CHECK_REDISPATCH);
 
             bool changed = false;
 

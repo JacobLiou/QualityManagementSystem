@@ -36,6 +36,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
                 changed = true;
             }
 
+            //设置解决日期
+            issue.SolveTime = this.SolveTime != default(DateTime) ? this.SolveTime : DateTime.Now;
+
+
             return changed;
         }
 

@@ -141,7 +141,8 @@ namespace QMS.Core.Entity
 
         public void DoSolve()
         {
-            this.SolveTime = DateTime.Now;
+            //解决日期应界面上的日期
+            //this.SolveTime = DateTime.Now;
             this.Executor = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.Solved;
