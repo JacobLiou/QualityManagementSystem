@@ -44,10 +44,10 @@
             >
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="责任人" prop="executorName">
+        <a-form-model-item label="责任人" prop="currentAssignmentName">
           <section class="from_chilen">
-            <a-input v-model="form.executorName" placeholder="请选择责任人" disabled />
-            <a-button @click="changePersonnel('executor')"> 选择 </a-button>
+            <a-input v-model="form.currentAssignmentName" placeholder="请选择责任人" disabled />
+            <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
         <a-form-model-item label="预计完成时间" prop="forecastSolveTime">
@@ -188,8 +188,8 @@ export default {
         forecastSolveTime: undefined, // 预计完成时间
         issueClassification: undefined, // 问题分类
         consequence: undefined, // 性质
-        executor: null, // 执行人id
-        executorName: '', // 执行人名字
+        currentAssignment: null, // 当前指派人id
+        currentAssignmentName: '', // 指派人名字
         // 下边不是必传字段
         ccList: [], // 抄送人
         ccListName: '', // 抄送人名字
@@ -197,7 +197,7 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        executorName: [{ required: true, message: '请选择执行人', trigger: 'changes' }],
+        currentAssignmentName: [{ required: true, message: '请选择责任人', trigger: 'changes' }],
         forecastSolveTime: [{ required: true, message: '请选择预计完成时间', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
         consequence: [{ required: true, message: '请选择性质', trigger: 'change' }],
@@ -277,8 +277,8 @@ export default {
       this.form.forecastSolveTime = value.forecastSolveTime // 预计完成时间
       this.form.issueClassification = value.issueClassification // 问题分类
       this.form.consequence = value.consequence // 性质
-      this.form.executor = value.executor // 执行人idF
-      this.form.executorName = value.executorName // 执行人名字
+      // this.form.executor = value.executor // 执行人idF   要改为指派人
+      // this.form.executorName = value.executorName // 执行人名字
       this.form.ccList = JSON.parse(value.ccList) // 抄送人
       this.form.ccListName = JSON.parse(value.ccListName)?.join() // 抄送人名字
       this.module = value.module
@@ -308,12 +308,12 @@ export default {
       if (checkUser.length === 0) return
       let perArray = []
       switch (this.personnelType) {
-        case 'executor': // 分发指派人
+        case 'currentAssignment': // 分发指派人
           perArray = checkUser.map((item) => {
             return item.name
           })
-          this.form.executorName = perArray.join()
-          this.form.executor = Number(checkUser[0].id)
+          this.form.currentAssignmentName = perArray.join()
+          this.form.currentAssignment = Number(checkUser[0].id)
           break
         case 'ccList': // 抄送指派人
           perArray = checkUser.map((item) => {
@@ -385,7 +385,7 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.form.extendAttribute = this.attribuFormChange()
-          const { ccListName, executorName, ...form } = this.form
+          const { ccListName, currentAssignmentName, ...form } = this.form
           IssueDispatch(form)
             .then((res) => {
               if (res.success) {
