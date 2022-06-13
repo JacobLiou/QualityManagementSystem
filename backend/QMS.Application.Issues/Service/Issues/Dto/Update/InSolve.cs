@@ -25,7 +25,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
         public bool SetIssue(Core.Entity.Issue issue)
         {
-            Helper.Helper.Assert(issue.Status > Core.Enum.EnumIssueStatus.Created && issue.Executor != null, Constants.ERROR_MSG_CHECK_SOLVE);
+            Helper.Helper.Assert(issue.Status > Core.Enum.EnumIssueStatus.Created && issue.CurrentAssignment != null, Constants.ERROR_MSG_CHECK_SOLVE);
 
             bool changed = false;
 
