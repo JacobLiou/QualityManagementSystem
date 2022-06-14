@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-05-20 16:07:38
+ * @LastEditTime: 2022-06-13 13:53:04
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理
  * @FilePath: \frontend\src\views\main\SsuGroupUser\index.vue
@@ -57,9 +57,9 @@
 <script>
 import { SsuProductList, SsuProductusers } from '@/api/modular/main/SsuProductManage'
 import { SsuProjectList, SsuProjectusers } from '@/api/modular/main/SsuProjectManage'
-import { getOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
+import { getSsuEmpOrgTree, getOrgUserList } from '@/api/modular/system/orgManage'
 import { SsuGroupList, SsuGroupusers } from '@/api/modular/main/SsuGroupManage'
-import qs from 'qs'
+
 
 export default {
   data() {
@@ -224,7 +224,7 @@ export default {
 
     // 获取部门列表
     getDepartmentList() {
-      getOrgTree()
+      getSsuEmpOrgTree()
         .then((res) => {
           if (res.success) {
             this.treeData = res.data

@@ -7982,6 +7982,10 @@ namespace QMS.Database.Migrations.Migrations
                         .HasColumnType("tinyint(1)")
                         .HasComment("软删除标记");
 
+                    b.Property<long?>("TenantId")
+                        .HasColumnType("bigint")
+                        .HasComment("租户id");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(30)

@@ -3,11 +3,11 @@
  * @Date: 2022-05-12 20:57:21
  * @LastEditTime: 2022-05-31 20:33:13
  * @LastEditors: 林伟群
- * @Description: 表格
+ * @Description: 表格   :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\Table.vue
 -->
 <template>
-  <section>
+  <section :class="{ problem_table: isProblemTable }">
     <a-table
       :columns="columns"
       :row-key="
@@ -188,6 +188,9 @@ export default {
     checkShow() {
       return this.indeterminate ? true : this.checkAll
     },
+    isProblemTable() {
+      return this.issueData.length !== 0
+    },
   },
 
   created() {
@@ -219,7 +222,7 @@ export default {
         {
           operName: '详情',
           operIcon: 'file-done',
-        },              
+        },
       ]
       const operationAdd = {
         0: [
@@ -250,7 +253,7 @@ export default {
             operIcon: 'question-circle',
           },
         ],
-        2: [          
+        2: [
           {
             operName: '复核',
             operIcon: 'reconciliation',
@@ -304,7 +307,7 @@ export default {
           {
             operName: '验证',
             operIcon: 'safety-certificate',
-          },         
+          },
         ],
       }
       const addList = operationAdd[String(state)]
@@ -358,7 +361,6 @@ export default {
 
     // 操作类型
     operationType(record, operName) {
-      console.log(record, operName)
       switch (operName) {
         case '删除':
           this.problemDelect(record)
@@ -461,13 +463,11 @@ export default {
       const checkIssue = this.issueData.filter((item) => {
         return item.checkbox == true
       })
-      console.log(checkIssue)
       const redispatchIssueList = checkIssue.filter((item) => {
         if (item.status == 1 || item.status == 3) {
           return item
         }
       })
-      console.log(redispatchIssueList)
       if (redispatchIssueList.length == 0) {
         this.$message.warning('所选问题不可转交')
       } else {
@@ -509,6 +509,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.problem_table {
+  /deep/ .ant-table-body {
+    min-height: 360px;
+  }
+}
 .record_footer {
   margin-top: 1.5em;
   display: flex;
@@ -545,6 +550,9 @@ export default {
     .once_span {
       text-align: center;
     }
+  }
+  /deep/.ant-dropdown {
+    z-index: 1000;
   }
 }
 </style>

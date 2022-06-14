@@ -4,6 +4,7 @@ using Furion.Extras.Admin.NET;
 using Furion.RemoteRequest.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using QMS.Core;
 using Serilog;
@@ -16,15 +17,22 @@ namespace QMS.Application.Issues
     [Route("issue/[controller]")]
     public class IssueAppService : IDynamicApiController
     {
-        private readonly IHttpProxy _http;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IEventPublisher _eventPublisher;
-
-        public IssueAppService(IHttpProxy http, IHttpContextAccessor contextAccessor, IEventPublisher eventPublisher)
+        private readonly IConfiguration _configuration;
+        /// <summary>
+        /// 问题管理应用服务
+        /// </summary>
+        /// <param name="contextAccessor"></param>
+        /// <param name="eventPublisher"></param>
+        /// <param name="configuration"></param>
+        public IssueAppService(IHttpContextAccessor contextAccessor
+            , IEventPublisher eventPublisher
+            , IConfiguration configuration)
         {
-            _http = http;
             _contextAccessor = contextAccessor;
             _eventPublisher = eventPublisher;
+            _configuration = configuration;
         }
         /// <summary>
         /// 通过事件总线发送通知
@@ -34,11 +42,12 @@ namespace QMS.Application.Issues
         [HttpGet("sendNotice")]
         public async Task SendNoticeAsync()
         {
+            var serviceUrl = _configuration["RemoteServiceHost"].ToString();
             NoticeContext notice = new NoticeContext();
             notice.Title = "测试企业微信消息";
             notice.Content = "系统无法登录问题";
             notice.PublicUserId = CurrentUserInfo.UserId;
-            notice.PageUrl = "http://qms.sofarsolar.com:8001/issue/detail/288141121613894";
+            notice.PageUrl = serviceUrl + "issue/detail/288141121613894";
             notice.NoticeUserIdList = null;
             notice.Type = (int)NoticeType.NOTICE;
 
@@ -58,8 +67,9 @@ namespace QMS.Application.Issues
         {
             var request = _contextAccessor.HttpContext.Request;
             var authHeader = request.Headers["Authorization"];
+            var serviceUrl = _configuration["RemoteServiceHost"].ToString();
 
-            var response = await "http://localhost:5566/System/group/UserGroup".SetHeaders(new
+            var response = await (serviceUrl + "System/group/UserGroup").SetHeaders(new
             {
                 Authorization = authHeader
             }).GetAsStringAsync();
@@ -69,7 +79,7 @@ namespace QMS.Application.Issues
 
         }
 
-     
+
 
     }
 

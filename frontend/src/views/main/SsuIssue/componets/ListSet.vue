@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-12 13:39:00
- * @LastEditTime: 2022-05-13 16:49:19
+ * @LastEditTime: 2022-06-10 17:35:28
  * @LastEditors: 林伟群
  * @Description: 列设置弹窗
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ListSet.vue
@@ -32,7 +32,6 @@
 <script>
 import draggable from 'vuedraggable'
 import { SsuIssueColumnDis, SsuIssueColumnUpdate } from '@/api/modular/main/SsuIssueManage'
-
 export default {
   props: {
     columns: {
@@ -50,6 +49,7 @@ export default {
       checkAll: false,
       columnsSetting: [],
       originColumns: [],
+      oldColumnObject: [],
     }
   },
   created() {
@@ -69,18 +69,28 @@ export default {
           }
           return item
         })
+        this.originColumns = columnObject
       } else {
         this.columnsSetting = this.columns.map((value) => ({ ...value, checked: true }))
+        this.originColumns = this.columns
       }
       this.checkAllState(this.columnsSetting)
-      this.originColumns = JSON.parse(JSON.stringify(this.columnsSetting))
     },
     resetList() {
-      this.columnsSetting = JSON.parse(JSON.stringify(this.originColumns))
+      this.columnsSetting = this.columns.map((item) => {
+        if (this.originColumns[item.dataIndex] == undefined) {
+          item = { ...item, checked: false }
+        } else {
+          item = { ...item, checked: true }
+        }
+        return item
+      })
       this.checkAllState(this.columnsSetting)
       this.emitColumnChange()
     },
     ChangeItem() {
+      console.log('this.originColumns', this.originColumns)
+      console.log('this.columnsSetting', this.columnsSetting)
       this.checkAllState(this.columnsSetting)
       this.updateColumn(this.columnsSetting)
       this.emitColumnChange()

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-05-31 19:02:58
+ * @LastEditTime: 2022-06-11 10:21:24
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -62,13 +62,13 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">项目名称：</span>
-              <div class="li_content">{{ IssueDetailData.projectName }}</div>
+              <div class="li_content">{{ IssueDetailData.projectName || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">产品名称：</span>
-              <div class="li_content">{{ IssueDetailData.productName }}</div>
+              <div class="li_content">{{ IssueDetailData.productName || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -98,7 +98,7 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">预计完成时间：</span>
-              <div class="li_content">{{ IssueDetailData.forecastSolveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.forecastSolveTime || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -110,79 +110,79 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">发现人：</span>
-              <div class="li_content">{{ IssueDetailData.discoverName }}</div>
+              <div class="li_content">{{ IssueDetailData.discoverName || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">发现日期：</span>
-              <div class="li_content">{{ IssueDetailData.discoverTime }}</div>
+              <div class="li_content">{{ IssueDetailData.discoverTime || '--' }}</div>
             </div>
-          </a-col>          
+          </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题来源：</span>
-              <div class="li_content">{{ sourceContent(IssueDetailData.source) }}</div>
+              <div class="li_content">{{ sourceContent(IssueDetailData.source) || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决人：</span>
-              <div class="li_content">{{ IssueDetailData.executorName }}</div>
+              <div class="li_content">{{ IssueDetailData.executorName || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决日期：</span>
-              <div class="li_content">{{ IssueDetailData.solveTime }}</div>
+              <div class="li_content">{{ IssueDetailData.solveTime || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">实际完成时间：</span>
-              <div class="li_content">{{ IssueDetailData.closeTime }}</div>
+              <div class="li_content">{{ IssueDetailData.closeTime || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决版本：</span>
-              <div class="li_content">{{ IssueDetailData.solveVersion }}</div>
+              <div class="li_content">{{ IssueDetailData.solveVersion || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证地点：</span>
-              <div class="li_content">{{ IssueDetailData.verifierPlace }}</div>
+              <div class="li_content">{{ IssueDetailData.verifierPlace || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证人：</span>
-              <div class="li_content">{{ IssueDetailData.verifierName }}</div>
+              <div class="li_content">{{ IssueDetailData.verifierName || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证日期：</span>
-              <div class="li_content">{{ IssueDetailData.validateTime }}</div>
+              <div class="li_content">{{ IssueDetailData.validateTime || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证状态：</span>
-              <div class="li_content">{{ IssueDetailData.validateTime }}</div>
+              <div class="li_content">{{ statusContent(IssueDetailData.validationStatus) || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证数量：</span>
-              <div class="li_content">{{ IssueDetailData.count }}</div>
+              <div class="li_content">{{ IssueDetailData.count || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证批次：</span>
-              <div class="li_content">{{ IssueDetailData.batch }}</div>
+              <div class="li_content">{{ IssueDetailData.batch || '--' }}</div>
             </div>
           </a-col>
         </a-row>
@@ -254,7 +254,7 @@
 </template>
 
 <script>
-import { IssueDetail, IssueDelete,IssueReOpen } from '@/api/modular/main/SsuIssueManage'
+import { IssueDetail, IssueDelete, IssueReOpen } from '@/api/modular/main/SsuIssueManage'
 import OperRecords from './componets/OperRecords.vue'
 import ProblemSolve from './componets/ProblemSolve.vue'
 import ProblemRecheck from './componets/ProblemRecheck.vue'
@@ -289,7 +289,7 @@ export default {
         {
           operName: '复制',
           operIcon: 'copy',
-        },        
+        },
       ]
       const operationAdd = {
         0: [
@@ -320,7 +320,7 @@ export default {
             operIcon: 'question-circle',
           },
         ],
-        2: [          
+        2: [
           {
             operName: '复核',
             operIcon: 'reconciliation',
@@ -374,7 +374,7 @@ export default {
           {
             operName: '验证',
             operIcon: 'safety-certificate',
-          },         
+          },
         ],
       }
       const addList = operationAdd[Number(this.IssueDetailData.status)]
@@ -430,13 +430,14 @@ export default {
     // 人员选择
     changePersonnel(value) {
       this.personnelType = value
+      this.userVisible = !this.userVisible
     },
     checkUserArray(checkUser) {
-      console.log(checkUser)
+      // console.log(checkUser)
       const perArray = checkUser.map((item) => {
         return item.name
       })
-      console.log(checkUser)
+      // console.log(checkUser)
       this.$refs.redispatchProblem.form.executor = Number(checkUser[0].id)
       this.$refs.redispatchProblem.form.executorName = perArray.join()
     },
@@ -474,7 +475,7 @@ export default {
           break
         case '重开启':
           this.problemOpen(this.IssueDetailData)
-          break      
+          break
         case '复制':
           this.$router.push({ path: '/problemAdd', query: { editId: this.IssueDetailData.id, copyAdd: 1 } })
           break
@@ -508,7 +509,7 @@ export default {
       const _this = this
       this.$confirm({
         content: '确定重新开启',
-        onOk() {          
+        onOk() {
           IssueReOpen({ id })
             .then((res) => {
               if (res.success) {

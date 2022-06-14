@@ -77,10 +77,12 @@
         :model="versionForm"
         :rules="versionFormRules"
       >
+
         <a-form-model-item label="版本类别" prop="type">
-          <a-select v-model="versionForm.type" style="width: 100%" placeholder="请选择版本类别">
-            <a-select-option v-for="(item, index) in versionTypeArray" :key="index" :value="item.type">{{
-              item.type
+          
+          <a-select v-model="versionForm.type" style="width: 100%" placeholder="请选择版本类别" @change="versionTypeChange">
+            <a-select-option v-for="item in versionTypeArray" :key="item.name" :value="item.name">{{
+              item.name
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
@@ -156,6 +158,9 @@ export default {
       isShow: true,
     }
   },
+  created(){
+    
+  },
   watch: {
     isVersion: {
       handler() {
@@ -201,9 +206,7 @@ export default {
               return JSON.stringify({ type: item.type })
             })
             const versionTypeList = [...new Set(versionType)]
-            this.versionTypeArray = versionTypeList.map((item) => {
-              return JSON.parse(item)
-            })
+            this.versionTypeArray =  this.$options.filters['dictData']('issue_solve_version');
             console.log(this.versionTypeArray)
           } else {
             this.$message.warning(res.message)
@@ -212,6 +215,15 @@ export default {
         .catch(() => {
           this.$message.error('版本列表获取失败')
         })
+
+    },
+      //模块选择
+    versionTypeChange(value) {
+      if(this.versionForm.type !== value){
+          this.versionForm.type = value
+      }
+       
+       
     },
     // 创建版本
     creaVersion() {

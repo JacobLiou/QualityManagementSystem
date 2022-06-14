@@ -55,6 +55,7 @@ namespace QMS.Application.System.EventSubscriber
         {
             using var scope = Services.CreateScope();
             var EmailApply = scope.ServiceProvider.GetRequiredService<IEmailApplpy>();
+            notice.PageUrl = "<a href=\"" + notice.PageUrl + "\">" + notice.Title + "</a>";   //构建邮箱跳转信息界面
             await EmailApply.SendEmail(notice.NoticeUserIdList, notice.Title, notice.Content + notice.PageUrl);
         }
     }

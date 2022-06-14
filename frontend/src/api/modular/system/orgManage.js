@@ -14,6 +14,18 @@ export function getOrgTree(parameter) {
     params: parameter
   })
 }
+
+export function getSsuEmpOrgTree() {
+  return axios({
+    url: "/SsuEmpOrg/tree",
+    method: "get",
+  })
+}
+
+
+
+
+
 /**
  * @description: 根据机构ID获取人员列表
  * @return {*}

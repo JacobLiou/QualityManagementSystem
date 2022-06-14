@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-05-31 17:16:31
+ * @LastEditTime: 2022-06-11 11:46:39
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -11,13 +11,14 @@
     <section class="form_1">
       <a-form-model ref="ruleForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="form" :rules="rules">
         <a-form-model-item ref="title" label="问题简述" prop="title">
-          <a-input
+          <a-textarea
             v-model="form.title"
             @blur="
               () => {
                 $refs.title.onFieldBlur()
               }
             "
+            minlength="1"
             placeholder="请输入问题简述"
           />
         </a-form-model-item>
@@ -28,7 +29,7 @@
           </section>
         </a-form-model-item>
         <a-form-model-item label="备注" prop="comment">
-          <a-textarea v-model="form.comment" :rows="4" placeholder="请输入备注" />
+          <a-textarea v-model="form.comment" :rows="6" placeholder="请输入备注" />
         </a-form-model-item>
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>

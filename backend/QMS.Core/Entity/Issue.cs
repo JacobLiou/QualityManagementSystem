@@ -8,12 +8,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QMS.Core.Entity
 {
-
     [Table("issue")]
     [Comment("问题记录")]
     public class Issue : DEntityTenant, IEntity<IssuesDbContextLocator>, IEntityTypeBuilder<Issue, IssuesDbContextLocator>
     {
-
         [Comment("问题简述")]
         [MaxLength(200)]
         [Required]
@@ -21,10 +19,12 @@ namespace QMS.Core.Entity
 
         [Comment("项目编号")]
         public long ProjectId { get; set; }
+
         //public SsuProject Project { get; set; }
 
         [Comment("产品编号")]
         public long? ProductId { get; set; }
+
         //public SsuProduct Product { get; set; }
 
         [Comment("问题模块")]
@@ -66,12 +66,13 @@ namespace QMS.Core.Entity
                 this.Status = EnumIssueStatus.Created;
             }
 
-            if (this.Verifier == null)
-            {
-                this.Verifier = this.CreatorId;
-            }
-
-            this.CurrentAssignment = this.Dispatcher;
+            //此时问题处于已开启状态，数据库先不记录验证人，等验证步骤之后记录
+            //if (this.Verifier == null)
+            //{
+            //    this.Verifier = this.CreatorId;
+            //}
+            //问题新增时不记录分发人
+            //this.CurrentAssignment = this.Dispatcher;
         }
 
 
@@ -104,7 +105,7 @@ namespace QMS.Core.Entity
 
             this.Status = EnumIssueStatus.Dispatched;
 
-            this.CurrentAssignment = this.Executor;
+            //this.CurrentAssignment = this.Executor;
         }
 
         public void DoReCheck(bool pass)
@@ -140,7 +141,8 @@ namespace QMS.Core.Entity
 
         public void DoSolve()
         {
-            this.SolveTime = DateTime.Now;
+            //解决日期应界面上的日期
+            //this.SolveTime = DateTime.Now;
             this.Executor = CurrentUserInfo.UserId;
 
             this.Status = EnumIssueStatus.Solved;
@@ -220,7 +222,5 @@ namespace QMS.Core.Entity
 
         [NotMapped]
         public IssueDetail SsuIssueDetail { get; set; }
-
-
     }
 }

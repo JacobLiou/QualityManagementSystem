@@ -31,7 +31,7 @@ const toolbarOptions = [
   [{ align: [] }], // 对齐方式-----[{ align: [] }]
   [{ size: fontSizeStyle.whitelist }], // 字体大小-----[{ size: ['small', false, 'large', 'huge'] }]
   [{ font: Font.whitelist }], // 字体种类-----[{ font: [] }]
-  [{ header: [1, 2, 3, 4, 5, 6, false] }], // 标题
+  [{ header: [1, 2, 3, 4, 5, false] }], // 标题
   // [{ direction: 'ltl' }], // 文本方向-----[{'direction': 'rtl'}]
   [{ direction: 'rtl' }], // 文本方向-----[{'direction': 'rtl'}]
   [{ indent: '-1' }, { indent: '+1' }], // 缩进-----[{ indent: '-1' }, { indent: '+1' }]

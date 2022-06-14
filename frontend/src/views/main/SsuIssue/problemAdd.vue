@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-02 15:13:54
+ * @LastEditTime: 2022-06-11 11:06:19
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -18,7 +18,7 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="产品" prop="productId">
+        <a-form-model-item label="产品">
           <a-select v-model="form.productId" placeholder="请选择产品">
             <a-select-option v-for="(item, index) in productData" :key="index" :value="item.id">{{
               item.productName
@@ -39,22 +39,8 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item ref="dispatcherName" label="当前指派" prop="dispatcherName" v-if="isStorage">
-          <section class="from_chilen">
-            <a-input
-              v-model="form.dispatcherName"
-              @blur="
-                () => {
-                  $refs.dispatcherName.onFieldBlur()
-                }
-              "
-              placeholder="请选择指派人"
-              disabled
-            />
-            <a-button @click="changePersonnel('dispatcher')"> 选择 </a-button>
-          </section>
-        </a-form-model-item>
-        <a-form-model-item label="当前指派" prop="currentAssignmentName" v-else>
+
+        <a-form-model-item label="当前指派" prop="currentAssignmentName" >
           <section class="from_chilen">
             <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled />
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
@@ -185,7 +171,13 @@
         </section>
         <section class="add_once">
           <a-form-item label="附件上传" :labelCol="labelCol2">
-            <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file">
+            <a-upload
+              :customRequest="customRequest"
+              :multiple="true"
+              :showUploadList="true"
+              name="file"
+              @change="handleChange"
+            >
               <a-button icon="upload">附件上传</a-button>
             </a-upload>
           </a-form-item>
@@ -242,8 +234,8 @@ export default {
         productId: undefined, // 产品编号
         module: undefined, // 模块
         issueClassification: undefined, // 问题分类
-        dispatcher: undefined, // 分发人ID（指派人）
-        dispatcherName: '', // 分发人名字
+        currentAssignment: undefined, // 指派人ID
+        currentAssignmentName: '', // 指派人名字
         consequence: undefined, // 性质
         // 下边不是必传字段
         source: null, // 问题来源
@@ -257,9 +249,8 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        dispatcherName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
+        currentAssignmentName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
         projectId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
-        productId: [{ required: true, message: '请选择产品编号', trigger: 'change' }],
         module: [{ required: true, message: '请选择模块', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
         consequence: [{ required: true, message: '请选择性质', trigger: 'change' }],
@@ -286,6 +277,7 @@ export default {
       status: -1, // 状态
       // oldDescription: '', // 编辑时旧的描述
       copyAdd: 0, // 是否为复制
+      uploadInfo: {}, // 文件上传详情
     }
   },
   created() {
@@ -512,15 +504,19 @@ export default {
       }
       this.$forceUpdate()
     },
-
+    handleChange(info) {
+      this.uploadInfo = info
+    },
     // 附件上传
     customRequest(data) {
+      console.log(data)
       const { file } = data
       const formData = new FormData()
       formData.append('file', file)
       sysFileInfoUpload(formData).then((res) => {
         if (res.success) {
           this.$message.success('附件上传成功')
+          this.uploadInfo.file.status = 'done'
           this.attachment = {
             attachmentId: res.data,
             fileName: file.name,
@@ -528,9 +524,11 @@ export default {
           }
         } else {
           this.$message.error('上传失败：' + res.message)
+          this.uploadInfo.file.status = 'error'
         }
       })
     },
+
     // 提交
     onSubmit() {
       this.$refs.ruleForm.validate((valid) => {
@@ -581,21 +579,21 @@ export default {
       IssueAdd(form)
         .then((res) => {
           if (res.success) {
-            // const issueId = res.data.id
-            // const parameter = {
-            //   attachment: this.attachment,
-            //   issueId: issueId,
-            // }
+            const issueId = res.data.id
+            const parameter = {
+              attachment: this.attachment,
+              issueId: issueId,
+            }
             this.$message.success(this.form.isTemporary ? '问题暂存成功' : '问题增加成功')
-            // IssueAttachmentSaveId(parameter)
-            //   .then((res) => {
-            //     if (!res.success) {
-            //       this.$message.error('附件信息保存失败：' + res.message)
-            //     }
-            //   })
-            //   .catch(() => {
-            //     this.$message.error('附件信息保存失败：' + res.message)
-            //   })
+            IssueAttachmentSaveId(parameter)
+              .then((res) => {
+                if (!res.success) {
+                  this.$message.error('附件信息保存失败：' + res.message)
+                }
+              })
+              .catch(() => {
+                this.$message.error('附件信息保存失败：' + res.message)
+              })
             this.$router.back()
           } else {
             this.$message.warning(res.message)

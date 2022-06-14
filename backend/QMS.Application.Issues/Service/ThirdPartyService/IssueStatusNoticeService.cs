@@ -17,13 +17,13 @@ namespace QMS.Application.Issues
     [Route("issue/[controller]")]
     public class IssueStatusNoticeService : IDynamicApiController, IScoped
     {
-        private readonly IHttpProxy _http;
+ 
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IEventPublisher _eventPublisher;
 
-        public IssueStatusNoticeService(IHttpProxy http, IHttpContextAccessor contextAccessor, IEventPublisher eventPublisher)
+        public IssueStatusNoticeService( IHttpContextAccessor contextAccessor, IEventPublisher eventPublisher)
         {
-            _http = http;
+
             _contextAccessor = contextAccessor;
             _eventPublisher = eventPublisher;
         }

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-18 11:07:28
- * @LastEditTime: 2022-05-31 15:01:25
+ * @LastEditTime: 2022-06-11 11:38:03
  * @LastEditors: 林伟群
  * @Description: 历史记录组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\OperRecords.vue
@@ -30,7 +30,7 @@
         </a-steps>
       </a-col>
     </a-row>
-    <section v-else>
+    <section v-else class="info_2">
       <ul v-if="this.operationRecords != ''">
         <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
           {{ index + 1 }}. {{ item.operationTime }}, 由 <b>{{ item.operatorName }}</b>
@@ -76,7 +76,7 @@ export default {
         .then((res) => {
           if (res.success) {
             const operationRecords = res.data.rows
-            this.operationRecords = operationRecords.reverse()
+            this.operationRecords = operationRecords
           } else {
             this.$message.error('问题操作记录读取失败')
           }
@@ -101,13 +101,24 @@ export default {
   ul {
     margin-bottom: 2em;
     li {
-      margin: 2em 0;
+      margin-bottom: 3.1em;
       margin-left: -1em;
       list-style: none;
     }
   }
   .step {
     margin-left: 16px;
+  }
+}
+.info_2 {
+  margin-top: 0.5em;
+  ul {
+    margin-bottom: 2em;
+    li {
+      margin-bottom: 1em;
+      margin-left: -1em;
+      list-style: none;
+    }
   }
 }
 </style>

@@ -12,7 +12,7 @@ namespace QMS.Core
     /// </summary>
     [Table("sys_version")]
     [Comment("版本表")]
-    public class SysVersion : DEntityBase
+    public class SysVersion : DEntityTenant
     {
         /// <summary>
         /// 类型

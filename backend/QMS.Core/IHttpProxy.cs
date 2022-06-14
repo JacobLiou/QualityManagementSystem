@@ -13,7 +13,6 @@ namespace QMS.Core
         /// Headers("Authorization",app.c)
         /// </summary>
         /// <returns></returns>
-        [Get("http://localhost:5566/System/UserGroup")]
         Task<List<GroupUserOutput>> GetUserGroupAsync();
 
 

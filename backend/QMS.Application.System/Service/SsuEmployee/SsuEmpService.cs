@@ -229,7 +229,7 @@ namespace QMS.Application.System
         {
             List<UserOutput> list = new List<UserOutput>();
             //获取该组织机构下的所有机构
-            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains(orgId.ToString())).Select(u => u.Id).ToList();
+            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains("[" + orgId.ToString() + "]")).Select(u => u.Id).ToList();
             //机构列表加入自身
             orgIds.Add(orgId);
             //获取机构对应的所有人员
@@ -287,5 +287,21 @@ namespace QMS.Application.System
             if (App.User == null) return string.Empty;
             return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
         }
+
+
+        #region 用户查找
+
+        /// <summary>
+        /// 根据用户名称模糊查找用户列表
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        [HttpGet("/SsuEmpOrg/getfuzzyusers")]
+        public async Task<List<UserOutput>> GetFuzzyUsers([FromQuery] string name)
+        {
+            return await _sysUser.DetachedEntities.Where(u => u.Name.Contains(name)).Select(u => u.Adapt<UserOutput>()).ToListAsync();
+        }
+
+        #endregion 用户查找
     }
 }
