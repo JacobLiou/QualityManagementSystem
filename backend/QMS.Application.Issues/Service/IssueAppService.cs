@@ -10,10 +10,11 @@ using QMS.Core;
 using Serilog;
 
 namespace QMS.Application.Issues
-{ /// <summary>
-  /// 系统服务接口
-  /// </summary>
-    [ApiDescriptionSettings("问题管理Demo", Name = "Issue", Order = 100)]
+{
+    /// <summary>
+    /// 系统服务接口
+    /// </summary>
+    [ApiDescriptionSettings("问题管理服务", Name = "test", Order = 100)]
     [Route("issue/[controller]")]
     public class IssueAppService : IDynamicApiController
     {
