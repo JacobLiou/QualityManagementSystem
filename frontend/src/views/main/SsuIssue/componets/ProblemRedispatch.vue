@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-06-11 11:46:39
+ * @LastEditTime: 2022-06-14 14:19:06
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -34,6 +34,7 @@
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
     </section>
+    <SelectUser></SelectUser>
     <template slot="footer">
       <a-button @click="handleSubmit" type="primary"> 确定 </a-button>
       <a-button @click="handleCancel"> 取消 </a-button>
@@ -44,9 +45,12 @@
 <script>
 import { IssueRedispatch } from '@/api/modular/main/SsuIssueManage'
 import OperRecords from './OperRecords.vue'
+import SelectUser from './SelectUser.vue'
+
 export default {
   components: {
     OperRecords,
+    SelectUser,
   },
   inject: ['getProblemList'],
   data() {

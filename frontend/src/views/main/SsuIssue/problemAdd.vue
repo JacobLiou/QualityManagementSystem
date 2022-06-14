@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-11 11:06:19
+ * @LastEditTime: 2022-06-14 16:50:32
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -40,7 +40,7 @@
           </a-select>
         </a-form-model-item>
 
-        <a-form-model-item label="当前指派" prop="currentAssignmentName" >
+        <a-form-model-item label="当前指派" prop="currentAssignmentName">
           <section class="from_chilen">
             <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled />
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
@@ -272,7 +272,7 @@ export default {
       attribuForm: {}, // 新增属性表单
       moduleType: '', // 新增类型属性
       dateType: '', // 时间类型
-      attachment: {}, // 附件参数
+      attachment: [], // 附件参数
       isEdit: false, // 问题编辑
       status: -1, // 状态
       // oldDescription: '', // 编辑时旧的描述
@@ -505,7 +505,17 @@ export default {
       this.$forceUpdate()
     },
     handleChange(info) {
+      if (info.file.status === 'removed') {
+        const fileIndex = this.uploadInfo.fileList.findIndex((item) => {
+          if (item.uid === info.file.uid) {
+            return item
+          }
+        })
+        this.attachment.splice(fileIndex, 1)
+        console.log('删除后', this.attachment)
+      }
       this.uploadInfo = info
+      console.log(info)
     },
     // 附件上传
     customRequest(data) {
@@ -517,11 +527,13 @@ export default {
         if (res.success) {
           this.$message.success('附件上传成功')
           this.uploadInfo.file.status = 'done'
-          this.attachment = {
+          const attachment = {
             attachmentId: res.data,
             fileName: file.name,
             attachmentType: 0,
           }
+          this.attachment.push(attachment)
+          console.log('删除前', this.attachment)
         } else {
           this.$message.error('上传失败：' + res.message)
           this.uploadInfo.file.status = 'error'
@@ -554,19 +566,14 @@ export default {
       }
       const newEAL = this.extendAttributeList.map((item) => {
         const fieldCode = item.fieldCode
-        // const fieldDataType = item.fieldDataType
         const fieldName = item.fieldName
-        // if (fieldDataType == 'long') {
-        //   item.value = this.attribuForm[fieldCode + 'customNameId']
-        // } else {
         if (fieldName === '样机说明') {
-          // item.value = JSON.stringify(this.attribuForm[fieldCode])
           item.value = this.attribuForm[fieldCode].join()
           console.log(item.value)
         } else {
           item.value = this.attribuForm[fieldCode]
         }
-        // }
+
         item.issueId = item.issueId ?? 0
         return item
       })
@@ -580,21 +587,24 @@ export default {
         .then((res) => {
           if (res.success) {
             const issueId = res.data.id
-            const parameter = {
-              attachment: this.attachment,
-              issueId: issueId,
+            // 附件ID保存
+            if (this.attachment.length !== 0) {
+              const parameter = {
+                attachments: this.attachment,
+                issueId: issueId,
+              }
+              IssueAttachmentSaveId(parameter)
+                .then((res) => {
+                  if (!res.success) {
+                    this.$message.error('附件信息保存失败：' + res.message)
+                  }
+                })
+                .catch(() => {
+                  this.$message.error('附件信息保存失败：' + res.message)
+                })
             }
             this.$message.success(this.form.isTemporary ? '问题暂存成功' : '问题增加成功')
-            IssueAttachmentSaveId(parameter)
-              .then((res) => {
-                if (!res.success) {
-                  this.$message.error('附件信息保存失败：' + res.message)
-                }
-              })
-              .catch(() => {
-                this.$message.error('附件信息保存失败：' + res.message)
-              })
-            this.$router.back()
+            this.onback()
           } else {
             this.$message.warning(res.message)
           }
@@ -609,22 +619,25 @@ export default {
       IssueEdit(form)
         .then((res) => {
           if (res.success) {
-            // const issueId = res.data.id
-            // const parameter = {
-            //   attachment: this.attachment,
-            //   issueId: issueId,
-            // }
+            const issueId = res.data.id
+            // 附件ID保存
+            if (this.attachment.length !== 0) {
+              const parameter = {
+                attachments: this.attachment,
+                issueId: issueId,
+              }
+              IssueAttachmentSaveId(parameter)
+                .then((res) => {
+                  if (!res.success) {
+                    this.$message.error('附件信息保存失败：' + res.message)
+                  }
+                })
+                .catch(() => {
+                  this.$message.error('附件信息保存失败：' + res.message)
+                })
+            }
             this.$message.success('问题编辑成功')
-            // IssueAttachmentSaveId(parameter)
-            //   .then((res) => {
-            //     if (!res.success) {
-            //       this.$message.error('附件信息保存失败：' + res.message)
-            //     }
-            //   })
-            //   .catch(() => {
-            //     this.$message.error('附件信息保存失败：' + res.message)
-            //   })
-            this.$router.back()
+            this.onback()
           } else {
             this.$message.warning(res.message)
           }
@@ -662,7 +675,12 @@ export default {
     },
     // 返回
     onback() {
-      this.$router.back()
+      if (this.$store.state.record.isBackPath) {
+        this.$router.push({ path: '/ssuissue' })
+        this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+      } else {
+        this.$router.back()
+      }
     },
   },
 }

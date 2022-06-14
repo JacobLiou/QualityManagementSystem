@@ -371,11 +371,8 @@ export default {
             path: '/problemInfo',
             query: { id: record.id },
           })
-          // this.$store.commit('SET_CHECK_RECORD', record)
           break
         case '编辑':
-          // this.$store.commit('SET_CHECK_RECORD', record)
-          // this.$store.commit('SET_EDIT_PROBLRM', { isEdit: true })
           this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
           this.$router.push({ path: '/problemAdd', query: { editId: record.id } })
           break
@@ -383,7 +380,6 @@ export default {
           this.$router.push({ path: '/problemAdd', query: { editId: record.id, copyAdd: 1 } })
           break
         case '分发':
-          // this.$store.commit('SET_CHECK_RECORD', record)
           this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
           this.$router.push({ path: '/problemDistribure', query: { distributeId: record.id } })
           break

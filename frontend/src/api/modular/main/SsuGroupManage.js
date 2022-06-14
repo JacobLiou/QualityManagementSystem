@@ -1,6 +1,18 @@
 ﻿import { axios } from '@/utils/request'
 
 /**
+ * @description: 根据用户名模糊搜索
+ * @return {*}
+ */
+export function getfuzzyusers(parameter) {
+  return axios({
+    url: "/SsuEmpOrg/getfuzzyusers",
+    method: "get",
+    params: parameter
+  })
+}
+
+/**
  * 查询人员组
  *
  * @author lilulu

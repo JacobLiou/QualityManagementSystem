@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 17:12:55
- * @LastEditTime: 2022-05-31 17:21:01
+ * @LastEditTime: 2022-06-14 16:49:42
  * @LastEditors: 林伟群
  * @Description: 问题复核
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRecheck.vue
@@ -37,7 +37,7 @@
           <a-switch v-model="form.passResult" checkedChildren="是" unCheckedChildren="否" />
         </a-form-item>
         <a-form-item label="附件上传">
-          <ProblemUplod @uploadProblem="uploadProblem"></ProblemUplod>
+          <ProblemUplod @uploadProblem="uploadProblem" :type="2"></ProblemUplod>
         </a-form-item>
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
@@ -75,7 +75,7 @@ export default {
         reCheckResult: [{ required: true, message: '请输入原因分析', trigger: 'blur' }],
       },
       visible: false,
-      attachment: {}, // 附件上传的数据
+      attachment: [], // 附件上传的数据
       isShow: true,
     }
   },
@@ -91,6 +91,7 @@ export default {
     uploadProblem() {
       this.attachment = val
     },
+
     // 确定
     handleSubmit() {
       this.$refs.ruleForm.validate((valid) => {
@@ -100,23 +101,25 @@ export default {
           IssueReCheck(parameter)
             .then((res) => {
               if (res.success) {
-                // const issueId = res.data.id
-                // const parameter = {
-                //   attachment: this.attachment,
-                //   issueId: issueId,
-                // }
-                // IssueAttachmentSaveId(parameter)
-                //   .then((res) => {
-                //     if (!res.success) {
-                //       this.$message.error('附件信息保存失败：' + res.message)
-                //     }
-                //   })
-                //   .catch(() => {
-                //     this.$message.error('附件信息保存失败：' + res.message)
-                //   })
+                // 保存ID
+                if (this.attachment.length !== 0) {
+                  const parameter = {
+                    attachments: this.attachment,
+                    issueId: this.form.id,
+                  }
+                  IssueAttachmentSaveId(parameter)
+                    .then((res) => {
+                      if (!res.success) {
+                        this.$message.error('附件信息保存失败：' + res.message)
+                      }
+                    })
+                    .catch(() => {
+                      this.$message.error('附件信息保存失败：' + res.message)
+                    })
+                }
                 this.$message.success('问题复核成功')
                 this.visible = false
-                this.isShow ? this.getProblemList() : this.$parent.getIssueDetail()
+                this.getProblemList()
               } else {
                 this.$message.warning(res.message)
               }

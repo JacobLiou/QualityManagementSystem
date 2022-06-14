@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 10:51:13
- * @LastEditTime: 2022-05-31 17:12:52
+ * @LastEditTime: 2022-06-14 16:49:35
  * @LastEditors: 林伟群
  * @Description: 问题验证组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemValidate.vue
@@ -45,7 +45,7 @@
           <a-switch v-model="form.passResult" checkedChildren="是" unCheckedChildren="否" />
         </a-form-item>
         <a-form-item label="附件上传">
-          <ProblemUplod @uploadProblem="uploadProblem"></ProblemUplod>
+          <ProblemUplod @uploadProblem="uploadProblem" :type="4"></ProblemUplod>
         </a-form-item>
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
@@ -87,7 +87,7 @@ export default {
         count: [{ required: true, message: '请输入验证数量', trigger: 'blur' }],
       },
       visible: false,
-      attachment: {}, // 附件上次的数据
+      attachment: [], // 附件上次的数据
       isShow: true,
     }
   },
@@ -111,20 +111,22 @@ export default {
           IssueValidate(parameter)
             .then((res) => {
               if (res.success) {
-                // const issueId = res.data.id
-                // const parameter = {
-                //   attachment: this.attachment,
-                //   issueId: issueId,
-                // }
-                // IssueAttachmentSaveId(parameter)
-                //   .then((res) => {
-                //     if (!res.success) {
-                //       this.$message.error('附件信息保存失败：' + res.message)
-                //     }
-                //   })
-                //   .catch(() => {
-                //     this.$message.error('附件信息保存失败：' + res.message)
-                //   })
+                // 保存ID
+                if (this.attachment.length !== 0) {
+                  const parameter = {
+                    attachments: this.attachment,
+                    issueId: this.form.id,
+                  }
+                  IssueAttachmentSaveId(parameter)
+                    .then((res) => {
+                      if (!res.success) {
+                        this.$message.error('附件信息保存失败：' + res.message)
+                      }
+                    })
+                    .catch(() => {
+                      this.$message.error('附件信息保存失败：' + res.message)
+                    })
+                }
                 this.$message.success('问题验证成功')
                 this.visible = false
                 this.getProblemList()

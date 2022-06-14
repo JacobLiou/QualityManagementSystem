@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-02 15:17:35
+ * @LastEditTime: 2022-06-14 16:50:04
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -210,7 +210,7 @@ export default {
       userVisible: false, // 人员选择显示
       personnelType: '', // 选择的人
       dateType: '', // 时间类型
-      attachment: {}, // 附件信息
+      attachment: [], // 附件信息
     }
   },
   filters: {
@@ -369,13 +369,16 @@ export default {
       sysFileInfoUpload(formData).then((res) => {
         if (res.success) {
           this.$message.success('附件上传成功')
-          this.attachment = {
+          this.uploadInfo.file.status = 'done'
+          const attachment = {
             attachmentId: res.data,
             fileName: file.name,
             attachmentType: 0,
           }
+          this.attachment.push(attachment)
         } else {
           this.$message.error('上传失败：' + res.message)
+          this.uploadInfo.file.status = 'error'
         }
       })
     },
@@ -389,22 +392,24 @@ export default {
           IssueDispatch(form)
             .then((res) => {
               if (res.success) {
-                // const issueId = res.data.id
-                // const parameter = {
-                //   attachment: this.attachment,
-                //   issueId: this.form.id,
-                // }
+                // 附件ID保存
+                if (this.attachment.length !== 0) {
+                  const parameter = {
+                    attachments: this.attachment,
+                    issueId: this.form.id,
+                  }
+                  IssueAttachmentSaveId(parameter)
+                    .then((res) => {
+                      if (!res.success) {
+                        this.$message.error('附件信息保存失败：' + res.message)
+                      }
+                    })
+                    .catch(() => {
+                      this.$message.error('附件信息保存失败：' + res.message)
+                    })
+                }
                 this.$message.success('问题分发成功')
-                // IssueAttachmentSaveId(parameter)
-                //   .then((res) => {
-                //     if (!res.success) {
-                //       this.$message.error('附件信息保存失败：' + res.message)
-                //     }
-                //   })
-                //   .catch(() => {
-                //     this.$message.error('附件信息保存失败：' + res.message)
-                //   })
-                this.$router.back()
+                this.onback()
               } else {
                 this.$message.warning(res.message)
               }
@@ -447,7 +452,12 @@ export default {
 
     // 返回
     onback() {
-      this.$router.back()
+      if (this.$store.state.record.isBackPath) {
+        this.$router.push({ path: '/ssuissue' })
+        this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+      } else {
+        this.$router.back()
+      }
     },
   },
 }

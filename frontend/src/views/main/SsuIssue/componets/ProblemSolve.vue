@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 09:56:36
- * @LastEditTime: 2022-06-06 17:05:56
+ * @LastEditTime: 2022-06-14 16:49:36
  * @LastEditors: 林伟群
  * @Description: 解决问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSolve.vue
@@ -65,7 +65,9 @@
           />
         </a-form-model-item>
 
-        <a-form-item label="附件上传"> <ProblemUplod @uploadProblem="uploadProblem"></ProblemUplod> </a-form-item>
+        <a-form-item label="附件上传">
+          <ProblemUplod @uploadProblem="uploadProblem" :type="3"></ProblemUplod>
+        </a-form-item>
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
     </section>
@@ -77,10 +79,13 @@
         :model="versionForm"
         :rules="versionFormRules"
       >
-
         <a-form-model-item label="版本类别" prop="type">
-          
-          <a-select v-model="versionForm.type" style="width: 100%" placeholder="请选择版本类别" @change="versionTypeChange">
+          <a-select
+            v-model="versionForm.type"
+            style="width: 100%"
+            placeholder="请选择版本类别"
+            @change="versionTypeChange"
+          >
             <a-select-option v-for="item in versionTypeArray" :key="item.name" :value="item.name">{{
               item.name
             }}</a-select-option>
@@ -140,7 +145,7 @@ export default {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         reason: [{ required: true, message: '请输入原因分析', trigger: 'blur' }],
         measures: [{ required: true, message: '请输入解决措施', trigger: 'blur' }],
-        solveTime:[{ required: true, message: '请输入解决日期', trigger: 'blur' }],
+        solveTime: [{ required: true, message: '请输入解决日期', trigger: 'blur' }],
       },
       dateType: '',
       isVersion: false,
@@ -154,13 +159,11 @@ export default {
       },
       versionArray: [],
       versionTypeArray: [],
-      attachment: {}, // 附件上传的数据
+      attachment: [], // 附件上传的数据
       isShow: true,
     }
   },
-  created(){
-    
-  },
+  created() {},
   watch: {
     isVersion: {
       handler() {
@@ -206,7 +209,7 @@ export default {
               return JSON.stringify({ type: item.type })
             })
             const versionTypeList = [...new Set(versionType)]
-            this.versionTypeArray =  this.$options.filters['dictData']('issue_solve_version');
+            this.versionTypeArray = this.$options.filters['dictData']('issue_solve_version')
             console.log(this.versionTypeArray)
           } else {
             this.$message.warning(res.message)
@@ -215,15 +218,12 @@ export default {
         .catch(() => {
           this.$message.error('版本列表获取失败')
         })
-
     },
-      //模块选择
+    //模块选择
     versionTypeChange(value) {
-      if(this.versionForm.type !== value){
-          this.versionForm.type = value
+      if (this.versionForm.type !== value) {
+        this.versionForm.type = value
       }
-       
-       
     },
     // 创建版本
     creaVersion() {
@@ -264,20 +264,22 @@ export default {
           IssueExecute(this.form)
             .then((res) => {
               if (res.success) {
-                // const issueId = res.data.id
-                // const parameter = {
-                //   attachment: this.attachment,
-                //   issueId: issueId,
-                // }
-                // IssueAttachmentSaveId(parameter)
-                //   .then((res) => {
-                //     if (!res.success) {
-                //       this.$message.error('附件信息保存失败：' + res.message)
-                //     }
-                //   })
-                //   .catch(() => {
-                //     this.$message.error('附件信息保存失败：' + res.message)
-                //   })
+                // 保存ID
+                if (this.attachment.length !== 0) {
+                  const parameter = {
+                    attachments: this.attachment,
+                    issueId: this.form.id,
+                  }
+                  IssueAttachmentSaveId(parameter)
+                    .then((res) => {
+                      if (!res.success) {
+                        this.$message.error('附件信息保存失败：' + res.message)
+                      }
+                    })
+                    .catch(() => {
+                      this.$message.error('附件信息保存失败：' + res.message)
+                    })
+                }
                 this.$message.success('问题处理成功')
                 this.visible = false
                 this.getProblemList()

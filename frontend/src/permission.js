@@ -24,11 +24,11 @@ router.beforeEach(async (to, from, next) => {
   const { fullPath } = to
   const fullpathState = fullPath.indexOf('&state=FromQYWechat')
   if (fullpathState !== -1) {
-    const fullPathArray = fullPath.split('&')
+    const fullPathArray = fullPath.split('code=')
     const codeStr = fullPathArray[1]
-    const toPath = fullPathArray[0]
+    const toPath = fullPathArray[0].slice(0, fullPathArray[0].length - 1)
     if (codeStr) {
-      const code = codeStr.split('=')[1]
+      const code = codeStr.split('&')[0]
       const tokenRes = await qyWeLoginToken({ code })
       if (tokenRes.success) {
         // 登录成功后会重定向到welcome页面，再在welcome进行页面跳转

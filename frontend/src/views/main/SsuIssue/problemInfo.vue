@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-06-11 10:21:24
+ * @LastEditTime: 2022-06-14 10:04:59
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -446,7 +446,12 @@ export default {
     operationType(operName) {
       switch (operName) {
         case '返回':
-          this.$router.back()
+          if (this.$store.state.record.isBackPath) {
+            this.$router.push({ path: '/ssuissue' })
+            this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+          } else {
+            this.$router.back()
+          }
           break
         case '删除':
           this.problemDelect(this.IssueDetailData)
@@ -455,7 +460,6 @@ export default {
           this.$router.push({ path: '/problemAdd', query: { editId: this.IssueDetailData.id } })
           break
         case '分发':
-          // this.$store.commit('SET_CHECK_RECORD', record)
           this.$router.push({ path: '/problemDistribure', query: { distributeId: this.IssueDetailData.id } })
           break
         case '解决':
