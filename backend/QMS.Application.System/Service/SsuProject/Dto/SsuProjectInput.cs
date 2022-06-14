@@ -68,4 +68,16 @@ namespace QMS.Application.System
     public class QueryeSsuProjectInput : BaseId
     {
     }
+
+    /// <summary>
+    /// 根据项目获取人员ID输入参数
+    /// </summary>
+    public class SsuProjectUserInput : PageInputBase
+    {
+        /// <summary>
+        /// 项目ID
+        /// </summary>
+        [Required(ErrorMessage = "请输入项目ID")]
+        public long projectId { get; set; }
+    }
 }

@@ -21,7 +21,7 @@ namespace QMS.Application.System
 
         Task Update(UpdateSsuProjectInput input);
 
-        Task<List<UserOutput>> GetProjectUser(long projectId);
+        Task<PageResult<UserOutput>> GetProjectUser(SsuProjectUserInput projectInput);
 
         Task InsertProjectGroup(long projectId, IEnumerable<long> userIds);
 

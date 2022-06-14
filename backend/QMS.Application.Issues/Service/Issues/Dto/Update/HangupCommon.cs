@@ -26,7 +26,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         {
             Helper.Helper.Assert(issue.Status != Core.Enum.EnumIssueStatus.Closed, Constants.ERROR_MSG_CHECK_HANGUP);
 
-            Helper.Helper.Assert(App.User.FindFirst(ClaimConst.CLAINM_USERID)?.Value == issue.Dispatcher.ToString(), "当前用户不是分发用户，无法执行挂起操作");
+            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.CurrentAssignment, "当前用户不是分发用户，无法执行挂起操作");
 
             bool changed = false;
 

@@ -119,27 +119,27 @@ namespace QMS.Application.System
         /// <summary>
         ///根据人员组ID获取对应的人员列表
         /// </summary>
-        /// <param name="groupId">人员组ID</param>
+        /// <param name="groupInput">人员组分页参数</param>
         /// <returns></returns>
         [HttpGet("/SsuGroup/getgroupusers")]
-        public async Task<List<UserOutput>> GetGroupUsers([FromQuery] long groupId)
+        public async Task<PageResult<UserOutput>> GetGroupUsers([FromQuery] SsuGroupUserInput groupInput)
         {
-            List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
+            PageResult<UserOutput> result = new PageResult<UserOutput>();
+            var userIds = await _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupInput.groupId)).Select(u => u.EmployeeId).ToADPagedListAsync(groupInput.PageNo, groupInput.PageSize);
             if (userIds != null)
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
-                if (userList != null)
-                {
-                    foreach (SysUser user in userList)
+                result = userIds.Adapt<PageResult<UserOutput>>();
+                result.Rows.Clear();
+                _ssuSysuser.Where(u => userIds.Rows.Contains(u.Id)).ToList().ForEach(
+                    delegate (SysUser user)
                     {
                         UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
-                        list.Add(output);
+                        output.SysEmpInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
+                        result.Rows.Add(output);
                     }
-                }
+                    );
             }
-            return list;
+            return result;
         }
 
         /// <summary>
