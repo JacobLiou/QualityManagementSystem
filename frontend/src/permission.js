@@ -33,6 +33,7 @@ router.beforeEach(async (to, from, next) => {
       if (tokenRes.success) {
         // 登录成功后会重定向到welcome页面，再在welcome进行页面跳转
         sessionStorage.setItem('to_path_to', toPath)
+        sessionStorage.setItem('SET_CHECK_PATH', true) // 路径原路返回
         store.dispatch('dictTypeData');
       } else {
         sessionStorage.setItem('to_path_to', '')

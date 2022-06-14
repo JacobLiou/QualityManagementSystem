@@ -22,10 +22,6 @@ export function getSsuEmpOrgTree() {
   })
 }
 
-
-
-
-
 /**
  * @description: 根据机构ID获取人员列表
  * @return {*}

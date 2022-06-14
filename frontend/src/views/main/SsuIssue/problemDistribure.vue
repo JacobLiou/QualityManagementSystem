@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-14 16:50:04
+ * @LastEditTime: 2022-06-14 19:58:18
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -418,8 +418,6 @@ export default {
               this.$message.error('问题分发失败')
             })
         } else {
-          console.log(this.form)
-          console.log('error submit!!')
           return false
         }
       })
@@ -452,9 +450,9 @@ export default {
 
     // 返回
     onback() {
-      if (this.$store.state.record.isBackPath) {
+      if (sessionStorage.getItem('SET_CHECK_PATH')) {
         this.$router.push({ path: '/ssuissue' })
-        this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+        sessionStorage.setItem('SET_CHECK_PATH', false) // 路径原路返回
       } else {
         this.$router.back()
       }

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-06-13 13:52:30
+ * @LastEditTime: 2022-06-14 19:39:39
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
@@ -53,8 +53,22 @@
             >
             </a-table>
             <section class="list_button">
-              <a-button type="primary" @click="userDefine" class="button1" :disabled="isDisabled">确定</a-button>
-              <a-button @click="userCancel">返回</a-button>
+              <a-pagination
+                v-if="totalNum > queryParam.PageSize"
+                class="content_pagination"
+                :total="totalNum"
+                :current="queryParam.PageNo"
+                :pageSize="queryParam.PageSize"
+                :pageSizeOptions="pageSizeOptions"
+                show-size-changer
+                show-quick-jumper
+                @change="jumpPagination"
+                @showSizeChange="changePageSize"
+              />
+              <section class="button_list">
+                <a-button type="primary" @click="userDefine" class="button1" :disabled="isDisabled">确定</a-button>
+                <a-button @click="userCancel">返回</a-button>
+              </section>
             </section>
           </a-spin>
         </a-card>
@@ -125,6 +139,13 @@ export default {
       checkUser: [],
       visible: false,
       isDisabled: true,
+      queryParam: {
+        PageNo: 1,
+        PageSize: 10,
+      },
+      totalNum: 0,
+      pageSizeOptions: ['10', '20', '30', '40'],
+      selectKey: [],
     }
   },
   computed: {
@@ -169,7 +190,9 @@ export default {
   methods: {
     // 树节点选中
     selectTree(key) {
+      console.log(key)
       this.tabLoading = true
+      this.selectKey = key
       switch (this.current[0]) {
         case 'productId':
           this.getproductuserList(key)
@@ -195,6 +218,7 @@ export default {
 
     // 获取产品列表
     getSsuProductList() {
+      this.initPagin()
       SsuProductList()
         .then((res) => {
           if (res.success) {
@@ -219,6 +243,7 @@ export default {
 
     // 获取项目列表
     getProjectList() {
+      this.initPagin()
       SsuProjectList()
         .then((res) => {
           if (res.success) {
@@ -243,6 +268,7 @@ export default {
 
     // 获取部门列表
     getDepartmentList() {
+      this.initPagin()
       getSsuEmpOrgTree()
         .then((res) => {
           if (res.success) {
@@ -263,6 +289,7 @@ export default {
 
     // 获取人员列表
     getPersonnelList() {
+      this.initPagin()
       SsuGroupList()
         .then((res) => {
           if (res.success) {
@@ -288,11 +315,11 @@ export default {
     // 根据部门id获取人员列表
     getDepartmentUserList(key) {
       const id = key[0]
-      getOrgUserList({ orgId: id })
+      getOrgUserList({ orgId: id, ...this.queryParam })
         .then((res) => {
-          console.log(res)
           if (res.success) {
-            this.userData = res.data
+            this.totalNum = res.data.totalRows
+            this.userData = res.data.rows
             this.userData.forEach((item, index) => (item.index = index + 1))
           }
         })
@@ -306,10 +333,11 @@ export default {
     // 根据项目ID获取成员列表
     getProjectUserList(key) {
       const id = key[0]
-      SsuProjectusers({ projectId: id })
+      SsuProjectusers({ projectId: id, ...this.queryParam })
         .then((res) => {
           if (res.success) {
-            this.userData = res.data
+            this.totalNum = res.data.totalRows
+            this.userData = res.data.rows
             this.userData.forEach((item, index) => (item.index = index + 1))
           }
         })
@@ -323,7 +351,7 @@ export default {
     // 根据产品id获取人员列表
     getproductuserList(key) {
       const id = key[0]
-      SsuProductusers({ productId: id })
+      SsuProductusers({ productId: id, ...this.queryParam })
         .then((res) => {
           if (res.success) {
             this.userData = res.data
@@ -340,10 +368,11 @@ export default {
     // 根据人员ID获取人员列表
     getPersonnelUserList(key) {
       const id = key[0]
-      SsuGroupusers({ groupId: id })
+      SsuGroupusers({ groupId: id, ...this.queryParam })
         .then((res) => {
           if (res.success) {
-            this.userData = res.data
+            this.totalNum = res.data.totalRows
+            this.userData = res.data.rows
             this.userData.forEach((item, index) => (item.index = index + 1))
           }
         })
@@ -381,6 +410,59 @@ export default {
       this.userData = []
       this.checkUser = []
     },
+
+    // 分页初始化
+    initPagin() {
+      Object.assign(this, {
+        queryParam: {
+          PageNo: 1,
+          PageSize: 10,
+        },
+        totalNum: 0,
+      })
+    },
+
+    // 分页
+    jumpPagination(PageNo, PageSize) {
+      this.queryParam = { PageNo, PageSize }
+      const key = this.selectKey
+      switch (this.current[0]) {
+        case 'productId':
+          this.getproductuserList(key)
+          break
+        case 'projectId':
+          this.getProjectUserList(key)
+          break
+        case 'departmentId':
+          this.getDepartmentUserList(key)
+          break
+        case 'personnelID':
+          this.getPersonnelUserList(key)
+          break
+        default:
+          break
+      }
+    },
+    changePageSize(PageNo, PageSize) {
+      this.queryParam = { PageNo, PageSize }
+      const key = this.selectKey
+      switch (this.current[0]) {
+        case 'productId':
+          this.getproductuserList(key)
+          break
+        case 'projectId':
+          this.getProjectUserList(key)
+          break
+        case 'departmentId':
+          this.getDepartmentUserList(key)
+          break
+        case 'personnelID':
+          this.getPersonnelUserList(key)
+          break
+        default:
+          break
+      }
+    },
   },
 }
 </script>
@@ -391,10 +473,16 @@ export default {
 }
 .user_list {
   width: 100%;
-  height: calc(100vh - 120px);
+  min-height: 500px;
   .list_button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 1.5em;
-    text-align: right;
+    .button_list {
+      flex: 1;
+      text-align: right;
+    }
     .button1 {
       margin-right: 2em;
     }

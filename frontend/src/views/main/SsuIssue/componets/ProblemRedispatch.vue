@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-06-14 14:19:06
+ * @LastEditTime: 2022-06-14 20:50:10
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -24,6 +24,8 @@
         </a-form-model-item>
         <a-form-model-item ref="executorName" label="转交人" prop="executorName">
           <section class="from_chilen">
+            <!-- 二次封装远程搜索组件 -->
+            <!-- <SelectUser title="转交人" ></SelectUser> -->
             <a-input v-model="form.executorName" placeholder="请选择转交人" disabled />
             <a-button @click="changePersonnel('executor')"> 选择 </a-button>
           </section>
@@ -34,7 +36,7 @@
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
     </section>
-    <SelectUser></SelectUser>
+
     <template slot="footer">
       <a-button @click="handleSubmit" type="primary"> 确定 </a-button>
       <a-button @click="handleCancel"> 取消 </a-button>

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-14 16:50:32
+ * @LastEditTime: 2022-06-14 19:47:11
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -519,7 +519,6 @@ export default {
     },
     // 附件上传
     customRequest(data) {
-      console.log(data)
       const { file } = data
       const formData = new FormData()
       formData.append('file', file)
@@ -619,12 +618,11 @@ export default {
       IssueEdit(form)
         .then((res) => {
           if (res.success) {
-            const issueId = res.data.id
             // 附件ID保存
             if (this.attachment.length !== 0) {
               const parameter = {
                 attachments: this.attachment,
-                issueId: issueId,
+                issueId:form.id,
               }
               IssueAttachmentSaveId(parameter)
                 .then((res) => {
@@ -675,9 +673,9 @@ export default {
     },
     // 返回
     onback() {
-      if (this.$store.state.record.isBackPath) {
+      if (sessionStorage.getItem('SET_CHECK_PATH')) {
         this.$router.push({ path: '/ssuissue' })
-        this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+        sessionStorage.setItem('SET_CHECK_PATH', false) // 路径原路返回
       } else {
         this.$router.back()
       }

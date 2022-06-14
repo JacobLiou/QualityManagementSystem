@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-06-14 10:04:59
+ * @LastEditTime: 2022-06-14 21:29:37
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -36,6 +36,18 @@
         <div class="info_li" v-if="IssueDetailData.hangupReason">
           <span class="li_title">挂起原因：</span>
           <div class="li_content">{{ IssueDetailData.hangupReason }}</div>
+        </div>
+        <div class="info_li" v-if="IssueDetailData.attachmentList !== null">
+          <span class="li_title">附件： <a-spin size="small" v-if="cardLoading" /></span>
+          <div
+            class="li_content li_file"
+            v-for="(iFile, index) in IssueDetailData.attachmentList"
+            :key="iFile.attachmentId"
+            @click="downFile(iFile.attachmentId, index)"
+            :title="'附件下载:' + iFile.fileName"
+          >
+            {{ iFile.fileName }}
+          </div>
         </div>
         <div class="info_li" v-if="IssueDetailData.comment">
           <span class="li_title" v-if="IssueDetailData.comment">备注：</span>
@@ -255,6 +267,7 @@
 
 <script>
 import { IssueDetail, IssueDelete, IssueReOpen } from '@/api/modular/main/SsuIssueManage'
+import { sysFileInfoDownload } from '@/api/modular/system/fileManage'
 import OperRecords from './componets/OperRecords.vue'
 import ProblemSolve from './componets/ProblemSolve.vue'
 import ProblemRecheck from './componets/ProblemRecheck.vue'
@@ -280,6 +293,7 @@ export default {
       // 人员选择
       userVisible: false,
       personnelType: '',
+      cardLoading: false,
     }
   },
   computed: {
@@ -446,9 +460,9 @@ export default {
     operationType(operName) {
       switch (operName) {
         case '返回':
-          if (this.$store.state.record.isBackPath) {
+          if (sessionStorage.getItem('SET_CHECK_PATH')) {
             this.$router.push({ path: '/ssuissue' })
-            this.$store.commit('SET_CHECK_PATH', false) // 路径原路返回
+            sessionStorage.setItem('SET_CHECK_PATH', false) // 路径原路返回
           } else {
             this.$router.back()
           }
@@ -572,6 +586,38 @@ export default {
       })
       return newAttArray
     },
+
+    // 附件下载
+    downFile(id, index) {
+      this.cardLoading = true
+      sysFileInfoDownload({ id })
+        .then((res) => {
+          this.cardLoading = false
+          this.downloadfile(res)
+          // eslint-disable-next-line handle-callback-err
+        })
+        .catch((err) => {
+          this.cardLoading = false
+          this.$message.error('下载错误：获取文件流错误' + err)
+        })
+    },
+    downloadfile(res) {
+      var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' })
+      var contentDisposition = res.headers['content-disposition']
+      var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*')
+      var result = patt.exec(contentDisposition)
+      var filename = result[1]
+      var downloadElement = document.createElement('a')
+      var href = window.URL.createObjectURL(blob) // 创建下载的链接
+      var reg = /^["](.*)["]$/g
+      downloadElement.style.display = 'none'
+      downloadElement.href = href
+      downloadElement.download = decodeURI(filename.replace(reg, '$1')) // 下载后文件名
+      document.body.appendChild(downloadElement)
+      downloadElement.click() // 点击下载
+      document.body.removeChild(downloadElement) // 下载完成移除元素
+      window.URL.revokeObjectURL(href)
+    },
   },
 }
 </script>
@@ -595,6 +641,10 @@ export default {
       /deep/ img {
         width: 100%;
       }
+    }
+    .li_file {
+      cursor: pointer;
+      color: #2096db;
     }
   }
   .title {
