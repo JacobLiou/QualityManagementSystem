@@ -21,7 +21,7 @@ namespace QMS.Application.System
         Task Update(UpdateSsuGroupInput input);
 
 
-        Task<List<UserOutput>> GetGroupUsers(long groupId);
+        Task<PageResult<UserOutput>> GetGroupUsers(SsuGroupUserInput groupInput);
 
         Task InsertUserGroup(long groupId, IEnumerable<long> userIds);
     }

@@ -58,6 +58,7 @@ namespace QMS.Application.Issues
             IRepository<IssueExtendAttribute, IssuesDbContextLocator> issueAttrRep,
             IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> issueAttrValueRep,
             IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep
+
         )
         {
             this._issueRep = issueRep;
@@ -256,6 +257,7 @@ namespace QMS.Application.Issues
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
 
             OutputDetailIssue outputDetailIssue = detail.Adapt<OutputDetailIssue>();
+
 
             outputDetailIssue.SetCommon(issue);
 

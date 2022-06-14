@@ -136,27 +136,27 @@ namespace QMS.Application.System
         /// <summary>
         /// 根据项目ID获取对应的项目人员
         /// </summary>
-        /// <param name="projectId">项目ID</param>
+        /// <param name="projectInput">项目分页参数</param>
         /// <returns></returns>
         [HttpGet("/SsuProject/getprojectuser")]
-        public async Task<List<UserOutput>> GetProjectUser([FromQuery] long projectId)
+        public async Task<PageResult<UserOutput>> GetProjectUser([FromQuery] SsuProjectUserInput projectInput)
         {
-            List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            PageResult<UserOutput> result = new PageResult<UserOutput>();
+            var userIds = await _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectInput.projectId)).Select(u => u.EmployeeId).ToADPagedListAsync(projectInput.PageNo, projectInput.PageSize);
             if (userIds != null)
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
-                if (userList != null)
-                {
-                    foreach (SysUser user in userList)
+                result = userIds.Adapt<PageResult<UserOutput>>();
+                result.Rows.Clear();
+                _ssuSysuser.Where(u => userIds.Rows.Contains(u.Id)).ToList().ForEach(
+                    delegate (SysUser user)
                     {
                         UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
-                        list.Add(output);
+                        output.SysEmpInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
+                        result.Rows.Add(output);
                     }
-                }
+                    );
             }
-            return list;
+            return result;
         }
 
         /// <summary>

@@ -25,7 +25,7 @@ namespace QMS.Application.System
 
         Task<Dictionary<long, SysUser>> GetUserList(IEnumerable<long> userIds);
 
-        Task<List<UserOutput>> GetOrgUser([FromQuery] long orgId);
+        Task<PageResult<UserOutput>> GetOrgUser([FromQuery] SsuOrgUserInput orgInput);
 
         Task<List<UserOutput>> GetFuzzyUsers([FromQuery] string name);
     }

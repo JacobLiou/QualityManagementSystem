@@ -19,7 +19,7 @@ namespace QMS.Application.System
 
         Task Update(UpdateSsuProductInput input);
 
-        Task<List<UserOutput>> GetProductUsers(long productId);
+        Task<PageResult<UserOutput>> GetProductUsers(SsuProductUserInput productInput);
 
         Task InsertProductGroup(long productId, IEnumerable<long> userIds);
 

@@ -75,4 +75,16 @@ namespace QMS.Application.System
     public class QueryeSsuProductInput : BaseId
     {
     }
+
+    /// <summary>
+    /// 获取产品对应人员的输入参数
+    /// </summary>
+    public class SsuProductUserInput : PageInputBase
+    {
+        /// <summary>
+        /// 产品ID
+        /// </summary>
+        [Required(ErrorMessage = "请输入产品ID")]
+        public long productId { get; set; }
+    }
 }

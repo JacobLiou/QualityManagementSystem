@@ -11,8 +11,7 @@ namespace QMS.Application.System
     /// <summary>
     /// 系统服务接口
     /// </summary>
-    [ApiDescriptionSettings("问题管理Demo", Name = "group", Order = 100)]
-    [Route("system/[controller]")]
+    [ApiDescriptionSettings(Name = "Test", Order = 100)]
     public class GroupAppService : IDynamicApiController
     {
         private readonly ISystemService _systemService;
@@ -40,7 +39,7 @@ namespace QMS.Application.System
         /// UserID：用户ID
         /// </remarks>
         /// <returns></returns>
-        [HttpGet("usergroup")]
+        [HttpGet("system/group/usergroup")]
         public async Task<List<GroupUserOutput>> GetUserGroup(long groupId = 281695421571141)
         {
             var userGruop = _cache.GetObject<List<GroupUserOutput>>(CacheKeys.CachedUserGroup + groupId);
@@ -85,7 +84,7 @@ namespace QMS.Application.System
         /// 获取组
         /// </summary>
         /// <returns></returns>
-        [HttpGet("get")]
+        [HttpGet("system/group/get")]
         public List<SsuGroupOutput> GetGroup()
         {
             return _systemService.GetGroup();
