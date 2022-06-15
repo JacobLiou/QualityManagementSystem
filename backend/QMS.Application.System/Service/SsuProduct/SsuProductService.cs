@@ -143,17 +143,17 @@ namespace QMS.Application.System
         {
             PageResult<UserOutput> result = new PageResult<UserOutput>();
             List<UserOutput> list = new List<UserOutput>();
-            var userIds = await _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productInput.productId)).Select(u => u.EmployeeId).ToADPagedListAsync(productInput.PageNo, productInput.PageSize);
-            if (userIds != null)
+            var userIds = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productInput.productId)).Select(u => u.EmployeeId);
+            if (userIds != null && userIds.Any())
             {
-                result = userIds.Adapt<PageResult<UserOutput>>();
-                result.Rows.Clear();
-                _ssuSysuser.Where(u => userIds.Rows.Contains(u.Id)).ToList().ForEach(
-                    delegate (SysUser user)
+                result = _ssuSysuser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin && u.IsDeleted == false)
+                    .Select(u => u.Adapt<UserOutput>())
+                    .ToADPagedList(productInput.PageNo, productInput.PageSize);
+
+                result.Rows.ToList().ForEach(
+                    delegate (UserOutput user)
                     {
-                        UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
-                        result.Rows.Add(output);
+                        user.SysEmpInfo = _sysEmpService.GetEmpInfo(Convert.ToInt64(user.Id)).Result;
                     }
                     );
             }
