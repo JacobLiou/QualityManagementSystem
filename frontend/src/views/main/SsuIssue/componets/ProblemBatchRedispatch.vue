@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 20:18:02
- * @LastEditTime: 2022-06-01 09:34:29
+ * @LastEditTime: 2022-06-15 16:32:39
  * @LastEditors: 林伟群
  * @Description: 批量转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemBatchRedispatch.vue
@@ -12,7 +12,8 @@
       <a-form-model ref="ruleForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="form" :rules="rules">
         <a-form-model-item ref="executorName" label="转交人" prop="executorName">
           <section class="from_chilen">
-            <a-input v-model="form.executorName" placeholder="请选择转交人" disabled />
+            <!-- <a-input v-model="form.executorName" placeholder="请选择转交人" disabled /> -->
+            <SelectUser title="请输入转交人" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
             <a-button @click="changePersonnel('batcheExecutor')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -30,8 +31,12 @@
 
 <script>
 import { IssueRedispatch } from '@/api/modular/main/SsuIssueManage'
+import SelectUser from './SelectUser.vue'
 
 export default {
+  components: {
+    SelectUser,
+  },
   inject: ['getProblemList'],
   data() {
     return {
@@ -49,10 +54,24 @@ export default {
       visible: false,
     }
   },
+  computed: {
+    userSelect() {
+      return {
+        id: this.form.executor,
+        name: this.form.executorName,
+      }
+    },
+  },
   methods: {
     initRedispatch(record) {
       this.visible = true
       this.checkRecord = record
+    },
+
+    // 模糊搜索选中人员
+    handlerSelectUser(valueObj) {
+      this.form.executor = valueObj.value
+      this.form.executorName = valueObj.label
     },
     // 人员选择
     changePersonnel(value) {

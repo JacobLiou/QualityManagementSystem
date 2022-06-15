@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-14 19:47:11
+ * @LastEditTime: 2022-06-15 17:38:25
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -42,7 +42,13 @@
 
         <a-form-model-item label="当前指派" prop="currentAssignmentName">
           <section class="from_chilen">
-            <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled />
+            <!-- <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled /> -->
+            <SelectUser
+              title="请输入当前指派人"
+              @handlerSelectUser="handlerSelectUser"
+              selectType="currentAssignment"
+              :userSelect="userSelectCurr"
+            ></SelectUser>
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -80,7 +86,13 @@
         </a-form-model-item>
         <a-form-model-item label="发现人" prop="discoverName">
           <section class="from_chilen">
-            <a-input v-model="form.discoverName" placeholder="请选择发现人" disabled />
+            <!-- <a-input v-model="form.discoverName" placeholder="请选择发现人" disabled /> -->
+            <SelectUser
+              title="请输入发现人"
+              @handlerSelectUser="handlerSelectUser"
+              selectType="discoverName"
+              :userSelect="userSelectDis"
+            ></SelectUser>
             <a-button @click="changePersonnel('discover')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -95,7 +107,13 @@
         </a-form-model-item>
         <a-form-model-item label="抄送" prop="ccListName">
           <section class="from_chilen" :title="form.ccListName">
-            <a-input v-model="form.ccListName" placeholder="请选择抄送人" disabled />
+            <!-- <a-input v-model="form.ccListName" placeholder="请选择抄送人" disabled /> -->
+            <SelectUserMore
+              title="请输入抄送人"
+              @handlerSelectUser="handlerSelectUser"
+              selectType="ccList"
+              :userSelect="userCcList"
+            ></SelectUserMore>
             <a-button @click="changePersonnel('ccList')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -163,8 +181,13 @@
             </section>
             <!-- 人员选择控件 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'long'">
-              <!-- TODO 逻辑待定 -->
-              <a-input v-model="attribuForm[attItem.fieldCode]" :placeholder="attItem | placeholderName" disabled />
+              <!-- <a-input v-model="attribuForm[attItem.fieldCode]" :placeholder="attItem | placeholderName" disabled /> -->
+              <SelectUser
+                :title="attItem | placeholderName"
+                :selectType="attItem.fieldCode"
+                @handlerSelectUser="handlerSelectUser"
+                :userSelect="attUser(attItem.fieldCode)"
+              ></SelectUser>
               <a-button @click="changePersonnel(attItem.fieldCode)"> 选择 </a-button>
             </section>
           </a-form-model-item>
@@ -217,9 +240,11 @@ import VueQuillEditor from './componets/VueQuillEditor.vue'
 import CheckUserList from './componets/CheckUserList.vue'
 import AttributCheck from './componets/AttributCheck.vue'
 import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
+import SelectUser from './componets/SelectUser.vue'
+import SelectUserMore from './componets/SelectUserMore.vue'
 
 export default {
-  components: { CheckUserList, VueQuillEditor, AttributCheck },
+  components: { CheckUserList, VueQuillEditor, AttributCheck, SelectUser, SelectUserMore },
   data() {
     return {
       labelCol: { md: { span: 24 }, lg: { span: 6 } },
@@ -315,6 +340,38 @@ export default {
     addName() {
       if (this.copyAdd == 1) return '添加'
       return this.status == -1 ? '添加' : '确定'
+    },
+    userCcList() {
+      let { ccListName, ccList } = this.form
+      if (ccListName == null && ccList == null) return []
+      if (typeof ccListName == 'string') ccListName = ccListName.split(',')
+      const selectUserArr = this.form.ccList.map((item, index) => {
+        return {
+          id: item,
+          name: ccListName[index],
+        }
+      })
+      return selectUserArr
+    },
+    userSelectCurr() {
+      return {
+        id: this.form.currentAssignment,
+        name: this.form.currentAssignmentName,
+      }
+    },
+    userSelectDis() {
+      return {
+        id: this.form.discover,
+        name: this.form.discoverName,
+      }
+    },
+    attUser() {
+      return function (type) {
+        return {
+          id: this.attribuForm[type + 'customNameId'] ?? type,
+          name: this.attribuForm[type],
+        }
+      }
     },
   },
   methods: {
@@ -446,6 +503,43 @@ export default {
         this.attribuForm[this.dateType] = dateStrings
       }
     },
+
+    // 模糊搜索选中人员
+    handlerSelectUser(valueObj) {
+      const { selectType } = valueObj
+      let perArray = []
+      switch (selectType) {
+        case 'currentAssignment': // 分发指派人
+          this.form.currentAssignment = valueObj.value
+          this.form.currentAssignmentName = valueObj.label
+          break
+        case 'discover': // 发现
+          this.form.currentAssignment = valueObj.value
+          this.form.currentAssignmentName = valueObj.label
+          break
+        case 'ccList': // 抄送
+          const { value } = valueObj
+          console.log(value)
+          perArray = value.map((item) => {
+            return item?.label
+          })
+          const ccList = value.map((item) => {
+            return Number(item?.key)
+          })
+          const newCcList = [...new Set(ccList)]
+          this.form.ccList = newCcList
+          const newPerArray = [...new Set(perArray)]
+          this.form.ccListName = newPerArray.join()
+          break
+        default:
+          const customAttribu = selectType + 'customNameId'
+          this.attribuForm[customAttribu] = valueObj.value // 存储人员id
+          this.attribuForm[selectType] = valueObj.label
+          this.$forceUpdate()
+          break
+      }
+    },
+
     // 选择人员
     changePersonnel(value) {
       this.personnelType = value
@@ -473,15 +567,26 @@ export default {
           this.form.discoverName = perArray.join()
           this.form.discover = Number(checkUser[0].id)
           break
-        case 'ccList': // 抄送
-          this.ccListData = checkUser
+        case 'ccList': // 抄送指派人
           perArray = checkUser.map((item) => {
             return item.name
           })
-          this.form.ccList = checkUser.map((item) => {
-            return Number(item.id)
-          })
-          this.form.ccListName = perArray.join()
+          if (this.form.ccList?.length > 0) {
+            const newList = checkUser.map((item) => {
+              return Number(item.id)
+            })
+            const newNameS = perArray
+            const oldNameS = this.form.ccListName.split(',')
+            const allNameS = [...new Set([...oldNameS, ...newNameS])]
+            this.form.ccList = [...new Set([...this.form.ccList, ...newList])]
+            console.log(allNameS, this.form.ccList)
+            this.form.ccListName = allNameS.join()
+          } else {
+            this.form.ccList = checkUser.map((item) => {
+              return Number(item.id)
+            })
+            this.form.ccListName = perArray.join()
+          }
           break
         case 'currentAssignment': // 指派
           this.ccListData = checkUser
@@ -622,7 +727,7 @@ export default {
             if (this.attachment.length !== 0) {
               const parameter = {
                 attachments: this.attachment,
-                issueId:form.id,
+                issueId: form.id,
               }
               IssueAttachmentSaveId(parameter)
                 .then((res) => {

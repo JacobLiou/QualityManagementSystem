@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-06-14 19:39:39
+ * @LastEditTime: 2022-06-15 17:44:09
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
@@ -320,7 +320,7 @@ export default {
           if (res.success) {
             this.totalNum = res.data.totalRows
             this.userData = res.data.rows
-            this.userData.forEach((item, index) => (item.index = index + 1))
+            this.userData?.forEach((item, index) => (item.index = index + 1))
           }
         })
         .catch(() => {
@@ -338,7 +338,7 @@ export default {
           if (res.success) {
             this.totalNum = res.data.totalRows
             this.userData = res.data.rows
-            this.userData.forEach((item, index) => (item.index = index + 1))
+            this.userData?.forEach((item, index) => (item.index = index + 1))
           }
         })
         .catch(() => {
@@ -354,8 +354,9 @@ export default {
       SsuProductusers({ productId: id, ...this.queryParam })
         .then((res) => {
           if (res.success) {
-            this.userData = res.data
-            this.userData.forEach((item, index) => (item.index = index + 1))
+            this.totalNum = res.data.totalRows
+            this.userData = res.data.rows
+            this.userData?.forEach((item, index) => (item.index = index + 1))
           }
         })
         .catch(() => {
@@ -373,7 +374,7 @@ export default {
           if (res.success) {
             this.totalNum = res.data.totalRows
             this.userData = res.data.rows
-            this.userData.forEach((item, index) => (item.index = index + 1))
+            this.userData?.forEach((item, index) => (item.index = index + 1))
           }
         })
         .catch(() => {

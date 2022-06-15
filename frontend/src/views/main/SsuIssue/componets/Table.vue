@@ -460,7 +460,7 @@ export default {
         return item.checkbox == true
       })
       const redispatchIssueList = checkIssue.filter((item) => {
-        if (item.status == 1 || item.status == 3) {
+        if (item.status == 0 || item.status == 3) {
           return item
         }
       })
@@ -473,10 +473,7 @@ export default {
 
     // 选中导出
     checkExport() {
-      // TODO
-      console.log(this.issueData)
       const exportData = this.issueData.filter((item) => item.checkbox)
-      console.log(exportData)
       const exportPamter = exportData.map((item) => {
         return item.id
       })
