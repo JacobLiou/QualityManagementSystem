@@ -1,5 +1,6 @@
 ﻿using Furion;
 using Furion.EventBus;
+using Furion.Extras.Admin.NET;
 using Furion.JsonSerialization;
 using Microsoft.Extensions.DependencyInjection;
 using QMS.Core;
@@ -35,7 +36,7 @@ namespace QMS.Application.System.EventSubscriber
         }
 
         /// <summary>
-        /// 发送微信消息
+        /// 问题发送微信消息
         /// </summary>
         /// <param name="notice"></param>
         /// <returns></returns>
@@ -47,7 +48,7 @@ namespace QMS.Application.System.EventSubscriber
         }
 
         /// <summary>
-        /// 发送邮件
+        /// 问题发送邮件
         /// </summary>
         /// <param name="notice"></param>
         /// <returns></returns>
@@ -55,7 +56,8 @@ namespace QMS.Application.System.EventSubscriber
         {
             using var scope = Services.CreateScope();
             var EmailApply = scope.ServiceProvider.GetRequiredService<IEmailApplpy>();
-            notice.PageUrl = "<a href=\"" + notice.PageUrl + "\">" + notice.Title + "</a>";   //构建邮箱跳转信息界面
+            //构建邮箱跳转信息界面，格式类似为<a href=http://qms.sofarsolar.com:8002/problemAdd&UserID=1234567896325&state=FromEamil>消息标题</a>,供前端识别跳转
+            notice.PageUrl = "<a href=\"" + notice.PageUrl + "&UserID=" + notice.PublicUserId + "&state=FromEmail" + "\">" + notice.Title + "</a>";
             await EmailApply.SendEmail(notice.NoticeUserIdList, notice.Title, notice.Content + notice.PageUrl);
         }
     }

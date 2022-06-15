@@ -233,17 +233,17 @@ namespace QMS.Application.System
             //机构列表加入自身
             orgIds.Add(orgInput.orgId);
             //获取机构对应页码数的所有人员
-            var userIds = await _sysEmpRep.DetachedEntities.Where(u => orgIds.Distinct().Contains(u.OrgId)).Select(u => u.Id).ToADPagedListAsync(orgInput.PageNo, orgInput.PageSize);
-            if (userIds != null && userIds.Rows.Count() > 0)
+            var userIds = _sysEmpRep.DetachedEntities.Where(u => orgIds.Distinct().Contains(u.OrgId)).Select(u => u.Id);
+            if (userIds != null && userIds.Any())
             {
-                result = userIds.Adapt<PageResult<UserOutput>>();
-                result.Rows.Clear();
-                _sysUser.Where(u => userIds.Rows.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin).ToList().ForEach(
-                    delegate (SysUser user)
+                result = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin && u.IsDeleted == false)
+                    .Select(u => u.Adapt<UserOutput>())
+                    .ToADPagedList(orgInput.PageNo, orgInput.PageSize);
+
+                result.Rows.ToList().ForEach(
+                    delegate (UserOutput user)
                     {
-                        UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = _sysEmpService.GetEmpInfo(user.Id).Result;
-                        result.Rows.Add(output);
+                        user.SysEmpInfo = _sysEmpService.GetEmpInfo(Convert.ToInt64(user.Id)).Result;
                     }
                     );
             }
