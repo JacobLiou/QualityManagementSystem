@@ -1,8 +1,10 @@
-﻿using MiniExcelLibs.Attributes;
+﻿using Furion.Extras.Admin.NET;
+using MiniExcelLibs.Attributes;
+using QMS.Core.Enum;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Add
 {
-    public class InIssue: AddToCommonIssue
+    public class InIssue : AddToCommonIssue
     {
         /// <summary>
         /// 详情
@@ -31,7 +33,22 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// [{"module": 0, "issueId":284932473958469,"fieldId":285613677277253,"fieldCode":"code", "fieldName":"中文代码", "value":"数据","fieldDataType":"string"}]
         /// </summary>
         [ExcelIgnore]
-        //[Required]
         public string ExtendAttribute { get; set; }
+
+        public bool SetIssuse(Core.Entity.Issue issue)
+        {
+            issue.CreateTime = DateTime.Now;
+            issue.CreatorId = CurrentUserInfo.UserId;
+
+            if (this.IsTemporary)
+            {
+                this.Status = EnumIssueStatus.HasTemporary;
+            }
+            else
+            {
+                this.Status = EnumIssueStatus.Created;
+            }
+            return true;
+        }
     }
 }

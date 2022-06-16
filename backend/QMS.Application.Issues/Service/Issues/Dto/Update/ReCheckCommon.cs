@@ -1,6 +1,7 @@
 ﻿using Furion.Extras.Admin.NET;
 using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -34,6 +35,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
                 changed = true;
             }
+            bool pass = this.PassResult == YesOrNot.Y;
+            issue.Status = pass ? EnumIssueStatus.HasRechecked : EnumIssueStatus.Dispatched;
+            issue.CurrentAssignment = pass ? issue.CreatorId : issue.Executor;
+
             return changed;
         }
 

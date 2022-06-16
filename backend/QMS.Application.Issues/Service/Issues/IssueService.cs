@@ -104,7 +104,7 @@ namespace QMS.Application.Issues
                 issue.CCs = JSON.Serialize(input.CCList);
             }
             Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定当前指派人!");
-            issue.SetCreate(input.IsTemporary);
+            input.SetIssuse(issue);
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
 
@@ -312,15 +312,17 @@ namespace QMS.Application.Issues
 
             //已挂起，已关闭状态下支持重开启
             Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
+            Helper.Helper.Assert(common.Dispatcher != Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
 
-            common.DoReOpen();
+            common.Status = EnumIssueStatus.Created;
             await this._issueRep.UpdateNowAsync(common, true);
 
+            //更改逻辑为：必须为问题分发人才能重开启问题,重开启后下一步操作为问题分发人，所以此处不发送消息
             //如果当前用户和问题的分发人不一致，则重新开启后发送消息通知分发人
-            if (Helper.Helper.GetCurrentUser() != common.Dispatcher)
-            {
-                this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
-            }
+            //if (Helper.Helper.GetCurrentUser() != common.Dispatcher)
+            //{
+            //    this.SendNotice(common.Id.ToString(), common.Dispatcher.ToString(), common.Title);
+            //}
 
             await IssueLogger.Log(
                 this._issueOperateRep,
@@ -346,7 +348,6 @@ namespace QMS.Application.Issues
 
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
-            common.DoReCheck(pass);
             await this._issueRep.UpdateNowAsync(common, true);
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
@@ -389,9 +390,6 @@ namespace QMS.Application.Issues
             Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
 
             input.SetIssue(common);
-            common.DoSolve();
-
-
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             input.SetIssueDetail(issueDetail);
 
@@ -429,7 +427,6 @@ namespace QMS.Application.Issues
 
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
-            common.DoVerify(pass);
             await this._issueRep.UpdateNowAsync(common, true);
 
 
@@ -444,7 +441,7 @@ namespace QMS.Application.Issues
                 this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
-            EnumIssueOperationType enumIssueOperationType = pass ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
+            EnumIssueOperationType enumIssueOperationType = input.PassResult == YesOrNot.Y ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
             await IssueLogger.Log(
                 this._issueOperateRep,
                 input.Id,
@@ -466,8 +463,6 @@ namespace QMS.Application.Issues
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             input.SetIssue(common);
-            common.SetHangup();
-
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             if (input.SetIssueDetail(issueDetail))
@@ -492,11 +487,9 @@ namespace QMS.Application.Issues
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(重分发人)");
-
+            Helper.Helper.Assert(common.Executor != 0 && common.Executor != null, "重分发时必须指定执行人");
 
             input.SetIssue(common);
-            Helper.Helper.Assert(common.Executor != 0 && common.Executor != null, "重分发时必须指定执行人");
-            common.DoDispatch();
             await this._issueRep.UpdateNowAsync(common, true);
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
@@ -534,6 +527,35 @@ namespace QMS.Application.Issues
                 input[0].Id,
                 EnumIssueOperationType.ReDispatch,
                 $"问题重分发给【{input[0].Executor.GetNameByEmpId()}】"
+            );
+        }
+
+        /// <summary>
+        /// 关闭问题
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("close")]
+        public async Task Close(InClose input)
+        {
+            Helper.Helper.CheckInput(input);
+            Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
+
+            input.SetIssue(common);
+
+            IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+            if (input.SetIssueDetail(issueDetail))
+            {
+                await this._issueDetailRep.UpdateNowAsync(issueDetail, true);
+            }
+
+            await IssueLogger.Log(
+                this._issueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Close,
+                $"【{common.CurrentAssignment.GetNameByEmpId()}】关闭【{common.CreatorId.GetNameByEmpId()}】提出的问题"
             );
         }
 
@@ -964,7 +986,6 @@ namespace QMS.Application.Issues
             Helper.Helper.Assert(input.CurrentAssignment != null && input.CurrentAssignment != 0, "分发时必须指定执行人");
 
             input.SetIssue(issue);
-            issue.DoDispatch();
             await this._issueRep.UpdateNowAsync(issue);
 
             IssueDetail detail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);

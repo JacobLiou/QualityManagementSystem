@@ -1,6 +1,7 @@
 ﻿using Furion.Extras.Admin.NET;
 using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -54,6 +55,17 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
                 issue.VerifierPlace = this.VerifierPlace;
 
                 changed = true;
+            }
+            //验证结果
+            bool pass = this.PassResult == YesOrNot.Y;
+            issue.Verifier = CurrentUserInfo.UserId;
+            issue.ValidateTime = DateTime.Now;
+            issue.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
+            issue.ValidationStatus = pass ? 2 : 1;
+            issue.CurrentAssignment = pass ? issue.CreatorId : issue.Dispatcher;
+            if (pass)
+            {
+                issue.CloseTime = DateTime.Now;
             }
 
             return changed;

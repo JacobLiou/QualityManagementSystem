@@ -1,4 +1,5 @@
-﻿using Furion.JsonSerialization;
+﻿using Furion.Extras.Admin.NET;
+using Furion.JsonSerialization;
 using QMS.Application.Issues.Helper;
 using QMS.Application.Issues.Service.Issue.Dto.Update;
 using QMS.Core.Entity;
@@ -83,6 +84,8 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
                 changed = true;
             }
 
+            issue.DispatchTime = DateTime.Now;
+            issue.Dispatcher = CurrentUserInfo.UserId;
             issue.IssueClassification = this.IssueClassification;
             issue.Consequence = this.Consequence;
             issue.CurrentAssignment = this.CurrentAssignment;
@@ -92,6 +95,7 @@ namespace QMS.Application.Issues.Service.Issues.Dto.Update
                 issue.CCs = JSON.Serialize(this.CCList);
             }
             issue.ForecastSolveTime = this.ForecastSolveTime;
+            issue.Status = EnumIssueStatus.Dispatched;
 
             return changed;
         }

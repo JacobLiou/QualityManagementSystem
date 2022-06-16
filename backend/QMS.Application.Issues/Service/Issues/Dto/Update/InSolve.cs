@@ -1,5 +1,7 @@
-﻿using QMS.Application.Issues.Helper;
+﻿using Furion.Extras.Admin.NET;
+using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
@@ -38,7 +40,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
             //设置解决日期
             issue.SolveTime = this.SolveTime != default(DateTime) ? this.SolveTime : DateTime.Now;
-
+            issue.Executor = CurrentUserInfo.UserId;
+            issue.Status = EnumIssueStatus.Solved;
+            issue.CurrentAssignment = issue.Dispatcher;
 
             return changed;
         }

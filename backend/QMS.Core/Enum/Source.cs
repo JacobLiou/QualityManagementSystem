@@ -15,5 +15,11 @@ namespace QMS.Core.Enum
 
         [Description("测试发现")]
         Test = 2,
+
+        [Description("外企厂")]
+        ForeignEnterpriseFactory = 3,
+
+        [Description("实验室")]
+        Laboratory = 4,
     }
 }

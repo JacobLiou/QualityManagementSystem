@@ -2,6 +2,7 @@
 using Furion.Extras.Admin.NET;
 using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -36,6 +37,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
 
                 changed = true;
             }
+            issue.HangupId = CurrentUserInfo.UserId;
+            issue.Status = EnumIssueStatus.HasHangUp;
+
             return changed;
         }
 

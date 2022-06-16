@@ -1,4 +1,5 @@
 ﻿using QMS.Core.Entity;
+using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
 {
@@ -17,6 +18,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
         /// <summary>
         /// 验证情况
         /// </summary>
+        [Required(ErrorMessage = "请填写验证情况")]
         public string Result { get; set; }
 
         public override bool SetIssueDetail(IssueDetail issueDetail)

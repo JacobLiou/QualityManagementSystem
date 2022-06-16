@@ -1,5 +1,7 @@
-﻿using QMS.Application.Issues.Helper;
+﻿using Furion.Extras.Admin.NET;
+using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
+using QMS.Core.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Update
@@ -38,19 +40,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Update
                 changed = true;
             }
 
-            if (issue.Executor != this.Executor)
-            {
-                issue.Executor = this.Executor;
-
-                changed = true;
-            }
-
-            //if (issue.ForecastSolveTime != this.ForecastSolveTime)
-            //{
-            //    issue.ForecastSolveTime = this.ForecastSolveTime;
-
-            //    changed = true;
-            //}
+            issue.Executor = this.Executor;
+            issue.DispatchTime = DateTime.Now;
+            issue.Dispatcher = CurrentUserInfo.UserId;
+            issue.Status = EnumIssueStatus.Dispatched;
 
             return changed;
         }
