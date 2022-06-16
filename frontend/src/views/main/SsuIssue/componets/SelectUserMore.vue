@@ -1,15 +1,15 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-06-14 13:57:47
- * @LastEditTime: 2022-06-15 15:49:50
+ * @LastEditTime: 2022-06-15 16:53:30
  * @LastEditors: 林伟群
- * @Description: 模糊搜索名字
- * @FilePath: \frontend\src\views\main\SsuIssue\componets\SelectUser.vue
+ * @Description: 模糊搜索名字多选
+ * @FilePath: \frontend\src\views\main\SsuIssue\componets\SelectUserMore.vue
 -->
 <template>
   <a-select
-    allowClear
-    show-search
+    mode="multiple"
+    label-in-value
     :placeholder="title"
     style="width: 100%"
     :filter-option="false"
@@ -37,7 +37,7 @@ export default {
       default: '',
     },
     userSelect: {
-      type: Object,
+      type: Array,
     },
     selectType: {
       type: String,
@@ -49,18 +49,18 @@ export default {
     this.fetchUser = debounce(this.fetchUser, 800)
     return {
       // 测试
-      testName: '',
       data: [],
-      value: '',
+      value: [],
       fetching: false,
     }
   },
   watch: {
     userSelect: {
       handler() {
-        this.data = []
-        this.data.push(this.userSelect)
-        this.value = this.userSelect.id
+        this.data = this.userSelect
+        this.value = this.userSelect.map((item) => {
+          return { key: item.id, label: item.name }
+        })
       },
       deep: true,
       immediate: true,
@@ -85,10 +85,9 @@ export default {
         })
         .catch(() => {})
     },
-    handleChange(value, option) {
-      const label = option?.componentOptions?.propsData?.label
-      console.log('selectType', this.selectType)
-      this.$emit('handlerSelectUser', { value, label, selectType: this.selectType })
+    handleChange() {
+      console.log(this.value)
+      this.$emit('handlerSelectUser', { value: this.value, selectType: this.selectType })
     },
   },
 }

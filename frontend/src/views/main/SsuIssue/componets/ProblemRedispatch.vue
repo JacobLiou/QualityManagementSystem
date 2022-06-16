@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-06-14 20:50:10
+ * @LastEditTime: 2022-06-15 16:32:30
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -25,8 +25,7 @@
         <a-form-model-item ref="executorName" label="转交人" prop="executorName">
           <section class="from_chilen">
             <!-- 二次封装远程搜索组件 -->
-            <!-- <SelectUser title="转交人" ></SelectUser> -->
-            <a-input v-model="form.executorName" placeholder="请选择转交人" disabled />
+            <SelectUser title="请输入转交人" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
             <a-button @click="changePersonnel('executor')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -68,11 +67,19 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        executorName: [{ required: true, message: '请选择解决人', trigger: 'blur' }],
+        executorName: [{ required: true, message: '请选择解决人', trigger: 'change' }],
       },
       visible: false,
       isShow: true,
     }
+  },
+  computed: {
+    userSelect() {
+      return {
+        id: this.form.executor,
+        name: this.form.executorName,
+      }
+    },
   },
   methods: {
     initRedispatch(record, isShow = true) {
@@ -81,6 +88,13 @@ export default {
       this.form.title = record.title
       this.isShow = isShow
     },
+
+    // 模糊搜索选中人员
+    handlerSelectUser(valueObj) {
+      this.form.executor = valueObj.value
+      this.form.executorName = valueObj.label
+    },
+
     // 人员选择
     changePersonnel(value) {
       this.$parent.userVisible = !this.$parent.userVisible

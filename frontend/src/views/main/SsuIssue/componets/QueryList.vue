@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 15:54:20
- * @LastEditTime: 2022-05-31 13:52:40
+ * @LastEditTime: 2022-06-15 16:32:18
  * @LastEditors: 林伟群
  * @Description: 高级筛选
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\QueryList.vue
@@ -18,7 +18,7 @@
       </a-col>
       <a-col :xs="16">
         <section class="check_btn">
-          <a-input v-model="nameList" allow-clear placeholder="请选择名字" disabled />
+          <SelectUser title="请输入名字" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
           <a-button @click="changePersonnel(CreatorType)"> 选择 </a-button>
         </section>
       </a-col>
@@ -100,7 +100,11 @@
 </template>
 
 <script>
+import SelectUser from './SelectUser.vue'
 export default {
+  components: {
+    SelectUser,
+  },
   props: {
     visibleTrue: {
       type: Boolean,
@@ -186,6 +190,12 @@ export default {
       }
       return content
     },
+    userSelect() {
+      return {
+        id: this.nameId,
+        name: this.nameList,
+      }
+    },
   },
   created() {
     this.classificationList = this.$options.filters['dictData']('issue_classification')
@@ -195,6 +205,12 @@ export default {
   methods: {
     handleOk() {
       this.visible = false
+    },
+
+    // 模糊搜索选中人员
+    handlerSelectUser(valueObj) {
+      this.nameId = valueObj.value
+      this.nameList = valueObj.label
     },
     // 高级检索
     handleQuery() {

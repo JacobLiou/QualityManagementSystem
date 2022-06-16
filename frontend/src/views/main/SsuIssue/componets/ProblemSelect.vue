@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 10:36:55
- * @LastEditTime: 2022-05-27 17:07:51
+ * @LastEditTime: 2022-06-15 10:16:43
  * @LastEditors: 林伟群
  * @Description: 问题管理筛选组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSelect.vue
@@ -102,11 +102,9 @@ export default {
     },
     // 人员选择
     checkUserArray(checkUser) {
-      console.log(checkUser)
       const perArray = checkUser.map((item) => {
         return item.name
       })
-      console.log(this.$refs.queryList.nameList)
       this.$refs.queryList.nameList = perArray.join()
       this.$refs.queryList.nameId = checkUser[0].id
     },
@@ -132,7 +130,7 @@ export default {
     },
 
     queryLsit(val) {
-      console.log(val);
+      console.log(val)
       this.$emit('queryParamSelect', val)
     },
 
