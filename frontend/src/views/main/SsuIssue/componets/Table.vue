@@ -252,6 +252,10 @@ export default {
             operName: '解决',
             operIcon: 'question-circle',
           },
+          {
+            operName: '转交',
+            operIcon: 'export',
+          },
         ],
         2: [
           {

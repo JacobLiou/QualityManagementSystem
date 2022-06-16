@@ -22,11 +22,11 @@
             placeholder="请输入问题简述"
           />
         </a-form-model-item>
-        <a-form-model-item ref="executorName" label="转交人" prop="executorName">
+        <a-form-model-item ref="currentAssignmentName" label="转交人" prop="currentAssignmentName">
           <section class="from_chilen">
             <!-- 二次封装远程搜索组件 -->
             <SelectUser title="请输入转交人" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
-            <a-button @click="changePersonnel('executor')"> 选择 </a-button>
+            <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
         <a-form-model-item label="备注" prop="comment">
@@ -61,13 +61,13 @@ export default {
       form: {
         id: null,
         title: '',
-        executor: null, // 解决ID
-        executorName: '', // 解决人
+        currentAssignment: null, // 解决ID
+        currentAssignmentName: '', // 解决人
         comment: '', // 备注
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        executorName: [{ required: true, message: '请选择解决人', trigger: 'change' }],
+        currentAssignmentName: [{ required: true, message: '请选择解决人', trigger: 'change' }],
       },
       visible: false,
       isShow: true,
@@ -76,8 +76,8 @@ export default {
   computed: {
     userSelect() {
       return {
-        id: this.form.executor,
-        name: this.form.executorName,
+        id: this.form.currentAssignment,
+        name: this.form.currentAssignmentName,
       }
     },
   },
@@ -91,8 +91,8 @@ export default {
 
     // 模糊搜索选中人员
     handlerSelectUser(valueObj) {
-      this.form.executor = valueObj.value
-      this.form.executorName = valueObj.label
+      this.form.currentAssignment = valueObj.value
+      this.form.currentAssignmentName = valueObj.label
     },
 
     // 人员选择
@@ -104,7 +104,7 @@ export default {
     handleSubmit() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          const { executorName, ...parameter } = this.form
+          const { currentAssignmentName, ...parameter } = this.form
           const parameterArray = [parameter]
           IssueRedispatch(parameterArray)
             .then((res) => {

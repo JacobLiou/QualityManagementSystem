@@ -486,8 +486,10 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(重分发人)");
-            Helper.Helper.Assert(common.Executor != 0 && common.Executor != null, "重分发时必须指定执行人");
+            Helper.Helper.Assert(input.CurrentAssignment != 0, "转交时必须指定转交人");
+            Helper.Helper.Assert(input.CurrentAssignment != Helper.Helper.GetCurrentUser(), $"当前用户不能是当前问题的转交人");
+            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.Dispatcher
+                || Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是当前问题的处理人或者分发人，不能进行转交操作");
 
             input.SetIssue(common);
             await this._issueRep.UpdateNowAsync(common, true);
@@ -526,7 +528,7 @@ namespace QMS.Application.Issues
                 this._issueOperateRep,
                 input[0].Id,
                 EnumIssueOperationType.ReDispatch,
-                $"问题重分发给【{input[0].Executor.GetNameByEmpId()}】"
+                $"问题重分发给【{input[0].CurrentAssignment.GetNameByEmpId()}】"
             );
         }
 
