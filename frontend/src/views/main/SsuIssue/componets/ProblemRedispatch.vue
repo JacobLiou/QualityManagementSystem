@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-06-14 14:19:06
+ * @LastEditTime: 2022-06-15 16:32:30
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -22,10 +22,11 @@
             placeholder="请输入问题简述"
           />
         </a-form-model-item>
-        <a-form-model-item ref="executorName" label="转交人" prop="executorName">
+        <a-form-model-item ref="currentAssignmentName" label="转交人" prop="currentAssignmentName">
           <section class="from_chilen">
-            <a-input v-model="form.executorName" placeholder="请选择转交人" disabled />
-            <a-button @click="changePersonnel('executor')"> 选择 </a-button>
+            <!-- 二次封装远程搜索组件 -->
+            <SelectUser title="请输入转交人" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
+            <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
         <a-form-model-item label="备注" prop="comment">
@@ -34,7 +35,7 @@
       </a-form-model>
       <OperRecords :id="form.id" isModal v-if="isShow"></OperRecords>
     </section>
-    <SelectUser></SelectUser>
+
     <template slot="footer">
       <a-button @click="handleSubmit" type="primary"> 确定 </a-button>
       <a-button @click="handleCancel"> 取消 </a-button>
@@ -60,17 +61,25 @@ export default {
       form: {
         id: null,
         title: '',
-        executor: null, // 解决ID
-        executorName: '', // 解决人
+        currentAssignment: null, // 解决ID
+        currentAssignmentName: '', // 解决人
         comment: '', // 备注
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        executorName: [{ required: true, message: '请选择解决人', trigger: 'blur' }],
+        currentAssignmentName: [{ required: true, message: '请选择解决人', trigger: 'change' }],
       },
       visible: false,
       isShow: true,
     }
+  },
+  computed: {
+    userSelect() {
+      return {
+        id: this.form.currentAssignment,
+        name: this.form.currentAssignmentName,
+      }
+    },
   },
   methods: {
     initRedispatch(record, isShow = true) {
@@ -79,6 +88,13 @@ export default {
       this.form.title = record.title
       this.isShow = isShow
     },
+
+    // 模糊搜索选中人员
+    handlerSelectUser(valueObj) {
+      this.form.currentAssignment = valueObj.value
+      this.form.currentAssignmentName = valueObj.label
+    },
+
     // 人员选择
     changePersonnel(value) {
       this.$parent.userVisible = !this.$parent.userVisible
@@ -88,7 +104,7 @@ export default {
     handleSubmit() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          const { executorName, ...parameter } = this.form
+          const { currentAssignmentName, ...parameter } = this.form
           const parameterArray = [parameter]
           IssueRedispatch(parameterArray)
             .then((res) => {

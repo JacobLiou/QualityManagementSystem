@@ -52,39 +52,8 @@ namespace QMS.Core.Entity
         [Comment("提出日期")]
         public DateTime CreateTime { get; set; }
 
-        public void SetCreate(bool isTemporary)
-        {
-            this.CreateTime = DateTime.Now;
-            this.CreatorId = CurrentUserInfo.UserId;
-
-            if (isTemporary)
-            {
-                this.Status = EnumIssueStatus.HasTemporary;
-            }
-            else
-            {
-                this.Status = EnumIssueStatus.Created;
-            }
-
-            //此时问题处于已开启状态，数据库先不记录验证人，等验证步骤之后记录
-            //if (this.Verifier == null)
-            //{
-            //    this.Verifier = this.CreatorId;
-            //}
-            //问题新增时不记录分发人
-            //this.CurrentAssignment = this.Dispatcher;
-        }
-
-
         [Comment("关闭日期")]
         public DateTime? CloseTime { get; set; }
-
-        public void SetClose()
-        {
-            this.CloseTime = DateTime.Now;
-
-            this.Status = EnumIssueStatus.Closed;
-        }
 
         [Comment("发现人")]
         public long? Discover { get; set; }
@@ -97,28 +66,6 @@ namespace QMS.Core.Entity
 
         [Comment("分发日期")]
         public DateTime? DispatchTime { get; set; }
-
-        public void DoDispatch()
-        {
-            this.DispatchTime = DateTime.Now;
-            this.Dispatcher = CurrentUserInfo.UserId;
-
-            this.Status = EnumIssueStatus.Dispatched;
-
-            //this.CurrentAssignment = this.Executor;
-        }
-
-        public void DoReCheck(bool pass)
-        {
-            this.Status = pass ? EnumIssueStatus.HasRechecked : EnumIssueStatus.Dispatched;
-
-            this.CurrentAssignment = pass ? this.CreatorId : this.Executor;
-        }
-
-        public void DoReOpen()
-        {
-            this.Status = EnumIssueStatus.Created;
-        }
 
         [Comment("预计完成日期")]
         public DateTime? ForecastSolveTime { get; set; }
@@ -139,17 +86,6 @@ namespace QMS.Core.Entity
         [Comment("解决日期")]
         public DateTime? SolveTime { get; set; }
 
-        public void DoSolve()
-        {
-            //解决日期应界面上的日期
-            //this.SolveTime = DateTime.Now;
-            this.Executor = CurrentUserInfo.UserId;
-
-            this.Status = EnumIssueStatus.Solved;
-
-            this.CurrentAssignment = this.Dispatcher;
-        }
-
         [Comment("验证人")]
         public long? Verifier { get; set; }
 
@@ -160,32 +96,8 @@ namespace QMS.Core.Entity
         [Comment("验证日期")]
         public DateTime? ValidateTime { get; set; }
 
-        public void DoVerify(bool pass)
-        {
-            this.Verifier = CurrentUserInfo.UserId;
-            this.ValidateTime = DateTime.Now;
-
-            this.Status = pass ? EnumIssueStatus.Closed : EnumIssueStatus.UnSolve;
-
-            this.ValidationStatus = pass ? 2 : 1;
-
-            this.CurrentAssignment = pass ? this.CreatorId : this.Dispatcher;
-
-            if (pass)
-            {
-                this.CloseTime = DateTime.Now;
-            }
-        }
-
         [Comment("挂起人")]
         public long? HangupId { get; set; }
-
-        public void SetHangup()
-        {
-            this.HangupId = CurrentUserInfo.UserId;
-
-            this.Status = EnumIssueStatus.HasHangUp;
-        }
 
 
         public void Configure(EntityTypeBuilder<Issue> entityBuilder, DbContext dbContext, Type dbContextLocator)

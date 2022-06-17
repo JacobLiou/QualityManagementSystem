@@ -1,6 +1,8 @@
 ﻿using Furion.Extras.Admin.NET.Service;
 using Furion.JsonSerialization;
+using Newtonsoft.Json;
 using QMS.Application.Issues.Helper;
+using QMS.Application.Issues.Service.Issue.Attachment;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Query
 {
@@ -155,6 +157,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
             this.SolveTime = issue.SolveTime;
             this.CloseTime = issue.CloseTime;
             this.ForecastSolveTime = issue.ForecastSolveTime;
+
+            this.AttachmentList = !string.IsNullOrEmpty(Attachments) ? JsonConvert.DeserializeObject<List<AttachmentModel>>(this.Attachments) : null;
         }
 
         // 公共问题属性
@@ -272,5 +276,15 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// 预计完成时间
         /// </summary>
         public DateTime? ForecastSolveTime { get; set; }
+
+        /// <summary>
+        /// 附件信息
+        /// </summary>
+        public string Attachments { get; set; }
+
+        /// <summary>
+        /// 附件详情列表
+        /// </summary>
+        public List<AttachmentModel> AttachmentList { get; set; }
     }
 }

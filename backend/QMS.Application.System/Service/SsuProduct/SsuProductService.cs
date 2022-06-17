@@ -136,27 +136,28 @@ namespace QMS.Application.System
         /// <summary>
         ///根据产品ID获取产品对应的人员列表
         /// </summary>
-        /// <param name="productId">产品ID</param>
+        /// <param name="productInput">产品分页参数</param>
         /// <returns></returns>
         [HttpGet("/SsuProduct/getproductusers")]
-        public async Task<List<UserOutput>> GetProductUsers([FromQuery] long productId)
+        public async Task<PageResult<UserOutput>> GetProductUsers([FromQuery] SsuProductUserInput productInput)
         {
+            PageResult<UserOutput> result = new PageResult<UserOutput>();
             List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
-            if (userIds != null)
+            var userIds = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productInput.productId)).Select(u => u.EmployeeId);
+            if (userIds != null && userIds.Any())
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
-                if (userList != null)
-                {
-                    foreach (SysUser user in userList)
+                result = _ssuSysuser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin && u.IsDeleted == false)
+                    .Select(u => u.Adapt<UserOutput>())
+                    .ToADPagedList(productInput.PageNo, productInput.PageSize);
+
+                result.Rows.ToList().ForEach(
+                    delegate (UserOutput user)
                     {
-                        UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
-                        list.Add(output);
+                        user.SysEmpInfo = _sysEmpService.GetEmpInfo(Convert.ToInt64(user.Id)).Result;
                     }
-                }
+                    );
             }
-            return list;
+            return result;
         }
 
         /// <summary>

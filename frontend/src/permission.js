@@ -23,6 +23,7 @@ router.beforeEach(async (to, from, next) => {
    */
   const { fullPath } = to
   const fullpathState = fullPath.indexOf('&state=FromQYWechat')
+  const userPathState = fullPath.indexOf('&state=FromEmail') // 邮件
   if (fullpathState !== -1) {
     const fullPathArray = fullPath.split('code=')
     const codeStr = fullPathArray[1]
@@ -33,9 +34,31 @@ router.beforeEach(async (to, from, next) => {
       if (tokenRes.success) {
         // 登录成功后会重定向到welcome页面，再在welcome进行页面跳转
         sessionStorage.setItem('to_path_to', toPath)
+        sessionStorage.setItem('SET_CHECK_PATH', true) // 路径原路
         store.dispatch('dictTypeData');
       } else {
         sessionStorage.setItem('to_path_to', '')
+      }
+    }
+  }
+  /**
+   * @description: 邮件判断登录
+   */
+  console.log(Vue.ls.get('USER_LOGIN_ID'));
+  if (userPathState !== -1) {
+    const userId = Vue.ls.get('USER_LOGIN_ID')
+    const fullPathArray = fullPath.split('UserID=')
+    const userIdStr = fullPathArray[1]
+    const toPath = fullPathArray[0].slice(0, fullPathArray[0].length - 1)
+    if (userIdStr) {
+      const id = userIdStr.split('&')[0]
+      if (id == userId) {
+        store.dispatch('dictTypeData');
+        sessionStorage.setItem('SET_CHECK_PATH', true) // 路径原路返回
+      } else {
+        sessionStorage.setItem('SET_CHECK_PATH', true) // 路径原路返回
+        store.dispatch('clearLogin')
+        window.location = toPath
       }
     }
   }

@@ -222,33 +222,35 @@ namespace QMS.Application.System
         /// <summary>
         /// 根据机构ID获取人员列表
         /// </summary>
-        /// <param name="orgId"></param>
+        /// <param name="orgInput">机构分页参数</param>
         /// <returns></returns>
         [HttpGet("/SsuEmpOrg/getorguser")]
-        public async Task<List<UserOutput>> GetOrgUser([FromQuery] long orgId)
+        public async Task<PageResult<UserOutput>> GetOrgUser([FromQuery] SsuOrgUserInput orgInput)
         {
-            List<UserOutput> list = new List<UserOutput>();
+            PageResult<UserOutput> result = new PageResult<UserOutput>();
             //获取该组织机构下的所有机构
-            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains("[" + orgId.ToString() + "]")).Select(u => u.Id).ToList();
+            var orgIds = _sysOrgRep.DetachedEntities.Where(u => u.Pids.Contains("[" + orgInput.orgId.ToString() + "]")).Select(u => u.Id).ToList();
             //机构列表加入自身
-            orgIds.Add(orgId);
-            //获取机构对应的所有人员
-            var userIds = _sysEmpRep.DetachedEntities.Where(u => orgIds.Distinct().Contains(u.OrgId)).Select(u => u.Id).ToList();
-            if (userIds != null && userIds.Count > 0)
+            orgIds.Add(orgInput.orgId);
+            //获取机构对应页码数的所有人员
+            var userIds = _sysEmpRep.DetachedEntities.Where(u => orgIds.Distinct().Contains(u.OrgId)).Select(u => u.Id);
+            if (userIds != null && userIds.Any())
             {
-                var userList = _sysUser.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin).ToList();
-                if (userList != null && userList.Count > 0)
-                {
-                    foreach (SysUser user in userList)
+                result = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin && u.IsDeleted == false)
+                    .Select(u => u.Adapt<UserOutput>())
+                    .ToADPagedList(orgInput.PageNo, orgInput.PageSize);
+
+                result.Rows.ToList().ForEach(
+                    delegate (UserOutput user)
                     {
-                        UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
-                        list.Add(output);
+                        user.SysEmpInfo = _sysEmpService.GetEmpInfo(Convert.ToInt64(user.Id)).Result;
                     }
-                }
+                    );
             }
-            return list;
+            return result;
         }
+
+
 
         /// <summary>
         /// 根据人员ID列表获取人员详细信息列表

@@ -119,27 +119,26 @@ namespace QMS.Application.System
         /// <summary>
         ///根据人员组ID获取对应的人员列表
         /// </summary>
-        /// <param name="groupId">人员组ID</param>
+        /// <param name="groupInput">人员组分页参数</param>
         /// <returns></returns>
         [HttpGet("/SsuGroup/getgroupusers")]
-        public async Task<List<UserOutput>> GetGroupUsers([FromQuery] long groupId)
+        public async Task<PageResult<UserOutput>> GetGroupUsers([FromQuery] SsuGroupUserInput groupInput)
         {
-            List<UserOutput> list = new List<UserOutput>();
-            var userIds = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
-            if (userIds != null)
+            PageResult<UserOutput> result = new PageResult<UserOutput>();
+            var userIds = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupInput.groupId)).Select(u => u.EmployeeId);
+            if (userIds != null && userIds.Any())
             {
-                var userList = _ssuSysuser.Where(u => userIds.Contains(u.Id)).ToList();
-                if (userList != null)
-                {
-                    foreach (SysUser user in userList)
+                result = _ssuSysuser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.AdminType != AdminType.SuperAdmin && u.IsDeleted == false)
+                    .Select(u => u.Adapt<UserOutput>())
+                    .ToADPagedList(groupInput.PageNo, groupInput.PageSize);
+                result.Rows.ToList().ForEach(
+                    delegate (UserOutput user)
                     {
-                        UserOutput output = user.Adapt<UserOutput>();
-                        output.SysEmpInfo = await _sysEmpService.GetEmpInfo(user.Id);
-                        list.Add(output);
+                        user.SysEmpInfo = _sysEmpService.GetEmpInfo(Convert.ToInt64(user.Id)).Result;
                     }
-                }
+                    );
             }
-            return list;
+            return result;
         }
 
         /// <summary>

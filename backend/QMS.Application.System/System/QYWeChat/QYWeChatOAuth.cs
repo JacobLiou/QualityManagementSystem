@@ -179,6 +179,7 @@ namespace QMS.Application.System
                 var user = qYUserInfo.Adapt<SysUser>();
                 user.Password = MD5Encryption.Encrypt("123456");
                 user.Status = 0;
+                user.AdminType = AdminType.None;
                 user.TenantId = Convert.ToInt64(_configuration["TenantId"]);
                 var newUser = _sysUserRep.InsertNow(user);
                 sysUser = newUser.Entity;

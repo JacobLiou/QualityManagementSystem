@@ -124,6 +124,7 @@ const user = {
     GetInfo({ commit }) {
       return new Promise((resolve, reject) => {
         getLoginUser().then(response => {
+          console.log(response);
           if (response.success) {
             const data = response.data
             commit('SET_ADMINTYPE', data.adminType)
@@ -132,6 +133,8 @@ const user = {
             commit('SET_ALL_BUTTONS', data.allPermissions)
             commit('SET_INFO', data)
             commit('SET_NAME', { name: data.name, welcome: welcome() })
+            const { id } = data
+            Vue.ls.set('USER_LOGIN_ID', id)
             if (data.avatar != null) {
               sysFileInfoPreview({ id: data.avatar }).then((res) => {
                 commit('SET_AVATAR', window.URL.createObjectURL(new Blob([res])))
@@ -172,6 +175,7 @@ const user = {
           Vue.ls.remove(ALL_APPS_MENU)
           Vue.ls.remove(DICT_TYPE_TREE_DATA)
           Vue.ls.remove('X-Access-Token')
+          Vue.ls.remove('USER_LOGIN_ID')
         })
       })
     },
@@ -251,6 +255,20 @@ const user = {
           reject(error)
         })
       })
+    },
+
+
+    clearLogin({ commit }) {
+      commit('SET_TOKEN', '')
+      commit('SET_ROLES', [])
+      commit('SET_BUTTONS', [])
+      commit('SET_ALL_BUTTONS', [])
+      commit('SET_ADMINTYPE', '')
+      Vue.ls.remove(ACCESS_TOKEN)
+      Vue.ls.remove(ALL_APPS_MENU)
+      Vue.ls.remove(DICT_TYPE_TREE_DATA)
+      Vue.ls.remove('X-Access-Token')
+      Vue.ls.remove('USER_LOGIN_ID')
     }
 
   }
