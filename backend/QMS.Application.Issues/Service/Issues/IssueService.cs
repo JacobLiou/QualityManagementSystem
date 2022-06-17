@@ -312,7 +312,7 @@ namespace QMS.Application.Issues
 
             //已挂起，已关闭状态下支持重开启
             Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
-            Helper.Helper.Assert(common.Dispatcher != Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
+            Helper.Helper.Assert(common.CurrentAssignment == Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
 
             common.Status = EnumIssueStatus.Created;
             await this._issueRep.UpdateNowAsync(common, true);

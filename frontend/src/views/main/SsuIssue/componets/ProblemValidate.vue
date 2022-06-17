@@ -35,7 +35,7 @@
             placeholder="请输入验证批次"
           />
         </a-form-model-item>
-        <a-form-model-item label="验证地点" prop="verifierPlace">
+        <a-form-model-item ref="verifierPlace" label="验证地点" prop="verifierPlace">
           <a-textarea v-model="form.verifierPlace" :rows="4" placeholder="请输入验证情况" />
         </a-form-model-item>
         <a-form-model-item label="验证情况" prop="result">
@@ -85,6 +85,7 @@ export default {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         batch: [{ required: true, message: '请输入验证批次', trigger: 'blur' }],
         count: [{ required: true, message: '请输入验证数量', trigger: 'blur' }],
+        result: [{ required: true, message: '请输入验证情况', trigger: 'blur' }],
       },
       visible: false,
       attachment: [], // 附件上次的数据
