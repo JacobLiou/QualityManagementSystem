@@ -41,7 +41,9 @@ namespace QMS.Application.Issues.Service.IssueAPI
         public IssueStatusDto()
         {
             Operations = new List<IssueOperation>();
+            Operations.Add(new IssueOperation());
             Attachments = new List<AttachmentList>();
+            Attachments.Add(new AttachmentList());
         }
     }
 

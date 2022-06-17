@@ -14,7 +14,7 @@ namespace QMS.Application.Issues.Service.IssueAPI
         /// <summary>
         /// 问题ID
         /// </summary>
-        public string IssueId { get; set; }
+        public long IssueId { get; set; }
         /// <summary>
         /// 是否通过
         /// </summary>
