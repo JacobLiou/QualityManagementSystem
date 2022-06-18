@@ -168,22 +168,30 @@ namespace QMS.Application.System
         [HttpPost("/SsuProject/insertprojectgroup")]
         public async Task InsertProjectGroup(long projectId, IEnumerable<long> userIds)
         {
-            List<SsuProjectUser> list = new List<SsuProjectUser>();
-            var resultList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
-            foreach (long employeeId in userIds)
+            List<SsuProjectUser> Addlist = new List<SsuProjectUser>();
+            var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于项目组中的ID
+            var intersectionList = userIds.Except(existsList);
+            foreach (long employeeId in intersectionList)
             {
-                if (!resultList.Contains(employeeId))
-                {
-                    SsuProjectUser projectUser = new SsuProjectUser();
-                    projectUser.ProjectId = projectId;
-                    projectUser.EmployeeId = employeeId;
-                    list.Add(projectUser);
-                }
+                SsuProjectUser projectUser = new SsuProjectUser();
+                projectUser.ProjectId = projectId;
+                projectUser.EmployeeId = employeeId;
+                Addlist.Add(projectUser);
+            }
+            if (Addlist != null && Addlist.Count > 0)
+            {
+                await _ssuProjectUser.InsertAsync(Addlist);
             }
 
-            if (list != null && list.Count > 0)
+            //获取在项目组中存在的ID，但是不存在于新增的ID列表中的ID
+            var differenceList = existsList.Except(userIds);
+            if (differenceList != null && differenceList.Count() > 0)
             {
-                await _ssuProjectUser.InsertAsync(list);
+                foreach (long employeeId in differenceList)
+                {
+                    await _ssuProjectUser.DeleteAsync(employeeId);
+                }
             }
         }
 

@@ -170,20 +170,29 @@ namespace QMS.Application.System
         public async Task InsertProductGroup(long productId, IEnumerable<long> userIds)
         {
             List<SsuProductUser> list = new List<SsuProductUser>();
-            var resultList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
-            foreach (long employeeId in userIds)
+            var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于产品组中的ID
+            var intersectionList = userIds.Except(existsList);
+            foreach (long employeeId in intersectionList)
             {
-                if (!resultList.Contains(employeeId))
-                {
-                    SsuProductUser projectUser = new SsuProductUser();
-                    projectUser.ProductId = productId;
-                    projectUser.EmployeeId = employeeId;
-                    list.Add(projectUser);
-                }
+                SsuProductUser projectUser = new SsuProductUser();
+                projectUser.ProductId = productId;
+                projectUser.EmployeeId = employeeId;
+                list.Add(projectUser);
             }
             if (list != null && list.Count > 0)
             {
                 await _ssuProductUserRep.InsertAsync(list);
+            }
+
+            //获取在产品组中存在的ID，但是不存在于新增的ID列表中的ID
+            var differenceList = existsList.Except(userIds);
+            if (differenceList != null && differenceList.Count() > 0)
+            {
+                foreach (long employeeId in differenceList)
+                {
+                    await _ssuProductUserRep.DeleteAsync(employeeId);
+                }
             }
         }
 

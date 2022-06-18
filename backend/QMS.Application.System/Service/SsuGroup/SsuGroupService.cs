@@ -151,20 +151,29 @@ namespace QMS.Application.System
         public async Task InsertUserGroup(long groupId, IEnumerable<long> userIds)
         {
             List<SsuGroupUser> list = new List<SsuGroupUser>();
-            var resultList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
-            foreach (long employeeId in userIds)
+            var existsList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(groupId)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
+            var intersectionList = userIds.Except(existsList);
+            foreach (long employeeId in intersectionList)
             {
-                if (!resultList.Contains(employeeId))
-                {
-                    SsuGroupUser groupUser = new SsuGroupUser();
-                    groupUser.GroupId = groupId;
-                    groupUser.EmployeeId = employeeId;
-                    list.Add(groupUser);
-                }
+                SsuGroupUser groupUser = new SsuGroupUser();
+                groupUser.GroupId = groupId;
+                groupUser.EmployeeId = employeeId;
+                list.Add(groupUser);
             }
             if (list != null && list.Count > 0)
             {
                 await _ssuGroupUser.InsertAsync(list);
+            }
+
+            //获取在人员组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
+            var differenceList = existsList.Except(userIds);
+            if (differenceList != null && differenceList.Count() > 0)
+            {
+                foreach (long employeeId in differenceList)
+                {
+                    await _ssuGroupUser.DeleteAsync(employeeId);
+                }
             }
         }
     }

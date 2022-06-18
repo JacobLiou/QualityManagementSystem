@@ -42,14 +42,9 @@ namespace QMS.Application.Issues
         private readonly IRepository<IssueOperation, IssuesDbContextLocator> _issueOperateRep;
         private readonly IRepository<IssueExtendAttribute, IssuesDbContextLocator> _issueAttrRep;
         private readonly IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> _issueAttrValueRep;
-
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
-        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8002/problemInfo?id=";
-
-
-        private readonly string ProblemInfoTitle = "质量平台问题管理";
-        private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
+        private readonly IssueStatusNoticeService _noticeService;
 
         public IssueService(
             IRepository<Issue, IssuesDbContextLocator> issueRep,
@@ -57,7 +52,8 @@ namespace QMS.Application.Issues
             IRepository<IssueOperation, IssuesDbContextLocator> issueOperateRep,
             IRepository<IssueExtendAttribute, IssuesDbContextLocator> issueAttrRep,
             IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> issueAttrValueRep,
-            IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep
+            IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep,
+            IssueStatusNoticeService noticeService
 
         )
         {
@@ -66,8 +62,8 @@ namespace QMS.Application.Issues
             this._issueOperateRep = issueOperateRep;
             this._issueAttrRep = issueAttrRep;
             this._issueAttrValueRep = issueAttrValueRep;
-
             this._issueColumnDisplayRep = issueColumnDisplayRep;
+            this._noticeService = noticeService;
         }
 
         #region CRUD
@@ -131,7 +127,7 @@ namespace QMS.Application.Issues
             //问题新增，如果当前用户和当前指派(分发人)不一致，则发送消息给对应的分发人
             if (!input.IsTemporary && Helper.Helper.GetCurrentUser() != input.CurrentAssignment)
             {
-                this.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
+                _noticeService.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
             }
 
             await IssueLogger.Log(
@@ -230,7 +226,7 @@ namespace QMS.Application.Issues
             //如果当前指派人和当前用户不一致则发送消息给当前指派人
             if (input.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
+                _noticeService.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -359,12 +355,12 @@ namespace QMS.Application.Issues
             //问题复核有效，则问题流转至验证，如果当前指派（验证人）和当前用户不一致则发送消息给验证人
             if (pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
             //问题复核无效，则问题重新流转至解决，如果当前指派（解决人）和当前用户不一致则发送消息给解决人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -400,7 +396,7 @@ namespace QMS.Application.Issues
             //如果当前用户和复核人（分发人）不一致，则发送消息给复核人（分发人）
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -438,7 +434,7 @@ namespace QMS.Application.Issues
             //问题验证无效，则问题重新流转至分发状态，当前指派（分发人）和当前用户不一致则发送消息分发人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             EnumIssueOperationType enumIssueOperationType = input.PassResult == YesOrNot.Y ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
@@ -503,7 +499,7 @@ namespace QMS.Application.Issues
             //问题转交，如果当前指派（转交人）和当前用户不一致，则发送消息给转交人
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
         }
 
@@ -1019,7 +1015,7 @@ namespace QMS.Application.Issues
             //如果当前用户和解决人不一致，则发送消息给解决人
             if (issue.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+                _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -1189,30 +1185,92 @@ namespace QMS.Application.Issues
 
         #endregion 问题统计
 
-        #region 问题流转发送消息
+        #region 问题催办
 
         /// <summary>
-        /// 发送问题消息
+        /// 对某个问题发送催办消息
         /// </summary>
-        /// <param name="issueId">问题详情ID</param>
-        /// <param name="userId">接收消息用户</param>
+        /// <param name="input"></param>
         /// <returns></returns>
-        public async Task SendNotice(string issueId, string userId, string title)
+        [HttpGet("sendurgenotice")]
+        public async Task SendUrgeNotice(BaseId input)
         {
-            //构建消息格式
-            var msg = new NoticeMsgInput()
+            Helper.Helper.CheckInput(input);
+            Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment != 0, "当前问题的当前指派人为空");
+            string errmsg = "当前用户不是当前问题的操作人";
+            switch (issue.Status)
             {
-                Url = ProblemInfoUrl + issueId,
-                Content = ProblemInfoContent,
-                Title = ProblemInfoTitle + "-" + title,
-                UserIdList = new List<string>() { userId }
-            };
-            if (!string.IsNullOrEmpty(msg.Url))
+                case EnumIssueStatus.Created:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.CreatedUserId && issue.CreatedUserId != null && issue.CreatedUserId != 0, errmsg);
+                    break;
+
+                case EnumIssueStatus.Dispatched:
+                case EnumIssueStatus.HasRechecked:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher && issue.Dispatcher != null && issue.Dispatcher != 0, errmsg);
+                    break;
+
+                case EnumIssueStatus.Solved:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher || (Helper.Helper.GetCurrentUser() == issue.Executor && issue.Executor != null && issue.Executor != 0), errmsg);
+                    break;
+
+                default:
+                    break;
+            }
+
+            _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+
+            await IssueLogger.Log(
+                this._issueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Dispatch,
+                $"当前用户【{Helper.Helper.GetCurrentUser()}】向【{issue.Id}】-【{issue.Title}】发送催办消息"
+            );
+        }
+
+        /// <summary>
+        /// 批量发送催办消息
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task SendUrgeNoticeList(List<BaseId> input)
+        {
+            foreach (BaseId id in input)
             {
-                App.GetService<IssueStatusNoticeService>().SendNoticeAsync(msg);
+                await this.SendUrgeNotice(id);
             }
         }
 
-        #endregion 问题流转发送消息
+        /// <summary>
+        /// 定时发送消息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("sendtimingurgenotice")]
+        public async Task SendTimingUrgeNotice()
+        {
+            //获取所有预计完成时间小于等于当前当前时间的问题
+            var list = _issueRep.DetachedEntities.Where(u => u.Status == EnumIssueStatus.UnSolve || u.Status == EnumIssueStatus.Created)
+                .Where(u => u.CurrentAssignment != null && u.CurrentAssignment != 0)
+                .Where(u => Convert.ToInt32(u.ForecastSolveTime.Value.ToString("yyyyMMdd")) <= Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd")))
+                .Select(u => u.Id);
+            foreach (long id in list)
+            {
+                BaseId input = new BaseId() { Id = id };
+                Helper.Helper.CheckInput(input);
+                Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+                _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+
+                await IssueLogger.Log(
+                    this._issueOperateRep,
+                    input.Id,
+                    EnumIssueOperationType.Dispatch,
+                    $"当前用户【{Helper.Helper.GetCurrentUser()}】向【{issue.Id}】-【{issue.Title}】发送催办消息"
+                );
+            }
+        }
+
+        #endregion 问题催办
     }
 }
