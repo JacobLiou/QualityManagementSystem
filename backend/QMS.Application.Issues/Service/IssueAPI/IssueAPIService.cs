@@ -33,7 +33,7 @@ namespace QMS.Application.Issues.Service.IssueAPI
         [HttpGet("issue/issueAPI/queryStatus")]
         public async Task<IssueStatusDto> QueryStatus(string issueId)
         {
-            return null;
+            return new IssueStatusDto() ;
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace QMS.Application.Issues.Service.IssueAPI
         /// <param name="validateDto"></param>
         /// <returns></returns>
         [HttpPost("issue/issueAPI/updateValidate")]
-        public string UpdateValidate(UpdateValidateDto validateDto)
+        public bool UpdateValidate(UpdateValidateDto validateDto)
         {
-            return "";
+            return true;
         }
     }
 }

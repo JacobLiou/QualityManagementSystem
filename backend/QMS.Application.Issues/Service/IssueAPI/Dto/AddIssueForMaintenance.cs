@@ -57,8 +57,21 @@ namespace QMS.Application.Issues.Service.IssueAPI
         /// 指派人名称
         /// </summary>
         public string AssignmentName { get; set; }
+        /// <summary>
+        /// 其他补充属性
+        /// </summary>
+        public List<ExtendAttr> ExtendAttrs { get; set; }
 
     }
+    /// <summary>
+    /// 扩展属性
+    /// </summary>
+    public class ExtendAttr
+    {
+        public string ExtendAttrCode { get; set; }
+        public string ExtendAttrValue { get; set; }
+    }
+
     /// <summary>
     /// 产品信息
     /// </summary>
