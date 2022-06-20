@@ -114,17 +114,17 @@ namespace QMS.Application.System
             await _ssuGroupRep.UpdateAsync(ssuGroup, ignoreNullValues: true);
 
             //更新人员组人员列表
-            var existsList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(input.Id)).Select(u => u.EmployeeId);
+            var existsList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
             //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
-            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuGroupUser() { GroupId = input.Id, EmployeeId = u }); ;
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuGroupUser() { GroupId = input.Id, EmployeeId = u }).ToList();
             if (intersectionList != null && intersectionList.Count() > 0)
             {
                 await _ssuGroupUser.InsertAsync(intersectionList);
             }
 
             //获取在人员组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
-            var differenceList = existsList.Except(input.UserIdList);
-            var ssuGroupUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == input.Id && differenceList.Contains(u.EmployeeId));
+            var differenceList = existsList.Except(input.UserIdList).ToList();
+            var ssuGroupUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
             if (ssuGroupUser != null && ssuGroupUser.Count() > 0)
             {
                 await _ssuGroupUser.DeleteAsync(ssuGroupUser);

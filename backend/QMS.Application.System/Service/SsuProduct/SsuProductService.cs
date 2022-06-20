@@ -121,17 +121,17 @@ namespace QMS.Application.System
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheMinute);
 
             //更新产品组人员列表
-            var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(input.Id)).Select(u => u.EmployeeId);
+            var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
             //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
-            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProductUser() { ProductId = input.Id, EmployeeId = u }); ;
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProductUser() { ProductId = input.Id, EmployeeId = u }).ToList();
             if (intersectionList != null && intersectionList.Count() > 0)
             {
                 await _ssuProductUserRep.InsertAsync(intersectionList);
             }
 
             //获取在产品组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
-            var differenceList = existsList.Except(input.UserIdList);
-            var ssuProductUser = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == input.Id && differenceList.Contains(u.EmployeeId));
+            var differenceList = existsList.Except(input.UserIdList).ToList();
+            var ssuProductUser = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
             if (ssuProductUser != null && ssuProductUser.Count() > 0)
             {
                 await _ssuProductUserRep.DeleteAsync(ssuProductUser);

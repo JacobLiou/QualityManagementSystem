@@ -121,17 +121,17 @@ namespace QMS.Application.System
 
 
             //更新项目组人员列表
-            var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(input.Id)).Select(u => u.EmployeeId);
+            var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
             //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
-            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProjectUser() { ProjectId = input.Id, EmployeeId = u }); ;
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProjectUser() { ProjectId = input.Id, EmployeeId = u }).ToList();
             if (intersectionList != null && intersectionList.Count() > 0)
             {
                 await _ssuProjectUser.InsertAsync(intersectionList);
             }
 
             //获取在项目组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
-            var differenceList = existsList.Except(input.UserIdList);
-            var ssuProjectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id && differenceList.Contains(u.EmployeeId));
+            var differenceList = existsList.Except(input.UserIdList).ToList();
+            var ssuProjectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
             if (ssuProjectUser != null && ssuProjectUser.Count() > 0)
             {
                 await _ssuProjectUser.DeleteAsync(ssuProjectUser);
