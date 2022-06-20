@@ -53,6 +53,11 @@ namespace QMS.Application.System
         /// </summary>
         [Required]
         public virtual long DirectorId { get; set; }
+
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
     }
 
     public class AddSsuProductInput : SsuProductInput

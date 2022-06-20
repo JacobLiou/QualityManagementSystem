@@ -25,6 +25,11 @@ namespace QMS.Application.System
         /// 排序
         /// </summary>
         public virtual int Sort { get; set; }
+
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
     }
 
     /// <summary>
@@ -50,6 +55,11 @@ namespace QMS.Application.System
         [Required(ErrorMessage = "排序值为必填项")]
         [DataValidation(SystemValidationTypes.NumberUnNegativeNumber, ErrorMessage = "排序值应大于等于0")]
         public virtual int Sort { get; set; }
+
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
     }
 
     public class DeleteSsuProjectInput : BaseId

@@ -52,6 +52,15 @@ namespace QMS.Application.System
                                      .ProjectToType<SsuGroupOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
 
+            //获取人员组的关联人员列表
+            foreach (SsuGroupOutput output in ssuGroups.Rows)
+            {
+                var userList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = _ssuSysuser.DetachedEntities.Where(u => userList.Contains(u.Id)).ToList().Adapt<List<UserOutput>>();
+                }
+            }
             return ssuGroups;
         }
 
@@ -64,7 +73,12 @@ namespace QMS.Application.System
         public async Task Add(AddSsuGroupInput input)
         {
             var ssuGroup = input.Adapt<SsuGroup>();
-            await _ssuGroupRep.InsertAsync(ssuGroup);
+            var result = await _ssuGroupRep.InsertAsync(ssuGroup);
+            if (result != null && result.Entity.Id != 0 && input.UserIdList.Count() > 0)
+            {
+                var list = input.UserIdList.Select(u => new SsuGroupUser() { GroupId = result.Entity.Id, EmployeeId = u });
+                await _ssuGroupUser.InsertAsync(list);
+            }
         }
 
         /// <summary>
@@ -77,6 +91,12 @@ namespace QMS.Application.System
         {
             var ssuGroup = await _ssuGroupRep.FirstOrDefaultAsync(u => u.Id == input.Id);
             await _ssuGroupRep.DeleteAsync(ssuGroup);
+
+            var ssuGroupUser = await _ssuGroupUser.DetachedEntities.FirstOrDefaultAsync(u => u.GroupId == input.Id);
+            if (ssuGroupUser != null)
+            {
+                await _ssuGroupUser.DeleteAsync(ssuGroupUser);
+            }
         }
 
         /// <summary>
@@ -88,32 +108,66 @@ namespace QMS.Application.System
         public async Task Update(UpdateSsuGroupInput input)
         {
             var isExist = await _ssuGroupRep.AnyAsync(u => u.Id == input.Id, false);
-            if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+            if (!isExist) throw Oops.Oh("人员组不存在");
 
             var ssuGroup = input.Adapt<SsuGroup>();
             await _ssuGroupRep.UpdateAsync(ssuGroup, ignoreNullValues: true);
+
+            //更新人员组人员列表
+            var existsList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId.Equals(input.Id)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuGroupUser() { GroupId = input.Id, EmployeeId = u }); ;
+            if (intersectionList != null && intersectionList.Count() > 0)
+            {
+                await _ssuGroupUser.InsertAsync(intersectionList);
+            }
+
+            //获取在人员组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
+            var differenceList = existsList.Except(input.UserIdList);
+            var ssuGroupUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == input.Id && differenceList.Contains(u.EmployeeId));
+            if (ssuGroupUser != null && ssuGroupUser.Count() > 0)
+            {
+                await _ssuGroupUser.DeleteAsync(ssuGroupUser);
+            }
         }
 
         /// <summary>
-        /// 获取人员组
+        /// 获取人员组明细
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuGroup/detail")]
         public async Task<SsuGroupOutput> Get([FromQuery] QueryeSsuGroupInput input)
         {
-            return (await _ssuGroupRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<SsuGroupOutput>();
+            var detail = await _ssuGroupRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            if (detail == null)
+            {
+                throw Oops.Oh("人员组不存在");
+            }
+            var result = detail.Adapt<SsuGroupOutput>();
+            var groupUserId = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == input.Id)
+                .Select(u => u.EmployeeId).ToList();
+            result.UserList = _ssuSysuser.DetachedEntities.Where(u => groupUserId.Contains(u.Id)).Adapt<List<UserOutput>>();
+            return result;
         }
 
         /// <summary>
         /// 获取人员组列表
         /// </summary>
-        /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuGroup/select")]
         public async Task<List<SsuGroupOutput>> Select()
         {
-            return await _ssuGroupRep.DetachedEntities.ProjectToType<SsuGroupOutput>().ToListAsync();
+            var result = await _ssuGroupRep.DetachedEntities.ProjectToType<SsuGroupOutput>().ToListAsync();
+            foreach (SsuGroupOutput output in result)
+            {
+                var userList = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = _ssuSysuser.DetachedEntities.Where(u => userList.Contains(u.Id)).ToList().Adapt<List<UserOutput>>();
+                }
+            }
+            return result;
         }
 
         /// <summary>
