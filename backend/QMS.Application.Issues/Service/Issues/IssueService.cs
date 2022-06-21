@@ -256,6 +256,7 @@ namespace QMS.Application.Issues
 
 
             outputDetailIssue.SetCommon(issue);
+            outputDetailIssue.BtnList = this.GetBtnList(issue);
 
             if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
             {
@@ -730,6 +731,13 @@ namespace QMS.Application.Issues
             IQueryable<Issue> querable = this.GetQueryable(input).OrderBy(PageInputOrder.OrderBuilder(input));
 
             var issues = await this.SelectToOutput(input, querable).ToADPagedListAsync(input.PageNo, input.PageSize);
+
+            issues.Rows.ToList().ForEach(
+                delegate (OutputGeneralIssue output)
+                {
+                    output.BtnList = this.GetBtnList(output.CurrentAssignId, output.Dispatcher, output.Status);
+                }
+                );
 
             return await this.UpdateProjectProductNames(issues);
         }
@@ -1253,11 +1261,11 @@ namespace QMS.Application.Issues
             var list = _issueRep.DetachedEntities.Where(u => u.Status == EnumIssueStatus.UnSolve || u.Status == EnumIssueStatus.Created)
                 .Where(u => u.CurrentAssignment != null && u.CurrentAssignment != 0)
                 .Where(u => Convert.ToInt32(u.ForecastSolveTime.Value.ToString("yyyyMMdd")) <= Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd")))
+                .Where(u => u.IsDeleted == false)
                 .Select(u => u.Id);
             foreach (long id in list)
             {
                 BaseId input = new BaseId() { Id = id };
-                Helper.Helper.CheckInput(input);
                 Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
                 _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
@@ -1266,11 +1274,242 @@ namespace QMS.Application.Issues
                     this._issueOperateRep,
                     input.Id,
                     EnumIssueOperationType.Dispatch,
-                    $"当前用户【{Helper.Helper.GetCurrentUser()}】向【{issue.Id}】-【{issue.Title}】发送催办消息"
+                    $"定时任务向【{issue.Id}】-【{issue.Title}】发送催办消息"
                 );
             }
         }
 
         #endregion 问题催办
+
+        #region 问题按钮显示获取
+
+        /// <summary>
+        /// 后台判断问题状态，当前登录用户，是否问题管理者下的按钮显示问题
+        /// </summary>
+        /// <param name="issue">当前问题</param>
+        /// <returns></returns>
+        public List<EnumIssueButton> GetBtnList(Issue issue)
+        {
+            return this.GetBtnList(issue.CurrentAssignment, issue.Dispatcher, issue.Status);
+        }
+
+        /// <summary>
+        /// 后台判断问题状态，当前登录用户，是否问题管理者下的按钮显示问题
+        /// </summary>
+        /// <param name="currentAssignment">当前指派</param>
+        /// <param name="dispatcher">分发人(问题管理者)</param>
+        /// <param name="status">问题状态</param>
+        /// <returns></returns>
+        public List<EnumIssueButton> GetBtnList(long? currentAssignment, long? dispatcher, EnumIssueStatus status)
+        {
+            //当前登录用户
+            var curUserId = CurrentUserInfo.UserId;
+            var result = new List<EnumIssueButton>();
+            result.Add(EnumIssueButton.Copy);
+            result.Add(EnumIssueButton.Detail);
+            if (currentAssignment == null || currentAssignment == 0)
+            {
+                return result;
+            }
+            //当前用户==当前指派，当前用户==问题管理者
+            if (curUserId == currentAssignment && curUserId == dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.ReCheck);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Validate);
+                        break;
+                }
+            }
+            //当前用户==当前指派，当前用户!=问题管理者
+            else if (curUserId == currentAssignment && curUserId != dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.HangUp);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Validate);
+                        break;
+                }
+            }
+            //当前用户!=当前指派，当前用户==问题管理者
+            else if (curUserId != currentAssignment && curUserId == dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+                }
+            }
+            //当前用户!=当前指派，当前用户!=问题管理者
+            else if (curUserId != currentAssignment && curUserId != dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        break;
+                }
+            }
+            return result.Distinct().ToList();
+        }
+
+        #endregion 问题按钮显示获取
     }
 }

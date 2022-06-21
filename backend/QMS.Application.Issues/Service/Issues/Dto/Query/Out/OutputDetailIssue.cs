@@ -3,6 +3,7 @@ using Furion.JsonSerialization;
 using Newtonsoft.Json;
 using QMS.Application.Issues.Helper;
 using QMS.Application.Issues.Service.Issue.Attachment;
+using QMS.Core.Enum;
 
 namespace QMS.Application.Issues.Service.Issue.Dto.Query
 {
@@ -286,5 +287,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// 附件详情列表
         /// </summary>
         public List<AttachmentModel> AttachmentList { get; set; }
+
+        /// <summary>
+        /// 可显示操作按钮列表
+        /// </summary>
+        public List<EnumIssueButton> BtnList { get; set; }
     }
 }

@@ -187,6 +187,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// </summary>
         public string CurrentAssignName { get; set; }
 
+        /// <summary>
+        /// 可显示操作按钮列表
+        /// </summary>
+        public List<EnumIssueButton> BtnList { get; set; }
 
         public OutputGeneralIssue(Core.Entity.Issue model)
         {
