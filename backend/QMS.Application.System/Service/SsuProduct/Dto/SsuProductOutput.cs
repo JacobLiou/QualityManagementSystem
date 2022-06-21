@@ -30,6 +30,11 @@ namespace QMS.Application.System
         public long ProjectId { get; set; }
 
         /// <summary>
+        /// 所属项目名称
+        /// </summary>
+        public string ProjectName { get; set; }
+
+        /// <summary>
         /// 状态
         /// </summary>
         public Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductStatus Status { get; set; }
@@ -48,6 +53,11 @@ namespace QMS.Application.System
         /// 产品负责人
         /// </summary>
         public long DirectorId { get; set; }
+
+        /// <summary>
+        /// 产品负责人名称
+        /// </summary>
+        public string DirectorName { get; set; }
 
         /// <summary>
         /// Id主键

@@ -19,6 +19,11 @@ namespace QMS.Application.System
         public long DirectorId { get; set; }
 
         /// <summary>
+        /// 项目负责人名称
+        /// </summary>
+        public string DirectorName { get; set; }
+
+        /// <summary>
         /// 排序
         /// </summary>
         public int Sort { get; set; }

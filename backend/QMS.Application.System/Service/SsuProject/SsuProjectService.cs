@@ -27,12 +27,13 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
+        private readonly ISsuEmpService _SsuEmpService;
         private readonly ICacheService _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProjectService(
             IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService cacheService
+            ISysEmpService sysEmpService, ICacheService cacheService, ISsuEmpService ssuEmpService
         )
         {
             _ssuProjectRep = ssuProjectRep;
@@ -40,6 +41,7 @@ namespace QMS.Application.System
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
             _cacheService = cacheService;
+            _SsuEmpService = ssuEmpService;
         }
 
         /// <summary>
@@ -56,13 +58,16 @@ namespace QMS.Application.System
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProjectInput>(input))
                                      .ProjectToType<SsuProjectOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
-            //获取项目的关联人员列表
+
             foreach (SsuProjectOutput output in ssuProjects.Rows)
             {
+                //设置项目负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
+                //获取项目的关联人员列表
                 var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
                 if (userList != null && userList.Count > 0)
                 {
-                    output.UserList = _ssuSysuser.DetachedEntities.Where(u => userList.Contains(u.Id)).ToList().Adapt<List<UserOutput>>();
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
                 }
             }
             return ssuProjects;
@@ -154,7 +159,9 @@ namespace QMS.Application.System
             var result = detail.Adapt<SsuProjectOutput>();
             var projectUserId = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id)
                 .Select(u => u.EmployeeId).ToList();
-            result.UserList = _ssuSysuser.DetachedEntities.Where(u => projectUserId.Contains(u.Id)).Adapt<List<UserOutput>>();
+            result.UserList = projectUserId.GetUserListById().Adapt<List<UserOutput>>();
+            //设置项目负责人名称
+            result.DirectorName = result.DirectorId.GetUserNameById();
             return result;
         }
 
@@ -172,7 +179,6 @@ namespace QMS.Application.System
         /// <summary>
         /// 获取项目列表
         /// </summary>
-        /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuProject/select")]
         public async Task<List<SsuProjectOutput>> Select()
@@ -180,10 +186,12 @@ namespace QMS.Application.System
             var result = await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
             foreach (SsuProjectOutput output in result)
             {
+                //设置项目负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
                 var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
                 if (userList != null && userList.Count > 0)
                 {
-                    output.UserList = _ssuSysuser.DetachedEntities.Where(u => userList.Contains(u.Id)).ToList().Adapt<List<UserOutput>>();
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
                 }
             }
             return result;
