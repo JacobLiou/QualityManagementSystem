@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 14:51:28
- * @LastEditTime: 2022-05-31 17:15:15
+ * @LastEditTime: 2022-06-22 15:20:04
  * @LastEditors: 林伟群
  * @Description: 问题挂起
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemHang.vue
@@ -73,9 +73,9 @@ export default {
           IssueHangup(this.form)
             .then((res) => {
               if (res.success) {
-                this.$message.success('问题挂起成功')
-                this.visible = false
+                this.$message.success('问题挂起成功')    
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }
@@ -90,6 +90,13 @@ export default {
     },
     // 取消
     handleCancel() {
+      Object.assign(this, {
+        form: {
+          id: null,
+          title: '',
+          hangupReason: '', // 挂起情况
+        },
+      })
       this.visible = false
     },
   },

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-21 15:47:38
+ * @LastEditTime: 2022-06-22 19:59:27
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -63,6 +63,7 @@
             v-model="form.forecastSolveTime"
             @change="attributDate"
             @focus="attributDateType('forecastSolveTime')"
+            :disabled-date="disabledDate"
           />
         </a-form-model-item>
         <a-form-model-item label="抄送" prop="ccListName">
@@ -103,7 +104,8 @@
                 format="YYYY-MM-DD"
                 v-model="attribuForm[attItem.fieldCode]"
                 @change="attributDate"
-                @focus="attributDateType(attItem.fieldCode)"
+                @focus="attributDateType(attItem.fieldCode, attribuForm[attItem.fieldCode])"
+                :disabled-date="disabledDate"
               />
             </section>
             <!-- 小数输入框 -->
@@ -197,6 +199,7 @@ import SelectUser from './componets/SelectUser.vue'
 import SelectUserMore from './componets/SelectUserMore.vue'
 import { IssueDetail, IssueAttachmentSaveId, IssueDispatch } from '@/api/modular/main/SsuIssueManage'
 import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
+import moment from 'moment'
 export default {
   components: { CheckUserList, AttributCheck, SelectUser, SelectUserMore },
   data() {
@@ -235,6 +238,7 @@ export default {
       userVisible: false, // 人员选择显示
       personnelType: '', // 选择的人
       dateType: '', // 时间类型
+      editDate: '',
       attachment: [], // 附件信息
     }
   },
@@ -471,17 +475,29 @@ export default {
     },
 
     // 动态属性日期类型
-    attributDateType(fieldCode) {
+    attributDateType(fieldCode, date) {
+      if (this.dateType !== fieldCode) {
+        this.editDate = date
+      }
       this.dateType = fieldCode
     },
     // 动态属性日期
     attributDate(dates, dateStrings) {
       if (this.dateType == 'forecastSolveTime') {
         this.form[this.dateType] = dateStrings
-        console.log(this.form)
       } else {
         this.attribuForm[this.dateType] = dateStrings
         console.log(this.attribuForm)
+      }
+    },
+
+    // 禁止部分时间
+    disabledDate(current) {
+      // 编辑和增加
+      if (this.editDate) {
+        return current.valueOf() < moment(this.editDate).valueOf()
+      } else {
+        return current && current < moment().subtract(1, 'days')
       }
     },
 

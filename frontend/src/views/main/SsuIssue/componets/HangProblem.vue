@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-14 14:24:22
- * @LastEditTime: 2022-05-14 16:41:34
+ * @LastEditTime: 2022-06-22 14:52:28
  * @LastEditors: 林伟群
  * @Description: 挂起问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\HangProblem.vue
@@ -35,7 +35,6 @@
 
     <div>
       <strong>历史记录</strong>
-
       <ul v-if="this.operationRecords != ''">
         <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
           {{ index + 1 }}. {{ item.operationTime }}, 由 <b>{{ item.operatorName }}</b>
@@ -77,7 +76,7 @@ export default {
       setTimeout(() => {
         this.form.setFieldsValue({
           id: record.id,
-          title: record.title,          
+          title: record.title,
         })
       }, 100)
 
@@ -131,7 +130,12 @@ export default {
       })
     },
     handleCancel() {
+      console.log(111111111111);
       this.form.resetFields()
+      this.form.setFieldsValue({
+        title: '',
+        hangupReason: '',
+      })
       this.visible = false
     },
   },

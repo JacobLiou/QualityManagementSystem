@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 10:51:13
- * @LastEditTime: 2022-06-17 14:26:26
+ * @LastEditTime: 2022-06-22 15:23:44
  * @LastEditors: 林伟群
  * @Description: 问题验证组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemValidate.vue
@@ -134,8 +134,8 @@ export default {
                     })
                 }
                 this.$message.success('问题验证成功')
-                this.visible = false
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }
@@ -150,6 +150,18 @@ export default {
     },
     // 取消
     handleCancel() {
+      Object.assign(this, {
+        form: {
+          id: null,
+          title: '',
+          verifierPlace: '', // 验证地点
+          passResult: '', // 是否通过验证
+          count: 0, // 验证数量
+          batch: '', // 验证批次
+          result: '', // 验证情况
+        },
+        attachment: [], // 附件上次的数据
+      })
       this.visible = false
     },
   },

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-22 13:57:23
+ * @LastEditTime: 2022-06-22 19:34:28
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -18,14 +18,13 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="项目" prop="projectId">
-          <a-select v-model="form.projectId" placeholder="请选择所属项目" @change="projectChange">
+        <a-form-model-item label="产品项目" prop="projectId">
+          <a-select v-model="form.projectId" placeholder="请选择所属产品项目" @change="projectChange">
             <a-select-option v-for="(item, index) in projectData" :key="index" :value="item.id">{{
               item.projectName
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-
         <a-form-model-item label="模块" prop="module">
           <a-select v-model="form.module" placeholder="请选择模块" @change="moduleChange">
             <a-select-option v-for="item in moduleData" :key="item.code" :value="Number(item.code)">{{
@@ -40,22 +39,13 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-
         <a-form-model-item label="当前指派" prop="currentAssignment">
           <section class="from_chilen">
-            <!-- <a-select v-model="form.currentAssignment" placeholder="请选择模块">
-              <a-select-option v-for="item in currentAssignmentData" :key="item.id" :value="item.id">{{
+            <a-select v-model="form.currentAssignment" placeholder="请选择指派人">
+              <a-select-option v-for="item in currentAssignmentData" :key="item.id" :value="Number(item.id)">{{
                 item.name
               }}</a-select-option>
-            </a-select> -->
-            <!-- <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled /> -->
-            <SelectUser
-              title="请输入当前指派人"
-              @handlerSelectUser="handlerSelectUser"
-              selectType="currentAssignment"
-              :userSelect="userSelectCurr"
-            ></SelectUser>
-            <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
+            </a-select>
           </section>
         </a-form-model-item>
         <a-form-model-item label="性质" prop="consequence">
@@ -92,7 +82,6 @@
         </a-form-model-item>
         <a-form-model-item label="发现人" prop="discoverName">
           <section class="from_chilen">
-            <!-- <a-input v-model="form.discoverName" placeholder="请选择发现人" disabled /> -->
             <SelectUser
               title="请输入发现人"
               @handlerSelectUser="handlerSelectUser"
@@ -108,7 +97,8 @@
             placeholder="请选择发现日期"
             v-model="form.discoverTime"
             @change="attributDate"
-            @focus="attributDateType('discoverTime')"
+            @focus="attributDateType('discoverTime', form.discoverTime)"
+            :disabled-date="disabledDate"
           />
         </a-form-model-item>
         <a-form-model-item label="抄送" prop="ccListName">
@@ -149,7 +139,8 @@
                 format="YYYY-MM-DD"
                 v-model="attribuForm[attItem.fieldCode]"
                 @change="attributDate"
-                @focus="attributDateType(attItem.fieldCode)"
+                @focus="attributDateType(attItem.fieldCode, attribuForm[attItem.fieldCode])"
+                :disabled-date="disabledDate"
               />
             </section>
             <!-- 小数输入框 -->
@@ -246,13 +237,14 @@
 import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
 import { SsuProductList } from '@/api/modular/main/SsuProductManage'
 import { IssueAdd, IssueAttachmentSaveId, IssueDetail, IssueEdit } from '@/api/modular/main/SsuIssueManage'
-// import { getresponsibilityuser } from '@/api/modular/system/orgManage'
+import { getresponsibilityuser } from '@/api/modular/system/orgManage'
 import VueQuillEditor from './componets/VueQuillEditor.vue'
 import CheckUserList from './componets/CheckUserList.vue'
 import AttributCheck from './componets/AttributCheck.vue'
 import { sysFileInfoUpload } from '@/api/modular/system/fileManage'
 import SelectUser from './componets/SelectUser.vue'
 import SelectUserMore from './componets/SelectUserMore.vue'
+import moment from 'moment'
 
 export default {
   components: { CheckUserList, VueQuillEditor, AttributCheck, SelectUser, SelectUserMore },
@@ -309,6 +301,7 @@ export default {
       attribuForm: {}, // 新增属性表单
       moduleType: '', // 新增类型属性
       dateType: '', // 时间类型
+      editDate: '',
       attachment: [], // 附件参数
       isEdit: false, // 问题编辑
       status: -1, // 状态
@@ -321,8 +314,12 @@ export default {
     const id = this.$route.query.editId
     this.copyAdd = this.$route.query.copyAdd
     if (id) {
+      this.isEdit = true
       // 编辑
       this.getIssueDetail(id)
+    }
+    if (this.copyAdd) {
+      this.form.discoverTime = null
     }
     this.initList()
     this.getFromData()
@@ -435,14 +432,9 @@ export default {
       this.form.ccList = JSON.parse(checkRecord.ccList) // 抄送人
       this.form.ccListName = JSON.parse(checkRecord.ccListName)?.join() // 抄送人名字
       this.status = checkRecord.status
+      this.getresponsibility()
       this.form.currentAssignment = checkRecord.currentAssignment
       this.form.currentAssignmentName = checkRecord.currentAssignmentName
-      this.currentAssignmentData = [
-        {
-          id: this.form.currentAssignment,
-          name: this.form.currentAssignmentName,
-        },
-      ]
     },
     // 列表初始化
     initList() {
@@ -481,38 +473,47 @@ export default {
 
     //模块选择
     moduleChange(value) {
-      console.log(this.moduleData)
       if (this.moduleType !== value) {
         this.moduleType = value
         this.attribuForm = {}
         this.extendAttributeList = []
       }
+      this.getresponsibility()
       // 根据模块id获取人员列表
     },
     // 根据项目id获取人员列表
-    projectChange(value) {},
+    projectChange() {
+      this.getresponsibility()
+    },
 
     // 根据项目ID和模块id获取人员列表
     getresponsibility() {
       const projectId = this.form.projectId
       const { module } = this.form
       const moduleObj = this.moduleData.filter((item) => item.code == module)
-      console.log(moduleObj)
-      // if (projectId != undefined && projectId != undefined) {
-      //   getresponsibilityuser({ projectId, modularId })
-      //     .then((res) => {
-      //       if (res.success) {
-      //         return []
-      //       } else {
-      //         return []
-      //       }
-      //     })
-      //     .catch(() => {
-      //       return []
-      //     })
-      // } else {
-      //   return []
-      // }
+      if (projectId != undefined && moduleObj[0]?.id != undefined) {
+        this.form.currentAssignment = undefined
+        this.form.currentAssignmentName = ''
+        getresponsibilityuser({ projectId, modularId: moduleObj[0]?.id })
+          .then((res) => {
+            if (res.success) {
+              this.currentAssignmentData = res.data.map((item) => {
+                return {
+                  id: item.id,
+                  name: item.name,
+                }
+              })
+              console.log(this.currentAssignmentData)
+            } else {
+              this.currentAssignmentData = []
+              this.$message.warning('当前指派人列表获取失败')
+            }
+          })
+          .catch(() => {
+            this.currentAssignmentData = []
+            this.$message.warning('当前指派人列表获取失败')
+          })
+      }
     },
 
     // 动态属性选择按钮操作
@@ -525,16 +526,27 @@ export default {
       return newAttArray
     },
     // 动态属性日期类型
-    attributDateType(fieldCode) {
+    attributDateType(fieldCode, date) {
+      if (this.isEdit && this.dateType !== fieldCode) {
+        this.editDate = date
+      }
       this.dateType = fieldCode
     },
     // 动态属性日期
     attributDate(dates, dateStrings) {
       if (this.dateType == 'discoverTime') {
         this.form[this.dateType] = dateStrings
-        console.log(this.form)
       } else {
         this.attribuForm[this.dateType] = dateStrings
+      }
+    },
+    // 禁止部分时间
+    disabledDate(current) {
+      // 编辑和增加
+      if (this.isEdit && this.editDate && this.copyAdd == 0) {
+        return current.valueOf() < moment(this.editDate).valueOf()
+      } else {
+        return current && current < moment().subtract(1, 'days')
       }
     },
 
@@ -650,10 +662,8 @@ export default {
           }
         })
         this.attachment.splice(fileIndex, 1)
-        console.log('删除后', this.attachment)
       }
       this.uploadInfo = info
-      console.log(info)
     },
     // 附件上传
     customRequest(data) {
@@ -670,9 +680,7 @@ export default {
             attachmentType: 0,
           }
           this.attachment.push(attachment)
-          console.log('删除前', this.attachment)
         } else {
-          this.$message.error('上传失败：' + res.message)
           this.uploadInfo.file.status = 'error'
         }
       })
@@ -683,8 +691,6 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.form.extendAttribute = this.attribuFormChange()
-          console.log(this.form)
-          console.log(this.isStorage)
           if (this.isStorage) {
             this.addIssue(this.form)
           } else {
@@ -706,14 +712,12 @@ export default {
         const fieldName = item.fieldName
         if (fieldName === '样机说明') {
           item.value = this.attribuForm[fieldCode].join()
-          console.log(item.value)
         } else {
           item.value = this.attribuForm[fieldCode]
         }
         item.issueId = item.issueId ?? 0
         return item
       })
-      console.log('newEAL', newEAL)
       return JSON.stringify(newEAL)
     },
 

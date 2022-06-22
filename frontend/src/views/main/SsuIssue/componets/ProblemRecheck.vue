@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 17:12:55
- * @LastEditTime: 2022-06-17 19:37:34
+ * @LastEditTime: 2022-06-22 15:21:00
  * @LastEditors: 林伟群
  * @Description: 问题复核
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRecheck.vue
@@ -122,8 +122,8 @@ export default {
                     })
                 }
                 this.$message.success('问题复核成功')
-                this.visible = false
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }
@@ -138,6 +138,15 @@ export default {
     },
     // 取消
     handleCancel() {
+      Object.assign(this, {
+        form: {
+          id: null,
+          title: '', // 问题简述，
+          passResult: '', // 复核状态
+          reCheckResult: '', // 复核情况
+        },
+        attachment: [],
+      })
       this.visible = false
     },
   },

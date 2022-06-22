@@ -94,7 +94,7 @@ export default {
     // 选中的属性
     checkChange(val) {
       this.checkedValues = val
-      console.log('默认选中', this.checkedValues)
+      // console.log('默认选中', this.checkedValues)
     },
     handleOk() {
       this.visible = false

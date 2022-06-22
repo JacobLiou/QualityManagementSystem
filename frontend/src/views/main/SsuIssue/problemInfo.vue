@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-17 14:31:45
- * @LastEditTime: 2022-06-22 10:24:29
+ * @LastEditTime: 2022-06-22 15:27:51
  * @LastEditors: 林伟群
  * @Description: 问题详情
  * @FilePath: \frontend\src\views\main\SsuIssue\problemInfo.vue
@@ -494,23 +494,31 @@ export default {
         content: '确定' + text + '该问题',
         onOk() {
           if (text == '删除') {
-            IssueDelete({ id }).then((res) => {
-              if (res.success) {
-                _this.$message.success(text + '成功')
-                _this.$router.back()
-              } else {
-                _this.$message.error(text + '失败')
-              }
-            })
+            IssueDelete({ id })
+              .then((res) => {
+                if (res.success) {
+                  _this.$message.success(text + '成功')
+                  _this.$router.back()
+                } else {
+                  _this.$message.warning(res.message)
+                }
+              })
+              .catch(() => {
+                _this.$message.error('删除失败')
+              })
           } else {
-            IssueSendur({ id }).then((res) => {
-              if (res.success) {
-                _this.$message.success(text + '成功')
-                _this.$router.back()
-              } else {
-                _this.$message.error(text + '失败')
-              }
-            })
+            IssueSendur({ id })
+              .then((res) => {
+                if (res.success) {
+                  _this.$message.success(text + '成功')
+                  _this.$router.back()
+                } else {
+                  _this.$message.warning(res.message)
+                }
+              })
+              .catch(() => {
+                _this.$message.error('催办失败')
+              })
           }
         },
         onCancel() {},

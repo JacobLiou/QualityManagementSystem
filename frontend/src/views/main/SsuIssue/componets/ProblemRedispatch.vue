@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 11:30:01
- * @LastEditTime: 2022-06-15 16:32:30
+ * @LastEditTime: 2022-06-22 15:21:23
  * @LastEditors: 林伟群
  * @Description: 问题转交
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRedispatch.vue
@@ -25,7 +25,11 @@
         <a-form-model-item ref="currentAssignmentName" label="转交人" prop="currentAssignmentName">
           <section class="from_chilen">
             <!-- 二次封装远程搜索组件 -->
-            <SelectUser title="请输入转交人" @handlerSelectUser="handlerSelectUser" :userSelect="userSelect"></SelectUser>
+            <SelectUser
+              title="请输入转交人"
+              @handlerSelectUser="handlerSelectUser"
+              :userSelect="userSelect"
+            ></SelectUser>
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
@@ -110,8 +114,8 @@ export default {
             .then((res) => {
               if (res.success) {
                 this.$message.success('问题转交成功')
-                this.visible = false
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }
@@ -126,6 +130,15 @@ export default {
     },
     // 取消
     handleCancel() {
+      Object.assign(this, {
+        form: {
+          id: null,
+          title: '',
+          currentAssignment: null, // 解决ID
+          currentAssignmentName: '', // 解决人
+          comment: '', // 备注
+        },
+      })
       this.visible = false
     },
   },

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 14:51:28
- * @LastEditTime: 2022-06-22 09:51:42
+ * @LastEditTime: 2022-06-22 15:19:44
  * @LastEditors: 林伟群
  * @Description: 问题关闭
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemClose.vue
@@ -74,8 +74,8 @@ export default {
             .then((res) => {
               if (res.success) {
                 this.$message.success('问题关闭成功')
-                this.visible = false
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }

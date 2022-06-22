@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-18 13:41:58
+ * @LastEditTime: 2022-06-22 14:42:42
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -94,26 +94,6 @@ export default {
           queryName: '由我解决',
           key: 3,
         },
-        // {
-        //   queryName: '待验证',
-        //   key: 4,
-        // },
-        // {
-        //   queryName: '未解决',
-        //   key: 5,
-        // },
-        // {
-        //   queryName: '已关闭',
-        //   key: 6,
-        // },
-        // {
-        //   queryName: '已挂起',
-        //   key: 7,
-        // },
-        // {
-        //   queryName: '抄送给我',
-        //   key: 8,
-        // },
       ],
       query: 0, // 流程类型
       columns: [
@@ -153,6 +133,26 @@ export default {
           },
         },
         {
+          title: '状态',
+          align: 'left',
+          sorter: true,
+          dataIndex: 'status',
+          width: '6em',
+          customRender: (text) => {
+            const contentArray = this.$options.filters['dictData']('issue_status')
+            const data = contentArray.find((item) => item.code == text)
+            const colorArray = ['#1890ff', '#f8b37c', '#229342', '#ff5500', '#bfc5d1', '#f1d710', '#d2b4e0', '#94b0f0']
+            return <a-tag color={colorArray[text]}>{data?.name}</a-tag>
+          },
+        },
+        {
+          title: '待办人',
+          align: 'left',
+          sorter: true,
+          dataIndex: 'currentAssignName',
+          width: '8em',
+        },
+        {
           title: '项目',
           align: 'left',
           sorter: true,
@@ -175,7 +175,6 @@ export default {
           customRender: (text) => {
             const contentArray = this.$options.filters['dictData']('issue_module')
             const data = contentArray.find((item) => item.code == text)
-            // const contentArray = ['研发', '研发', '试产', 'IQC', '量产', '售后']
             return data?.name
           },
         },
@@ -186,7 +185,6 @@ export default {
           dataIndex: 'consequence',
           width: '6em',
           customRender: (text) => {
-            // const contentArray = ['致命', '严重', '一般', '提示']
             const contentArray = this.$options.filters['dictData']('issue_consequence')
             const data = contentArray.find((item) => item.code == text)
             return data?.name
@@ -199,24 +197,6 @@ export default {
           dataIndex: 'issueClassification',
           width: '10em',
           customRender: (text) => {
-            // const contentArray = [
-            //   '设计问题-硬件',
-            //   '设计问题-产品软件',
-            //   '设计问题-生产测试',
-            //   ' 设计问题-结构',
-            //   '设计问题-工艺',
-            //   '设计问题-BOM ',
-            //   '设计问题-器件',
-            //   '设计问题-包装',
-            //   '设计问题-治具',
-            //   '制程问题-SMT',
-            //   '制程问题-DIP ',
-            //   '制程问题-工艺',
-            //   '制程问题-设备',
-            //   '制程问题-装配',
-            //   '物料问题 ',
-            //   '其它问题  ',
-            // ]
             const contentArray = this.$options.filters['dictData']('issue_classification')
             const data = contentArray.find((item) => item.code == text)
             return data?.name
@@ -230,33 +210,12 @@ export default {
           scopedSlots: { customRender: 'sourcescopedSlots' },
           width: '8em',
           customRender: (text) => {
-            // const contentArray = ['客户反馈 ', '工厂 ', '测试发现 ']
             const contentArray = this.$options.filters['dictData']('issue_source')
             const data = contentArray.find((item) => item.code == text)
             return data?.name
           },
         },
-        {
-          title: '状态',
-          align: 'left',
-          sorter: true,
-          dataIndex: 'status',
-          width: '6em',
-          customRender: (text) => {
-            // const contentArray = ['已开启', '已分派', '已处理', '未解决', '已关闭', '已挂起']
-            const contentArray = this.$options.filters['dictData']('issue_status')
-            const data = contentArray.find((item) => item.code == text)
-            const colorArray = ['#1890ff', '#f8b37c', '#229342', '#ff5500', '#bfc5d1', '#f1d710', '#d2b4e0', '#94b0f0']
-            return <a-tag color={colorArray[text]}>{data?.name}</a-tag>
-          },
-        },
-        {
-          title: '当前指派',
-          align: 'left',
-          sorter: true,
-          dataIndex: 'currentAssignName',
-          width: '8em',
-        },
+
         {
           title: '提出人',
           align: 'left',
@@ -307,13 +266,6 @@ export default {
           dataIndex: 'forecastSolveTime',
           width: '10em',
         },
-        // {
-        //   title: '被抄送人',
-        //   align: 'center',
-        //   sorter: true,
-        //   dataIndex: 'copyToName',
-        //   width: '10em',
-        // },
         {
           title: '解决人',
           align: 'left',

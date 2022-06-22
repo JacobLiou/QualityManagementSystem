@@ -362,23 +362,31 @@ export default {
         content: '确定' + text + '该问题',
         onOk() {
           if (text == '删除') {
-            IssueDelete({ id }).then((res) => {
-              if (res.success) {
-                _this.$message.success(text + '成功')
-                _this.$router.back()
-              } else {
-                _this.$message.error(text + '失败')
-              }
-            })
+            IssueDelete({ id })
+              .then((res) => {
+                if (res.success) {
+                  _this.$message.success(text + '成功')
+                  _this.getProblemList()
+                } else {
+                  _this.$message.warning(res.message)
+                }
+              })
+              .catch(() => {
+                _this.$message.error('删除失败')
+              })
           } else {
-            IssueSendur({ id }).then((res) => {
-              if (res.success) {
-                _this.$message.success(text + '成功')
-                _this.$router.back()
-              } else {
-                _this.$message.error(text + '失败')
-              }
-            })
+            IssueSendur({ id })
+              .then((res) => {
+                if (res.success) {
+                  _this.$message.success(text + '成功')
+                  _this.getProblemList()
+                } else {
+                  _this.$message.warning(res.message)
+                }
+              })
+              .catch(() => {
+                _this.$message.error('催办失败')
+              })
           }
         },
         onCancel() {},

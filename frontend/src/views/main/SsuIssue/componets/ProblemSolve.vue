@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 09:56:36
- * @LastEditTime: 2022-06-17 19:42:46
+ * @LastEditTime: 2022-06-22 19:54:34
  * @LastEditors: 林伟群
  * @Description: 解决问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSolve.vue
@@ -28,6 +28,7 @@
             v-model="form.solveTime"
             @change="attributDate"
             @focus="attributDateType('solveTime')"
+            :disabled-date="disabledDate"
           />
         </a-form-model-item>
         <a-form-model-item label="解决版本" prop="solveVersion">
@@ -122,6 +123,7 @@ import { getalltypelist, addversion } from '@/api/modular/system/versionManage'
 import OperRecords from './OperRecords.vue'
 import ProblemUplod from './ProblemUplod.vue'
 import qs from 'qs'
+import moment from 'moment'
 export default {
   components: {
     OperRecords,
@@ -196,11 +198,15 @@ export default {
     attributDateType(fieldCode) {
       this.dateType = fieldCode
     },
+
     // 动态属性日期
     attributDate(dates, dateStrings) {
       if (this.dateType == 'solveTime') {
         this.form[this.dateType] = dateStrings
       }
+    },
+    disabledDate(current) {
+      return current && current < moment().subtract(1, 'days')
     },
 
     // 获取版本列表
@@ -288,8 +294,8 @@ export default {
                     })
                 }
                 this.$message.success('问题处理成功')
-                this.visible = false
                 this.getProblemList()
+                this.handleCancel()
               } else {
                 this.$message.warning(res.message)
               }
@@ -304,7 +310,24 @@ export default {
     },
     // 返回
     handleCancel() {
-      this.visible = !this.visible
+      Object.assign(this, {
+        form: {
+          id: null,
+          title: '', // 问题简述，
+          solveTime: undefined, // 预计完成时间
+          reason: '', // 原因分析
+          measures: '', // 解决措施
+          solveVersion: '', // 解决版本
+        },
+        versionForm: {
+          type: '',
+          version: '',
+        },
+        versionArray: [],
+        versionTypeArray: [],
+        attachment: [], // 附件上传的数据
+      })
+      this.visible = false
     },
   },
 }
