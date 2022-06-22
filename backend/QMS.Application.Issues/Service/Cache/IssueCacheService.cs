@@ -111,5 +111,25 @@ namespace QMS.Application.Issues
 
             return cacheOption;
         }
+
+        [NonAction]
+        public async Task SetString(string key, string value)
+        {
+            await _cache.SetStringAsync(key, value);
+        }
+
+        [NonAction]
+        public async Task<string> GetString(string key)
+        {
+            return await _cache.GetStringAsync(key);
+        }
+
+        public async Task SetString(string key, string value, int hours, int minutes, int seconds)
+        {
+            DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
+            TimeSpan time = new TimeSpan(hours, minutes, seconds);
+            DistributedCacheEntryOptions option = new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = time };
+            await _cache.SetStringAsync(key, value, cacheOption);
+        }
     }
 }

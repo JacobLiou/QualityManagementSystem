@@ -45,6 +45,7 @@ namespace QMS.Application.Issues
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
         private readonly IssueStatusNoticeService _noticeService;
+        private readonly IssueCacheService _issueCacheService;
 
         public IssueService(
             IRepository<Issue, IssuesDbContextLocator> issueRep,
@@ -53,7 +54,8 @@ namespace QMS.Application.Issues
             IRepository<IssueExtendAttribute, IssuesDbContextLocator> issueAttrRep,
             IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> issueAttrValueRep,
             IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep,
-            IssueStatusNoticeService noticeService
+            IssueStatusNoticeService noticeService,
+            IssueCacheService issueCacheService
 
         )
         {
@@ -64,6 +66,7 @@ namespace QMS.Application.Issues
             this._issueAttrValueRep = issueAttrValueRep;
             this._issueColumnDisplayRep = issueColumnDisplayRep;
             this._noticeService = noticeService;
+            this._issueCacheService = issueCacheService;
         }
 
         #region CRUD
@@ -99,6 +102,9 @@ namespace QMS.Application.Issues
             {
                 issue.CCs = JSON.Serialize(input.CCList);
             }
+            //获取序号
+            issue.SerialNumber = this.GetNewSerialNumber(issue.Module);
+
             Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定当前指派人!");
             input.SetIssuse(issue);
 
@@ -543,6 +549,7 @@ namespace QMS.Application.Issues
             //Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
 
             input.SetIssue(common);
+            await this._issueRep.UpdateNowAsync(common, true);
 
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
             if (input.SetIssueDetail(issueDetail))
@@ -1318,6 +1325,11 @@ namespace QMS.Application.Issues
             {
                 return result;
             }
+            //分发人为空的时候，则意味着这是新建状态下，此时分发人=当前指派
+            if (dispatcher == null || dispatcher == 0)
+            {
+                dispatcher = currentAssignment;
+            }
             //当前用户==当前指派，当前用户==问题管理者
             if (curUserId == currentAssignment && curUserId == dispatcher)
             {
@@ -1334,7 +1346,7 @@ namespace QMS.Application.Issues
 
                     case EnumIssueStatus.Dispatched:
                         result.Add(EnumIssueButton.Edit);
-                        result.Add(EnumIssueButton.ReDispatch);
+                        //result.Add(EnumIssueButton.ReDispatch);
                         result.Add(EnumIssueButton.HangUp);
                         result.Add(EnumIssueButton.Close);
                         result.Add(EnumIssueButton.Notice);
@@ -1343,7 +1355,7 @@ namespace QMS.Application.Issues
 
                     case EnumIssueStatus.Solved:
                         result.Add(EnumIssueButton.Edit);
-                        result.Add(EnumIssueButton.ReDispatch);
+                        //result.Add(EnumIssueButton.ReDispatch);
                         result.Add(EnumIssueButton.HangUp);
                         result.Add(EnumIssueButton.Close);
                         result.Add(EnumIssueButton.Notice);
@@ -1405,7 +1417,7 @@ namespace QMS.Application.Issues
                         break;
 
                     case EnumIssueStatus.UnSolve:
-                        result.Add(EnumIssueButton.ReDispatch);
+                        //result.Add(EnumIssueButton.ReDispatch);
                         result.Add(EnumIssueButton.Execute);
                         break;
 
@@ -1449,7 +1461,7 @@ namespace QMS.Application.Issues
 
                     case EnumIssueStatus.Solved:
                         result.Add(EnumIssueButton.Edit);
-                        result.Add(EnumIssueButton.ReDispatch);
+                        //result.Add(EnumIssueButton.ReDispatch);
                         result.Add(EnumIssueButton.HangUp);
                         result.Add(EnumIssueButton.Close);
                         result.Add(EnumIssueButton.Notice);
@@ -1518,5 +1530,66 @@ namespace QMS.Application.Issues
         }
 
         #endregion 问题按钮显示获取
+
+        #region 获取问题序号
+
+        /// <summary>
+        /// 获取新的问题序号
+        /// </summary>
+        /// <returns></returns>
+        public string GetNewSerialNumber(EnumModule modular)
+        {
+            System.Object locker = new System.Object();
+            lock (locker)
+            {
+                int seedNum = 0;
+                string abbreviation = "";
+                switch (modular)
+                {
+                    case EnumModule.R_D:
+                        abbreviation = "R&D";
+                        break;
+
+                    case EnumModule.Test:
+                        abbreviation = "TST";
+                        break;
+
+                    case EnumModule.TrialProduce:
+                        abbreviation = "NPI";
+                        break;
+
+                    case EnumModule.IQC:
+                        abbreviation = "IQC";
+                        break;
+
+                    case EnumModule.MassProduction:
+                        abbreviation = "MSP";
+                        break;
+
+                    case EnumModule.AfterSales:
+                        abbreviation = "AMS";
+                        break;
+                }
+
+                //缓存Key值，如NPI_20220622
+                var key = abbreviation + "_" + DateTime.Now.ToString("yyyyMMdd");
+                string result = _issueCacheService.GetString(key).Result;
+                if (string.IsNullOrEmpty(result))
+                {
+                    result = _issueRep.DetachedEntities.OrderByDescending(u => u.CreateTime).FirstOrDefault(u => u.Module == modular)?.SerialNumber;
+                    if (string.IsNullOrEmpty(result))
+                    {
+                        result = abbreviation + DateTime.Now.ToString("yyyyMMdd") + seedNum.ToString("000");
+                    }
+                }
+                int.TryParse(result.Substring(result.Length - 3, 3), out seedNum);
+                seedNum++;
+                result = abbreviation + DateTime.Now.ToString("yyyyMMdd") + seedNum.ToString("000");
+                _issueCacheService.SetString(key, result, 24, 0, 0).Wait();
+                return result;
+            }
+        }
+
+        #endregion 获取问题序号
     }
 }

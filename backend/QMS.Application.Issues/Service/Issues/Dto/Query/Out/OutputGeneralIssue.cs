@@ -192,6 +192,11 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         /// </summary>
         public List<EnumIssueButton> BtnList { get; set; }
 
+        /// <summary>
+        /// 问题序号（格式为：模块缩写+时间年月日+三位数自增种子，如TST20220620002）
+        /// </summary>
+        public string SerialNumber { get; set; }
+
         public OutputGeneralIssue(Core.Entity.Issue model)
         {
             this.Id = model.Id;
@@ -248,6 +253,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
                 this.CopyTo = JSON.Deserialize<List<long>>(model.CCs);
                 this.CopyToName = this.CopyTo?.Select<long, string>(id => id.GetNameByEmpId())?.ToList();
             }
+            this.SerialNumber = model.SerialNumber;
         }
     }
 }
