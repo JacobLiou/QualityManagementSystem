@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace QMS.Application.System
 {
-    internal static partial class ModelHelper
+    internal static partial class ModelExtension
     {
         /// <summary>
         /// 根据人员ID获取人员名称
