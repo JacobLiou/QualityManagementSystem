@@ -17,6 +17,13 @@ namespace QMS.Core.Entity
         [Required]
         public string Title { get; set; }
 
+        /// <summary>
+        /// 问题序号（格式为：模块缩写+时间年月日+三位数自增种子，如TST20220620002）
+        /// </summary>
+        [Comment("问题序号")]
+        [MaxLength(50)]
+        public string SerialNumber { get; set; }
+
         [Comment("项目编号")]
         public long ProjectId { get; set; }
 
@@ -120,7 +127,7 @@ namespace QMS.Core.Entity
         /// <summary>
         /// 当前指派给
         /// </summary>
-        [Comment("当前指派给")]
+        [Comment("待办人")]
         public long? CurrentAssignment { get; set; }
 
         [NotMapped]
