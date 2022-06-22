@@ -1,4 +1,5 @@
-﻿using Furion.DependencyInjection;
+﻿using Furion;
+using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.EventBus;
 using Furion.Extras.Admin.NET;
@@ -17,13 +18,15 @@ namespace QMS.Application.Issues
     [Route("issue/[controller]")]
     public class IssueStatusNoticeService : IDynamicApiController, IScoped
     {
- 
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IEventPublisher _eventPublisher;
 
-        public IssueStatusNoticeService( IHttpContextAccessor contextAccessor, IEventPublisher eventPublisher)
-        {
+        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8002/problemInfo?id=";
+        private readonly string ProblemInfoTitle = "质量平台问题管理";
+        private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
 
+        public IssueStatusNoticeService(IHttpContextAccessor contextAccessor, IEventPublisher eventPublisher)
+        {
             _contextAccessor = contextAccessor;
             _eventPublisher = eventPublisher;
         }
@@ -80,6 +83,29 @@ namespace QMS.Application.Issues
 
             // 写日志文件
             Log.Information(notice.ToString());
+        }
+
+        /// <summary>
+        /// 发送问题消息
+        /// </summary>
+        /// <param name="issueId">问题详情ID</param>
+        /// <param name="userId">接收消息用户</param>
+        /// <returns></returns>
+        public async Task SendNotice(string issueId, string userId, string title)
+        {
+            //构建消息格式
+            var msg = new NoticeMsgInput()
+            {
+                Url = ProblemInfoUrl + issueId,
+                Content = ProblemInfoContent,
+                Title = ProblemInfoTitle + "-" + title,
+                UserIdList = new List<string>() { userId }
+            };
+            if (!string.IsNullOrEmpty(msg.Url))
+            {
+                //App.GetService<IssueStatusNoticeService>().SendNoticeAsync(msg);
+                this.SendNoticeAsync(msg);
+            }
         }
     }
 }

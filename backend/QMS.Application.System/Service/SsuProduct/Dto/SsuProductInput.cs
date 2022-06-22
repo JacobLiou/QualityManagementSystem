@@ -14,6 +14,54 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品名称
         /// </summary>
+        public virtual string ProductName { get; set; }
+
+        /// <summary>
+        /// 产品型号
+        /// </summary>
+        public virtual string ProductType { get; set; }
+
+        /// <summary>
+        /// 产品线
+        /// </summary>
+        public virtual EnumProductLine? ProductLine { get; set; }
+
+        /// <summary>
+        /// 所属项目
+        /// </summary>
+        public virtual long ProjectId { get; set; }
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductStatus Status { get; set; }
+
+        /// <summary>
+        /// 产品分类
+        /// </summary>
+        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductClassfication ClassificationId { get; set; }
+
+        /// <summary>
+        /// 排序
+        /// </summary>
+        public virtual int Sort { get; set; }
+
+        /// <summary>
+        /// 产品负责人
+        /// </summary>
+        public virtual long DirectorId { get; set; }
+
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
+    }
+
+    public class AddSsuProductInput
+    {
+        /// <summary>
+        /// 产品名称
+        /// </summary>
         [Required]
         public virtual string ProductName { get; set; }
 
@@ -53,10 +101,11 @@ namespace QMS.Application.System
         /// </summary>
         [Required]
         public virtual long DirectorId { get; set; }
-    }
 
-    public class AddSsuProductInput : SsuProductInput
-    {
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
     }
 
     public class DeleteSsuProductInput : BaseId

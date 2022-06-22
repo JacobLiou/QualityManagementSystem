@@ -42,14 +42,9 @@ namespace QMS.Application.Issues
         private readonly IRepository<IssueOperation, IssuesDbContextLocator> _issueOperateRep;
         private readonly IRepository<IssueExtendAttribute, IssuesDbContextLocator> _issueAttrRep;
         private readonly IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> _issueAttrValueRep;
-
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
 
-        private readonly string ProblemInfoUrl = "http://qms.sofarsolar.com:8002/problemInfo?id=";
-
-
-        private readonly string ProblemInfoTitle = "质量平台问题管理";
-        private readonly string ProblemInfoContent = "您好，您当前有个问题需要关注，请登录质量平台查看";
+        private readonly IssueStatusNoticeService _noticeService;
 
         public IssueService(
             IRepository<Issue, IssuesDbContextLocator> issueRep,
@@ -57,7 +52,8 @@ namespace QMS.Application.Issues
             IRepository<IssueOperation, IssuesDbContextLocator> issueOperateRep,
             IRepository<IssueExtendAttribute, IssuesDbContextLocator> issueAttrRep,
             IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> issueAttrValueRep,
-            IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep
+            IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep,
+            IssueStatusNoticeService noticeService
 
         )
         {
@@ -66,8 +62,8 @@ namespace QMS.Application.Issues
             this._issueOperateRep = issueOperateRep;
             this._issueAttrRep = issueAttrRep;
             this._issueAttrValueRep = issueAttrValueRep;
-
             this._issueColumnDisplayRep = issueColumnDisplayRep;
+            this._noticeService = noticeService;
         }
 
         #region CRUD
@@ -131,7 +127,7 @@ namespace QMS.Application.Issues
             //问题新增，如果当前用户和当前指派(分发人)不一致，则发送消息给对应的分发人
             if (!input.IsTemporary && Helper.Helper.GetCurrentUser() != input.CurrentAssignment)
             {
-                this.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
+                _noticeService.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
             }
 
             await IssueLogger.Log(
@@ -230,7 +226,7 @@ namespace QMS.Application.Issues
             //如果当前指派人和当前用户不一致则发送消息给当前指派人
             if (input.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
+                _noticeService.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -260,6 +256,7 @@ namespace QMS.Application.Issues
 
 
             outputDetailIssue.SetCommon(issue);
+            outputDetailIssue.BtnList = this.GetBtnList(issue);
 
             if (!string.IsNullOrEmpty(outputDetailIssue.ExtendAttribute))
             {
@@ -311,8 +308,8 @@ namespace QMS.Application.Issues
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             //已挂起，已关闭状态下支持重开启
-            Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
-            Helper.Helper.Assert(common.CurrentAssignment == Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
+            //Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
+            //Helper.Helper.Assert(common.CurrentAssignment == Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
 
             common.Status = EnumIssueStatus.Created;
             await this._issueRep.UpdateNowAsync(common, true);
@@ -344,7 +341,7 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(复核人)");
+            //Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(复核人)");
 
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
@@ -359,12 +356,12 @@ namespace QMS.Application.Issues
             //问题复核有效，则问题流转至验证，如果当前指派（验证人）和当前用户不一致则发送消息给验证人
             if (pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
             //问题复核无效，则问题重新流转至解决，如果当前指派（解决人）和当前用户不一致则发送消息给解决人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -387,7 +384,7 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
+            //Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
 
             input.SetIssue(common);
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
@@ -400,7 +397,7 @@ namespace QMS.Application.Issues
             //如果当前用户和复核人（分发人）不一致，则发送消息给复核人（分发人）
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             await IssueLogger.Log(
@@ -438,7 +435,7 @@ namespace QMS.Application.Issues
             //问题验证无效，则问题重新流转至分发状态，当前指派（分发人）和当前用户不一致则发送消息分发人
             if (!pass && common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
 
             EnumIssueOperationType enumIssueOperationType = input.PassResult == YesOrNot.Y ? EnumIssueOperationType.Close : EnumIssueOperationType.NoPass;
@@ -486,10 +483,10 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(input.CurrentAssignment != 0, "转交时必须指定转交人");
-            Helper.Helper.Assert(input.CurrentAssignment != Helper.Helper.GetCurrentUser(), $"当前用户不能是当前问题的转交人");
-            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.Dispatcher
-                || Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是当前问题的处理人或者分发人，不能进行转交操作");
+            //Helper.Helper.Assert(input.CurrentAssignment != 0, "转交时必须指定转交人");
+            //Helper.Helper.Assert(input.CurrentAssignment != Helper.Helper.GetCurrentUser(), $"当前用户不能是当前问题的转交人");
+            //Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.Dispatcher
+            //    || Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是当前问题的处理人或者分发人，不能进行转交操作");
 
             input.SetIssue(common);
             await this._issueRep.UpdateNowAsync(common, true);
@@ -503,7 +500,7 @@ namespace QMS.Application.Issues
             //问题转交，如果当前指派（转交人）和当前用户不一致，则发送消息给转交人
             if (common.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
+                _noticeService.SendNotice(common.Id.ToString(), common.CurrentAssignment.ToString(), common.Title);
             }
         }
 
@@ -543,7 +540,7 @@ namespace QMS.Application.Issues
             Helper.Helper.CheckInput(input);
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
+            //Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
 
             input.SetIssue(common);
 
@@ -734,6 +731,13 @@ namespace QMS.Application.Issues
             IQueryable<Issue> querable = this.GetQueryable(input).OrderBy(PageInputOrder.OrderBuilder(input));
 
             var issues = await this.SelectToOutput(input, querable).ToADPagedListAsync(input.PageNo, input.PageSize);
+
+            issues.Rows.ToList().ForEach(
+                delegate (OutputGeneralIssue output)
+                {
+                    output.BtnList = this.GetBtnList(output.CurrentAssignId, output.Dispatcher, output.Status);
+                }
+                );
 
             return await this.UpdateProjectProductNames(issues);
         }
@@ -1019,7 +1023,7 @@ namespace QMS.Application.Issues
             //如果当前用户和解决人不一致，则发送消息给解决人
             if (issue.CurrentAssignment != Helper.Helper.GetCurrentUser())
             {
-                this.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+                _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
             }
 
             await IssueLogger.Log(
@@ -1189,30 +1193,330 @@ namespace QMS.Application.Issues
 
         #endregion 问题统计
 
-        #region 问题流转发送消息
+        #region 问题催办
 
         /// <summary>
-        /// 发送问题消息
+        /// 对某个问题发送催办消息
         /// </summary>
-        /// <param name="issueId">问题详情ID</param>
-        /// <param name="userId">接收消息用户</param>
+        /// <param name="input"></param>
         /// <returns></returns>
-        public async Task SendNotice(string issueId, string userId, string title)
+        [HttpGet("sendurgenotice")]
+        public async Task SendUrgeNotice(BaseId input)
         {
-            //构建消息格式
-            var msg = new NoticeMsgInput()
+            Helper.Helper.CheckInput(input);
+            Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+            Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment != 0, "当前问题的当前指派人为空");
+            string errmsg = "当前用户不是当前问题的操作人";
+            switch (issue.Status)
             {
-                Url = ProblemInfoUrl + issueId,
-                Content = ProblemInfoContent,
-                Title = ProblemInfoTitle + "-" + title,
-                UserIdList = new List<string>() { userId }
-            };
-            if (!string.IsNullOrEmpty(msg.Url))
+                case EnumIssueStatus.Created:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.CreatedUserId && issue.CreatedUserId != null && issue.CreatedUserId != 0, errmsg);
+                    break;
+
+                case EnumIssueStatus.Dispatched:
+                case EnumIssueStatus.HasRechecked:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher && issue.Dispatcher != null && issue.Dispatcher != 0, errmsg);
+                    break;
+
+                case EnumIssueStatus.Solved:
+                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher || (Helper.Helper.GetCurrentUser() == issue.Executor && issue.Executor != null && issue.Executor != 0), errmsg);
+                    break;
+
+                default:
+                    break;
+            }
+
+            _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+
+            await IssueLogger.Log(
+                this._issueOperateRep,
+                input.Id,
+                EnumIssueOperationType.Dispatch,
+                $"当前用户【{Helper.Helper.GetCurrentUser()}】向【{issue.Id}】-【{issue.Title}】发送催办消息"
+            );
+        }
+
+        /// <summary>
+        /// 批量发送催办消息
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task SendUrgeNoticeList(List<BaseId> input)
+        {
+            foreach (BaseId id in input)
             {
-                App.GetService<IssueStatusNoticeService>().SendNoticeAsync(msg);
+                await this.SendUrgeNotice(id);
             }
         }
 
-        #endregion 问题流转发送消息
+        /// <summary>
+        /// 定时发送消息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("sendtimingurgenotice")]
+        public async Task SendTimingUrgeNotice()
+        {
+            //获取所有预计完成时间小于等于当前当前时间的问题
+            var list = _issueRep.DetachedEntities.Where(u => u.Status == EnumIssueStatus.UnSolve || u.Status == EnumIssueStatus.Created)
+                .Where(u => u.CurrentAssignment != null && u.CurrentAssignment != 0)
+                .Where(u => Convert.ToInt32(u.ForecastSolveTime.Value.ToString("yyyyMMdd")) <= Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd")))
+                .Where(u => u.IsDeleted == false)
+                .Select(u => u.Id);
+            foreach (long id in list)
+            {
+                BaseId input = new BaseId() { Id = id };
+                Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+                _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
+
+                await IssueLogger.Log(
+                    this._issueOperateRep,
+                    input.Id,
+                    EnumIssueOperationType.Dispatch,
+                    $"定时任务向【{issue.Id}】-【{issue.Title}】发送催办消息"
+                );
+            }
+        }
+
+        #endregion 问题催办
+
+        #region 问题按钮显示获取
+
+        /// <summary>
+        /// 后台判断问题状态，当前登录用户，是否问题管理者下的按钮显示问题
+        /// </summary>
+        /// <param name="issue">当前问题</param>
+        /// <returns></returns>
+        public List<EnumIssueButton> GetBtnList(Issue issue)
+        {
+            return this.GetBtnList(issue.CurrentAssignment, issue.Dispatcher, issue.Status);
+        }
+
+        /// <summary>
+        /// 后台判断问题状态，当前登录用户，是否问题管理者下的按钮显示问题
+        /// </summary>
+        /// <param name="currentAssignment">当前指派</param>
+        /// <param name="dispatcher">分发人(问题管理者)</param>
+        /// <param name="status">问题状态</param>
+        /// <returns></returns>
+        public List<EnumIssueButton> GetBtnList(long? currentAssignment, long? dispatcher, EnumIssueStatus status)
+        {
+            //当前登录用户
+            var curUserId = CurrentUserInfo.UserId;
+            var result = new List<EnumIssueButton>();
+            result.Add(EnumIssueButton.Copy);
+            result.Add(EnumIssueButton.Detail);
+
+            //超级管理员才能进行删除动作
+            var adminType = CurrentUserInfo.IsSuperAdmin;
+            if (adminType)
+            {
+                result.Add(EnumIssueButton.Delete);
+            }
+            if (currentAssignment == null || currentAssignment == 0)
+            {
+                return result;
+            }
+            //当前用户==当前指派，当前用户==问题管理者
+            if (curUserId == currentAssignment && curUserId == dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.ReCheck);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Validate);
+                        break;
+                }
+            }
+            //当前用户==当前指派，当前用户!=问题管理者
+            else if (curUserId == currentAssignment && curUserId != dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.HangUp);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.Execute);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Validate);
+                        break;
+                }
+            }
+            //当前用户!=当前指派，当前用户==问题管理者
+            else if (curUserId != currentAssignment && curUserId == dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        result.Add(EnumIssueButton.Dispatch);
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        result.Add(EnumIssueButton.ReOpen);
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        result.Add(EnumIssueButton.Edit);
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        result.Add(EnumIssueButton.Edit);
+                        result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.HangUp);
+                        result.Add(EnumIssueButton.Close);
+                        result.Add(EnumIssueButton.Notice);
+                        break;
+                }
+            }
+            //当前用户!=当前指派，当前用户!=问题管理者
+            else if (curUserId != currentAssignment && curUserId != dispatcher)
+            {
+                switch (status)
+                {
+                    case EnumIssueStatus.Created:
+                        break;
+
+                    case EnumIssueStatus.Dispatched:
+                        break;
+
+                    case EnumIssueStatus.Solved:
+                        break;
+
+                    case EnumIssueStatus.UnSolve:
+                        break;
+
+                    case EnumIssueStatus.Closed:
+                        break;
+
+                    case EnumIssueStatus.HasHangUp:
+                        break;
+
+                    case EnumIssueStatus.HasTemporary:
+                        break;
+
+                    case EnumIssueStatus.HasRechecked:
+                        break;
+                }
+            }
+            return result.Distinct().ToList();
+        }
+
+        #endregion 问题按钮显示获取
     }
 }

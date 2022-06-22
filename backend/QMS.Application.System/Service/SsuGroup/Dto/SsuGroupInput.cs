@@ -19,6 +19,11 @@ namespace QMS.Application.System
         /// 排序
         /// </summary>
         public virtual int Sort { get; set; }
+
+        /// <summary>
+        /// 关联人员列表
+        /// </summary>
+        public virtual IEnumerable<long> UserIdList { get; set; }
     }
 
     public class AddSsuGroupInput : SsuGroupInput
@@ -29,7 +34,7 @@ namespace QMS.Application.System
     {
     }
 
-    public class UpdateSsuGroupInput : SsuGroupInput
+    public class UpdateSsuGroupInput : AddSsuGroupInput
     {
         /// <summary>
         /// Id主键

@@ -57,6 +57,17 @@ namespace QMS.Application.System
                                      .ProjectToType<SsuProjectOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
 
+            foreach (SsuProjectOutput output in ssuProjects.Rows)
+            {
+                //设置项目负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
+                //获取项目的关联人员列表
+                var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
+                }
+            }
             return ssuProjects;
         }
 
@@ -69,7 +80,13 @@ namespace QMS.Application.System
         public async Task Add(AddSsuProjectInput input)
         {
             var ssuProject = input.Adapt<SsuProject>();
-            await _ssuProjectRep.InsertAsync(ssuProject);
+            var result = await _ssuProjectRep.InsertAsync(ssuProject);
+
+            if (result != null && result.Entity.Id != 0 && input.UserIdList.Count() > 0)
+            {
+                var list = input.UserIdList.Select(u => new SsuProjectUser() { ProjectId = result.Entity.Id, EmployeeId = u });
+                await _ssuProjectUser.InsertAsync(list);
+            }
         }
 
         /// <summary>
@@ -82,6 +99,12 @@ namespace QMS.Application.System
         {
             var ssuProject = await _ssuProjectRep.FirstOrDefaultAsync(u => u.Id == input.Id);
             await _ssuProjectRep.DeleteAsync(ssuProject);
+
+            var ssuProjectUser = await _ssuProjectUser.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
+            if (ssuProjectUser != null)
+            {
+                await _ssuProjectUser.DeleteAsync(ssuProjectUser);
+            }
         }
 
         /// <summary>
@@ -93,22 +116,51 @@ namespace QMS.Application.System
         public async Task Update(UpdateSsuProjectInput input)
         {
             var isExist = await _ssuProjectRep.AnyAsync(u => u.Id == input.Id, false);
-            if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+            if (!isExist) throw Oops.Oh("项目组不存在");
 
             var ssuProject = input.Adapt<SsuProject>();
             await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: true);
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheMinute);
+
+
+            //更新项目组人员列表
+            var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
+            //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProjectUser() { ProjectId = input.Id, EmployeeId = u }).ToList();
+            if (intersectionList != null && intersectionList.Count() > 0)
+            {
+                await _ssuProjectUser.InsertAsync(intersectionList);
+            }
+
+            //获取在项目组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
+            var differenceList = existsList.Except(input.UserIdList).ToList();
+            var ssuProjectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
+            if (ssuProjectUser != null && ssuProjectUser.Count() > 0)
+            {
+                await _ssuProjectUser.DeleteAsync(ssuProjectUser);
+            }
         }
 
         /// <summary>
-        /// 获取项目
+        /// 获取项目明细
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuProject/detail")]
         public async Task<SsuProjectOutput> Get([FromQuery] QueryeSsuProjectInput input)
         {
-            return (await _ssuProjectRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<SsuProjectOutput>();
+            var detail = await _ssuProjectRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            if (detail == null)
+            {
+                throw Oops.Oh("项目不存在");
+            }
+            var result = detail.Adapt<SsuProjectOutput>();
+            var projectUserId = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id)
+                .Select(u => u.EmployeeId).ToList();
+            result.UserList = projectUserId.GetUserListById().Adapt<List<UserOutput>>();
+            //设置项目负责人名称
+            result.DirectorName = result.DirectorId.GetUserNameById();
+            return result;
         }
 
         /// <summary>
@@ -125,12 +177,22 @@ namespace QMS.Application.System
         /// <summary>
         /// 获取项目列表
         /// </summary>
-        /// <param name="input"></param>
         /// <returns></returns>
         [HttpGet("/SsuProject/select")]
         public async Task<List<SsuProjectOutput>> Select()
         {
-            return await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
+            var result = await _ssuProjectRep.DetachedEntities.ProjectToType<SsuProjectOutput>().ToListAsync();
+            foreach (SsuProjectOutput output in result)
+            {
+                //设置项目负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
+                var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -168,22 +230,30 @@ namespace QMS.Application.System
         [HttpPost("/SsuProject/insertprojectgroup")]
         public async Task InsertProjectGroup(long projectId, IEnumerable<long> userIds)
         {
-            List<SsuProjectUser> list = new List<SsuProjectUser>();
-            var resultList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
-            foreach (long employeeId in userIds)
+            List<SsuProjectUser> Addlist = new List<SsuProjectUser>();
+            var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(projectId)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于项目组中的ID
+            var intersectionList = userIds.Except(existsList);
+            foreach (long employeeId in intersectionList)
             {
-                if (!resultList.Contains(employeeId))
-                {
-                    SsuProjectUser projectUser = new SsuProjectUser();
-                    projectUser.ProjectId = projectId;
-                    projectUser.EmployeeId = employeeId;
-                    list.Add(projectUser);
-                }
+                SsuProjectUser projectUser = new SsuProjectUser();
+                projectUser.ProjectId = projectId;
+                projectUser.EmployeeId = employeeId;
+                Addlist.Add(projectUser);
+            }
+            if (Addlist != null && Addlist.Count > 0)
+            {
+                await _ssuProjectUser.InsertAsync(Addlist);
             }
 
-            if (list != null && list.Count > 0)
+            //获取在项目组中存在的ID，但是不存在于新增的ID列表中的ID
+            var differenceList = existsList.Except(userIds);
+            if (differenceList != null && differenceList.Count() > 0)
             {
-                await _ssuProjectUser.InsertAsync(list);
+                foreach (long employeeId in differenceList)
+                {
+                    await _ssuProjectUser.DeleteAsync(employeeId);
+                }
             }
         }
 

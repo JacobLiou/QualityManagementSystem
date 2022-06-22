@@ -57,7 +57,19 @@ namespace QMS.Application.System
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProductInput>(input))
                                      .ProjectToType<SsuProductOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
-
+            //获取产品的关联人员列表
+            foreach (SsuProductOutput output in ssuProducts.Rows)
+            {
+                //设置产品负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
+                //设置产品所属项目名称
+                output.ProjectName = output.ProjectId.GetProjectNameById();
+                var userList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
+                }
+            }
             return ssuProducts;
         }
 
@@ -70,7 +82,13 @@ namespace QMS.Application.System
         public async Task Add(AddSsuProductInput input)
         {
             var ssuProduct = input.Adapt<SsuProduct>();
-            await _ssuProductRep.InsertAsync(ssuProduct);
+            var result = await _ssuProductRep.InsertAsync(ssuProduct);
+
+            if (result != null && result.Entity.Id != 0 && input.UserIdList.Count() > 0)
+            {
+                var list = input.UserIdList.Select(u => new SsuProductUser() { ProductId = result.Entity.Id, EmployeeId = u });
+                await _ssuProductUserRep.InsertAsync(list);
+            }
         }
 
         /// <summary>
@@ -83,6 +101,12 @@ namespace QMS.Application.System
         {
             var ssuProduct = await _ssuProductRep.FirstOrDefaultAsync(u => u.Id == input.Id);
             await _ssuProductRep.DeleteAsync(ssuProduct);
+
+            var ssuProductUser = await _ssuProductUserRep.DetachedEntities.FirstOrDefaultAsync(u => u.ProductId == input.Id);
+            if (ssuProductUser != null)
+            {
+                await _ssuProductUserRep.DeleteAsync(ssuProductUser);
+            }
         }
 
         /// <summary>
@@ -94,11 +118,28 @@ namespace QMS.Application.System
         public async Task Update(UpdateSsuProductInput input)
         {
             var isExist = await _ssuProductRep.AnyAsync(u => u.Id == input.Id, false);
-            if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+            if (!isExist) throw Oops.Oh("产品组不存在");
 
             var ssuProduct = input.Adapt<SsuProduct>();
             await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheMinute);
+
+            //更新产品组人员列表
+            var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
+            //获取在新增列表中存在，但是不存在于人员组中的ID，执行新增操作
+            var intersectionList = input.UserIdList.Except(existsList).Select(u => new SsuProductUser() { ProductId = input.Id, EmployeeId = u }).ToList();
+            if (intersectionList != null && intersectionList.Count() > 0)
+            {
+                await _ssuProductUserRep.InsertAsync(intersectionList);
+            }
+
+            //获取在产品组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
+            var differenceList = existsList.Except(input.UserIdList).ToList();
+            var ssuProductUser = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
+            if (ssuProductUser != null && ssuProductUser.Count() > 0)
+            {
+                await _ssuProductUserRep.DeleteAsync(ssuProductUser);
+            }
         }
 
         /// <summary>
@@ -109,7 +150,20 @@ namespace QMS.Application.System
         [HttpGet("/SsuProduct/detail")]
         public async Task<SsuProductOutput> Get([FromQuery] QueryeSsuProductInput input)
         {
-            return (await _ssuProductRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id)).Adapt<SsuProductOutput>();
+            var detail = await _ssuProductRep.DetachedEntities.FirstOrDefaultAsync(u => u.Id == input.Id);
+            if (detail == null)
+            {
+                throw Oops.Oh("人员组不存在");
+            }
+            var result = detail.Adapt<SsuProductOutput>();
+            var productUserId = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == input.Id)
+                .Select(u => u.EmployeeId).ToList();
+            result.UserList = productUserId.GetUserListById().ToList().Adapt<List<UserOutput>>();
+            //设置产品负责人名称
+            result.DirectorName = result.DirectorId.GetUserNameById();
+            //设置产品所属项目名称
+            result.ProjectName = result.ProjectId.GetProjectNameById();
+            return result;
         }
 
         /// <summary>
@@ -130,7 +184,20 @@ namespace QMS.Application.System
         [HttpGet("/SsuProduct/select")]
         public async Task<List<SsuProductOutput>> Select()
         {
-            return await _ssuProductRep.DetachedEntities.ProjectToType<SsuProductOutput>().ToListAsync();
+            var result = await _ssuProductRep.DetachedEntities.ProjectToType<SsuProductOutput>().ToListAsync();
+            foreach (SsuProductOutput output in result)
+            {
+                //设置产品负责人名称
+                output.DirectorName = output.DirectorId.GetUserNameById();
+                //设置产品所属项目名称
+                output.ProjectName = output.ProjectId.GetProjectNameById();
+                var userList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == output.Id).Select(u => u.EmployeeId).ToList();
+                if (userList != null && userList.Count > 0)
+                {
+                    output.UserList = userList.GetUserListById().Adapt<List<UserOutput>>();
+                }
+            }
+            return result;
         }
 
         /// <summary>
@@ -170,20 +237,29 @@ namespace QMS.Application.System
         public async Task InsertProductGroup(long productId, IEnumerable<long> userIds)
         {
             List<SsuProductUser> list = new List<SsuProductUser>();
-            var resultList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
-            foreach (long employeeId in userIds)
+            var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(productId)).Select(u => u.EmployeeId);
+            //获取在新增列表中存在，但是不存在于产品组中的ID
+            var intersectionList = userIds.Except(existsList);
+            foreach (long employeeId in intersectionList)
             {
-                if (!resultList.Contains(employeeId))
-                {
-                    SsuProductUser projectUser = new SsuProductUser();
-                    projectUser.ProductId = productId;
-                    projectUser.EmployeeId = employeeId;
-                    list.Add(projectUser);
-                }
+                SsuProductUser projectUser = new SsuProductUser();
+                projectUser.ProductId = productId;
+                projectUser.EmployeeId = employeeId;
+                list.Add(projectUser);
             }
             if (list != null && list.Count > 0)
             {
                 await _ssuProductUserRep.InsertAsync(list);
+            }
+
+            //获取在产品组中存在的ID，但是不存在于新增的ID列表中的ID
+            var differenceList = existsList.Except(userIds);
+            if (differenceList != null && differenceList.Count() > 0)
+            {
+                foreach (long employeeId in differenceList)
+                {
+                    await _ssuProductUserRep.DeleteAsync(employeeId);
+                }
             }
         }
 
