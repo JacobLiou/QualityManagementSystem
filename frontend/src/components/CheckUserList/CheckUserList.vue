@@ -1,11 +1,12 @@
 <!--
  * @Author: 林伟群
- * @Date: 2022-05-16 16:28:46
- * @LastEditTime: 2022-06-21 17:12:30
+ * @Date: 2022-06-20 10:28:56
+ * @LastEditTime: 2022-06-21 17:14:40
  * @LastEditors: 林伟群
  * @Description: 人员组成员管理组件
- * @FilePath: \frontend\src\views\main\SsuIssue\componets\CheckUserList.vue
+ * @FilePath: \frontend\src\components\CheckUserList\CheckUserList.vue
 -->
+
 <template>
   <a-drawer
     destroyOnClose
@@ -472,8 +473,7 @@ export default {
 .user1 {
   width: 100%;
   height: 500px;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: auto;
 }
 .user_list {
   width: 100%;

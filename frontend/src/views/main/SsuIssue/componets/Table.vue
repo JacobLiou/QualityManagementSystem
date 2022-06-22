@@ -20,6 +20,7 @@
       @change="handleTableChange"
       :scroll="{ x: true, y: moblileTrue ? 0 : 'calc(100vh - 360px)' }"
       size="middle"
+      :customRow="customRow"
     >
       <div slot="checkbox" slot-scope="text, record, index">
         <a-checkbox @change="onceCheck(text, record, index)" :checked="record.checkbox"> </a-checkbox>
@@ -31,7 +32,7 @@
           <a-menu slot="overlay">
             <a-menu-item
               :key="item.currentKey"
-              v-for="item in operationFilter(record.status)"
+              v-for="item in operationFilter(record.btnList)"
               @click="operationType(record, item.operName)"
             >
               <a-icon :style="{ fontSize: '1em' }" :type="item.operIcon" />{{ item.operName }}
@@ -72,6 +73,8 @@
     <ProblemRedispatch ref="redispatchProblem" @changePersonnel="changePersonnel"></ProblemRedispatch>
     <!-- 问题挂起 -->
     <ProblemHang ref="hangProblem"></ProblemHang>
+    <!-- 问题关闭 -->
+    <ProblemClose ref="closeProblem"></ProblemClose>
     <!-- 批量转交 -->
     <ProblemBatchRedispatch ref="batchRedispatchProblem" @changePersonnel="changePersonnel"></ProblemBatchRedispatch>
     <!-- 选择人员 -->
@@ -85,12 +88,13 @@
 </template>
 
 <script>
-import { IssueDelete, IssueExport, Downloadfile, IssueReOpen } from '@/api/modular/main/SsuIssueManage'
+import { IssueDelete, IssueExport, Downloadfile, IssueReOpen, IssueSendur } from '@/api/modular/main/SsuIssueManage'
 import ProblemSolve from './ProblemSolve.vue'
 import ProblemRecheck from './ProblemRecheck.vue'
 import ProblemValidate from './ProblemValidate.vue'
 import ProblemRedispatch from './ProblemRedispatch.vue'
 import ProblemHang from './ProblemHang.vue'
+import ProblemClose from './ProblemClose.vue'
 import ProblemBatchRedispatch from './ProblemBatchRedispatch.vue'
 import CheckUserList from './CheckUserList.vue'
 export default {
@@ -101,6 +105,7 @@ export default {
     ProblemRedispatch,
     CheckUserList,
     ProblemHang,
+    ProblemClose,
     ProblemBatchRedispatch,
   },
   props: {
@@ -129,40 +134,6 @@ export default {
       indeterminate: false,
       checkAll: false,
       pageSizeOptions: ['20', '30', '40', '50'],
-      operationList: [
-        {
-          operName: '分发',
-          operIcon: 'select',
-        },
-        {
-          operName: '解决',
-          operIcon: 'question-circle',
-        },
-        {
-          operName: '验证',
-          operIcon: 'safety-certificate',
-        },
-        {
-          operName: '转交',
-          operIcon: 'export',
-        },
-        {
-          operName: '挂起',
-          operIcon: 'minus-circle',
-        },
-        {
-          operName: '详情',
-          operIcon: 'file-done',
-        },
-        {
-          operName: '编辑',
-          operIcon: 'edit',
-        },
-        {
-          operName: '删除',
-          operIcon: 'delete',
-        },
-      ],
       // 人员选择
       userVisible: false,
       personnelType: '',
@@ -197,6 +168,14 @@ export default {
     this.isMoblile()
   },
   methods: {
+    customRow(record) {
+      const { status } = record
+      return {
+        style: {
+          color: status == 4 ? '#bfc5d1' : 'unset',
+        },
+      }
+    },
     changePersonnel(value) {
       this.personnelType = value
     },
@@ -213,109 +192,68 @@ export default {
       this.$refs.redispatchProblem.form.executor = Number(checkUser[0].id)
       this.$refs.redispatchProblem.form.executorName = perArray.join()
     },
-    operationFilter(state) {
-      let operationList = [
+
+    // 操作类型
+    operationFilter(btnList) {
+      // const { admintype } = this.$store.state.user // 获取用户类型 1是超级用户
+      const operationArray = [
         {
           operName: '复制',
           operIcon: 'copy',
         },
         {
+          operName: '编辑',
+          operIcon: 'edit',
+        },
+        {
           operName: '详情',
           operIcon: 'file-done',
         },
+        {
+          operName: '分发',
+          operIcon: 'select',
+        },
+        {
+          operName: '转交',
+          operIcon: 'export',
+        },
+        {
+          operName: '解决',
+          operIcon: 'question-circle',
+        },
+        {
+          operName: '复核',
+          operIcon: 'reconciliation',
+        },
+        {
+          operName: '验证',
+          operIcon: 'safety-certificate',
+        },
+        {
+          operName: '关闭',
+          operIcon: 'close-circle',
+        },
+        {
+          operName: '挂起',
+          operIcon: 'minus-circle',
+        },
+        {
+          operName: '重开启',
+          operIcon: 'key',
+        },
+        {
+          operName: '催办',
+          operIcon: 'bell',
+        },
+        {
+          operName: '删除',
+          operIcon: 'delete',
+        },
       ]
-      const operationAdd = {
-        0: [
-          {
-            operName: '分发',
-            operIcon: 'select',
-          },
-          {
-            operName: '删除',
-            operIcon: 'delete',
-          },
-          {
-            operName: '转交',
-            operIcon: 'export',
-          },
-          {
-            operName: '挂起',
-            operIcon: 'minus-circle',
-          },
-          {
-            operName: '编辑',
-            operIcon: 'edit',
-          },
-        ],
-        1: [
-          {
-            operName: '解决',
-            operIcon: 'question-circle',
-          },
-          {
-            operName: '转交',
-            operIcon: 'export',
-          },
-        ],
-        2: [
-          {
-            operName: '复核',
-            operIcon: 'reconciliation',
-          },
-        ],
-        3: [
-          {
-            operName: '分发',
-            operIcon: 'select',
-          },
-          {
-            operName: '删除',
-            operIcon: 'delete',
-          },
-          {
-            operName: '转交',
-            operIcon: 'export',
-          },
-          {
-            operName: '挂起',
-            operIcon: 'minus-circle',
-          },
-          {
-            operName: '编辑',
-            operIcon: 'edit',
-          },
-        ],
-        4: [
-          {
-            operName: '重开启',
-            operIcon: 'key',
-          },
-        ],
-        5: [
-          {
-            operName: '重开启',
-            operIcon: 'key',
-          },
-        ],
-        6: [
-          {
-            operName: '重开启',
-            operIcon: 'key',
-          },
-          {
-            operName: '编辑',
-            operIcon: 'edit',
-          },
-        ],
-        7: [
-          {
-            operName: '验证',
-            operIcon: 'safety-certificate',
-          },
-        ],
-      }
-      const addList = operationAdd[String(state)]
-      const newOperationList = [...addList, ...operationList]
+      const newOperationList = []
+      btnList?.forEach((item) => {
+        newOperationList.push(operationArray[item])
+      })
       return newOperationList
     },
     isMoblile() {
@@ -367,7 +305,10 @@ export default {
     operationType(record, operName) {
       switch (operName) {
         case '删除':
-          this.problemDelect(record)
+          this.problemDelectSend(record, '删除')
+          break
+        case '催办':
+          this.problemDelectSend(record, '催办')
           break
         case '详情':
           this.$store.commit('SET_BACK_QP', this.$parent.$parent.$parent.queryParam)
@@ -405,30 +346,40 @@ export default {
         case '重开启':
           this.problemOpen(record)
           break
+        case '关闭':
+          this.$refs.closeProblem.initClose(record)
+          break
         default:
           break
       }
     },
 
-    // 删除
-    problemDelect(record) {
+    // 删除\催办
+    problemDelectSend(record, text) {
       const { id } = record
       const _this = this
       this.$confirm({
-        content: '确定删除该问题',
+        content: '确定' + text + '该问题',
         onOk() {
-          IssueDelete({ id })
-            .then((res) => {
+          if (text == '删除') {
+            IssueDelete({ id }).then((res) => {
               if (res.success) {
-                _this.$message.success('删除成功')
-                _this.getProblemList()
+                _this.$message.success(text + '成功')
+                _this.$router.back()
               } else {
-                _this.$message.warning(res.message)
+                _this.$message.error(text + '失败')
               }
             })
-            .catch(() => {
-              _this.$message.error('删除失败')
+          } else {
+            IssueSendur({ id }).then((res) => {
+              if (res.success) {
+                _this.$message.success(text + '成功')
+                _this.$router.back()
+              } else {
+                _this.$message.error(text + '失败')
+              }
             })
+          }
         },
         onCancel() {},
       })

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-15 17:25:56
+ * @LastEditTime: 2022-06-21 15:47:38
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -35,7 +35,7 @@
           </a-select>
         </a-form-model-item>
         <a-form-model-item label="性质" prop="consequence">
-          <a-select v-model="form.consequence" placeholder="请选择问题性质">
+          <a-select v-model="form.consequence" placeholder="请选择问题性质" @change="handleConsequence">
             <a-select-option
               v-for="(item, index) in checkAttArray('issue_consequence')"
               :key="index"
@@ -108,7 +108,12 @@
             </section>
             <!-- 小数输入框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'decimal'">
-              <a-input-number v-model="attribuForm[attItem.fieldCode]" :min="0" :step="0.1" />
+              <a-input-number
+                v-model="attribuForm[attItem.fieldCode]"
+                :min="0"
+                :step="0.1"
+                :disabled="attItem.fieldCode == 'ImpactScore'"
+              />
             </section>
             <!-- 复选框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'enum' && attItem.fieldName == '样机说明'">
@@ -439,6 +444,30 @@ export default {
     handleAttribut(val) {
       this.initCheckAttr = val
       this.extendAttributeList = val.map((item) => JSON.parse(item))
+      if (this.module == 2) this.handleConsequence(this.form.consequence)
+    },
+
+    // 试产模块 ，问题性质评分
+    handleConsequence(value) {
+      console.log(this.form.module)
+      if (this.module !== 2) return
+      switch (value) {
+        case 0:
+          this.attribuForm.ImpactScore = 10
+          break
+        case 1:
+          this.attribuForm.ImpactScore = 3
+          break
+        case 2:
+          this.attribuForm.ImpactScore = 1
+          break
+        case 3:
+          this.attribuForm.ImpactScore = 0.3
+          break
+        default:
+          this.attribuForm.ImpactScore = 0
+          break
+      }
     },
 
     // 动态属性日期类型
@@ -525,17 +554,12 @@ export default {
       }
       const newEAL = this.extendAttributeList.map((item) => {
         const fieldCode = item.fieldCode
-        const fieldDataType = item.fieldDataType
         const fieldName = item.fieldName
-        // if (fieldDataType == 'long') {
-        //   item.value = this.attribuForm[fieldCode]
-        // } else {
         if (fieldName === '样机说明') {
           item.value = this.attribuForm[fieldCode].join()
         } else {
           item.value = this.attribuForm[fieldCode]
         }
-        // }
         item.issueId = item.issueId ?? 0
         return item
       })

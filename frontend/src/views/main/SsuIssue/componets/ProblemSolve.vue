@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 09:56:36
- * @LastEditTime: 2022-06-14 16:49:36
+ * @LastEditTime: 2022-06-17 19:42:46
  * @LastEditors: 林伟群
  * @Description: 解决问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSolve.vue
@@ -143,9 +143,16 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        reason: [{ required: true, message: '请输入原因分析', trigger: 'blur' }],
-        measures: [{ required: true, message: '请输入解决措施', trigger: 'blur' }],
+        reason: [
+          { required: true, message: '请输入原因分析', trigger: 'blur' },
+          { min: 20, message: '原因分析不少于20', trigger: 'blur' },
+        ],
+        measures: [
+          { required: true, message: '请输入解决措施', trigger: 'blur' },
+          { min: 20, message: '解决措施不少于20', trigger: 'blur' },
+        ],
         solveTime: [{ required: true, message: '请输入解决日期', trigger: 'blur' }],
+        solveVersion: [{ required: true, message: '请选择解决版本', trigger: 'change' }],
       },
       dateType: '',
       isVersion: false,

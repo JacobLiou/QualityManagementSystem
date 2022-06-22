@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-15 17:38:25
+ * @LastEditTime: 2022-06-22 13:57:23
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -11,20 +11,21 @@
     <div class="add_title">{{ isStorage ? '问题新增' : '问题编辑' }}</div>
     <section class="form_1">
       <a-form-model ref="ruleForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="form" :rules="rules">
-        <a-form-model-item label="所属项目" prop="projectId">
-          <a-select v-model="form.projectId" placeholder="请选择所属项目">
-            <a-select-option v-for="(item, index) in projectData" :key="index" :value="item.id">{{
-              item.projectName
-            }}</a-select-option>
-          </a-select>
-        </a-form-model-item>
-        <a-form-model-item label="产品">
+        <a-form-model-item label="产品线">
           <a-select v-model="form.productId" placeholder="请选择产品">
             <a-select-option v-for="(item, index) in productData" :key="index" :value="item.id">{{
               item.productName
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
+        <a-form-model-item label="项目" prop="projectId">
+          <a-select v-model="form.projectId" placeholder="请选择所属项目" @change="projectChange">
+            <a-select-option v-for="(item, index) in projectData" :key="index" :value="item.id">{{
+              item.projectName
+            }}</a-select-option>
+          </a-select>
+        </a-form-model-item>
+
         <a-form-model-item label="模块" prop="module">
           <a-select v-model="form.module" placeholder="请选择模块" @change="moduleChange">
             <a-select-option v-for="item in moduleData" :key="item.code" :value="Number(item.code)">{{
@@ -40,8 +41,13 @@
           </a-select>
         </a-form-model-item>
 
-        <a-form-model-item label="当前指派" prop="currentAssignmentName">
+        <a-form-model-item label="当前指派" prop="currentAssignment">
           <section class="from_chilen">
+            <!-- <a-select v-model="form.currentAssignment" placeholder="请选择模块">
+              <a-select-option v-for="item in currentAssignmentData" :key="item.id" :value="item.id">{{
+                item.name
+              }}</a-select-option>
+            </a-select> -->
             <!-- <a-input v-model="form.currentAssignmentName" placeholder="请选择指派人" disabled /> -->
             <SelectUser
               title="请输入当前指派人"
@@ -53,7 +59,7 @@
           </section>
         </a-form-model-item>
         <a-form-model-item label="性质" prop="consequence">
-          <a-select v-model="form.consequence" placeholder="请选择问题性质">
+          <a-select v-model="form.consequence" placeholder="请选择问题性质" @change="handleConsequence">
             <a-select-option v-for="(item, index) in consequenceData" :key="index" :value="Number(item.code)">{{
               item.name
             }}</a-select-option>
@@ -148,7 +154,12 @@
             </section>
             <!-- 小数输入框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'decimal'">
-              <a-input-number v-model="attribuForm[attItem.fieldCode]" :min="0" :step="0.1" />
+              <a-input-number
+                v-model="attribuForm[attItem.fieldCode]"
+                :min="0"
+                :step="0.1"
+                :disabled="attItem.fieldCode == 'ImpactScore'"
+              />
             </section>
             <!-- 复选框 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'enum' && attItem.fieldName == '样机说明'">
@@ -181,7 +192,6 @@
             </section>
             <!-- 人员选择控件 -->
             <section class="from_chilen" v-if="attItem.fieldDataType == 'long'">
-              <!-- <a-input v-model="attribuForm[attItem.fieldCode]" :placeholder="attItem | placeholderName" disabled /> -->
               <SelectUser
                 :title="attItem | placeholderName"
                 :selectType="attItem.fieldCode"
@@ -236,6 +246,7 @@
 import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
 import { SsuProductList } from '@/api/modular/main/SsuProductManage'
 import { IssueAdd, IssueAttachmentSaveId, IssueDetail, IssueEdit } from '@/api/modular/main/SsuIssueManage'
+// import { getresponsibilityuser } from '@/api/modular/system/orgManage'
 import VueQuillEditor from './componets/VueQuillEditor.vue'
 import CheckUserList from './componets/CheckUserList.vue'
 import AttributCheck from './componets/AttributCheck.vue'
@@ -274,7 +285,7 @@ export default {
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
-        currentAssignmentName: [{ required: true, message: '请选择指派人', trigger: 'changes' }],
+        currentAssignment: [{ required: true, message: '请选择指派人', trigger: 'change' }],
         projectId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
         module: [{ required: true, message: '请选择模块', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
@@ -284,6 +295,7 @@ export default {
       productData: [], // 产品list
       moduleData: [], // 模块list
       issueClassificationData: [], // 问题分类list
+      currentAssignmentData: [], // 指派人list
       consequenceData: [], // 问题性质
       sourceData: [], // 问题来源
       ccListData: [], // 抄送人数组
@@ -353,12 +365,6 @@ export default {
       })
       return selectUserArr
     },
-    userSelectCurr() {
-      return {
-        id: this.form.currentAssignment,
-        name: this.form.currentAssignmentName,
-      }
-    },
     userSelectDis() {
       return {
         id: this.form.discover,
@@ -381,7 +387,6 @@ export default {
         .then((res) => {
           if (res.success) {
             this.form.description = res.data.description
-            // this.oldDescription = res.data.description
             this.initEditData(res.data)
             if (!res.data.extendAttribute) return
             const extendAttributeS = JSON.parse(res.data.extendAttribute)
@@ -398,8 +403,6 @@ export default {
                 this.attribuForm[item.fieldCode] = item.value
               }
             })
-            // console.log('extendAttributeList', extendAttributeList)
-            // console.log('attribuForm', this.attribuForm)
             this.initCheckAttr = this.extendAttributeList.map((item) => {
               const { value, issueId, ...newItem } = item
               return JSON.stringify(newItem)
@@ -416,7 +419,6 @@ export default {
     },
     // 编辑数据初始化
     initEditData(checkRecord) {
-      console.log(checkRecord)
       this.form.id = checkRecord.id
       this.form.title = checkRecord.title
       this.form.projectId = checkRecord.projectId // 项目编号
@@ -435,6 +437,12 @@ export default {
       this.status = checkRecord.status
       this.form.currentAssignment = checkRecord.currentAssignment
       this.form.currentAssignmentName = checkRecord.currentAssignmentName
+      this.currentAssignmentData = [
+        {
+          id: this.form.currentAssignment,
+          name: this.form.currentAssignmentName,
+        },
+      ]
     },
     // 列表初始化
     initList() {
@@ -473,11 +481,38 @@ export default {
 
     //模块选择
     moduleChange(value) {
+      console.log(this.moduleData)
       if (this.moduleType !== value) {
         this.moduleType = value
         this.attribuForm = {}
         this.extendAttributeList = []
       }
+      // 根据模块id获取人员列表
+    },
+    // 根据项目id获取人员列表
+    projectChange(value) {},
+
+    // 根据项目ID和模块id获取人员列表
+    getresponsibility() {
+      const projectId = this.form.projectId
+      const { module } = this.form
+      const moduleObj = this.moduleData.filter((item) => item.code == module)
+      console.log(moduleObj)
+      // if (projectId != undefined && projectId != undefined) {
+      //   getresponsibilityuser({ projectId, modularId })
+      //     .then((res) => {
+      //       if (res.success) {
+      //         return []
+      //       } else {
+      //         return []
+      //       }
+      //     })
+      //     .catch(() => {
+      //       return []
+      //     })
+      // } else {
+      //   return []
+      // }
     },
 
     // 动态属性选择按钮操作
@@ -495,7 +530,6 @@ export default {
     },
     // 动态属性日期
     attributDate(dates, dateStrings) {
-      console.log(this.dateType)
       if (this.dateType == 'discoverTime') {
         this.form[this.dateType] = dateStrings
         console.log(this.form)
@@ -579,7 +613,6 @@ export default {
             const oldNameS = this.form.ccListName.split(',')
             const allNameS = [...new Set([...oldNameS, ...newNameS])]
             this.form.ccList = [...new Set([...this.form.ccList, ...newList])]
-            console.log(allNameS, this.form.ccList)
             this.form.ccListName = allNameS.join()
           } else {
             this.form.ccList = checkUser.map((item) => {
@@ -677,7 +710,6 @@ export default {
         } else {
           item.value = this.attribuForm[fieldCode]
         }
-
         item.issueId = item.issueId ?? 0
         return item
       })
@@ -774,7 +806,30 @@ export default {
     handleAttribut(val) {
       this.initCheckAttr = val
       this.extendAttributeList = val.map((item) => JSON.parse(item))
+      if (this.form.module == 2) this.handleConsequence(this.form.consequence)
       console.log('新增属性', this.extendAttributeList)
+    },
+    // 试产模块 ，问题性质评分
+    handleConsequence(value) {
+      console.log(this.form.module)
+      if (this.form.module !== 2) return
+      switch (value) {
+        case 0:
+          this.attribuForm.ImpactScore = 10
+          break
+        case 1:
+          this.attribuForm.ImpactScore = 3
+          break
+        case 2:
+          this.attribuForm.ImpactScore = 1
+          break
+        case 3:
+          this.attribuForm.ImpactScore = 0.3
+          break
+        default:
+          this.attribuForm.ImpactScore = 0
+          break
+      }
     },
     // 返回
     onback() {

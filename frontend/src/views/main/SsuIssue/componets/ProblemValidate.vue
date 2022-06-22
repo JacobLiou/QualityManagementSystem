@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 10:51:13
- * @LastEditTime: 2022-06-14 16:49:35
+ * @LastEditTime: 2022-06-17 14:26:26
  * @LastEditors: 林伟群
  * @Description: 问题验证组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemValidate.vue
@@ -36,14 +36,17 @@
           />
         </a-form-model-item>
         <a-form-model-item ref="verifierPlace" label="验证地点" prop="verifierPlace">
-          <a-textarea v-model="form.verifierPlace" :rows="4" placeholder="请输入验证情况" />
+          <a-textarea v-model="form.verifierPlace" :rows="4" placeholder="请输入验证地点" />
         </a-form-model-item>
         <a-form-model-item label="验证情况" prop="result">
           <a-textarea v-model="form.result" :rows="4" placeholder="请输入验证情况" />
         </a-form-model-item>
-        <a-form-item label="验证通过">
-          <a-switch v-model="form.passResult" checkedChildren="是" unCheckedChildren="否" />
-        </a-form-item>
+        <a-form-model-item label="验证状态" prop="passResult">
+          <a-radio-group v-model="form.passResult">
+            <a-radio value="0"> 验证不通过 </a-radio>
+            <a-radio value="1"> 验证通过 </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
         <a-form-item label="附件上传">
           <ProblemUplod @uploadProblem="uploadProblem" :type="4"></ProblemUplod>
         </a-form-item>
@@ -76,7 +79,7 @@ export default {
         id: null,
         title: '',
         verifierPlace: '', // 验证地点
-        passResult: false, // 是否通过验证
+        passResult: '', // 是否通过验证
         count: 0, // 验证数量
         batch: '', // 验证批次
         result: '', // 验证情况
@@ -85,7 +88,9 @@ export default {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         batch: [{ required: true, message: '请输入验证批次', trigger: 'blur' }],
         count: [{ required: true, message: '请输入验证数量', trigger: 'blur' }],
+        verifierPlace: [{ required: true, message: '请输入验证地点', trigger: 'blur' }],
         result: [{ required: true, message: '请输入验证情况', trigger: 'blur' }],
+        passResult: [{ required: true, message: '请选择验证状态', trigger: 'change' }],
       },
       visible: false,
       attachment: [], // 附件上次的数据
@@ -108,7 +113,7 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           const parameter = JSON.parse(JSON.stringify(this.form))
-          parameter.passResult = parameter.passResult ? 1 : 0
+          parameter.passResult = Number(parameter.passResult)
           IssueValidate(parameter)
             .then((res) => {
               if (res.success) {

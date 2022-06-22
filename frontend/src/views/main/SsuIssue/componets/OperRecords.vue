@@ -1,35 +1,44 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-18 11:07:28
- * @LastEditTime: 2022-06-11 11:38:03
+ * @LastEditTime: 2022-06-17 19:28:30
  * @LastEditors: 林伟群
  * @Description: 历史记录组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\OperRecords.vue
 -->
 <template>
   <section class="info">
-    <div class="title">历史记录</div>
-    <a-row :gutter="[24, 12]" v-if="!isModal">
-      <a-col :xl="12" :xs="24"
-        ><ul v-if="this.operationRecords != ''">
-          <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
-            {{ index + 1 }}、{{ item.operationTime }}, 由 <b>{{ item.operatorName }}</b>
-            {{ 'issue_operation_type' | dictType(item.operationTypeId) }}
-          </li>
-        </ul>
-      </a-col>
-      <a-col :xl="12" :xs="24">
-        <a-steps direction="vertical" class="step">
-          <a-step
-            v-for="(item, index) in operationRecords"
-            :key="index"
-            status="process"
-            :title="'issue_operation_type' | dictType(item.operationTypeId)"
-            :description="item.operationTime"
-          />
-        </a-steps>
-      </a-col>
-    </a-row>
+    <a-tabs default-active-key="1" v-if="!isModal">
+      <a-tab-pane key="1" tab="历史记录">
+        <div>
+          <ul v-if="this.operationRecords != ''">
+            <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
+              {{ index + 1 }}、{{ item.operationTime }}, 由 <b>{{ item.operatorName }}</b>
+              {{ 'issue_operation_type' | dictType(item.operationTypeId) }}
+            </li>
+          </ul>
+        </div>
+      </a-tab-pane>
+      <a-tab-pane key="2" tab="流程记录">
+        <div>
+          <a-steps class="step">
+            <a-step
+              v-for="(item, index) in operationRecords"
+              :key="index"
+              status="process"
+              :title="'issue_operation_type' | dictType(item.operationTypeId)"
+            >
+              <template slot="description">
+                <span
+                  >{{ item.operatorName }} <br />
+                  {{ item.operationTime }}</span
+                >
+              </template>
+            </a-step>
+          </a-steps>
+        </div>
+      </a-tab-pane>
+    </a-tabs>
     <section v-else class="info_2">
       <ul v-if="this.operationRecords != ''">
         <li v-for="(item, index) in operationRecords" :key="index" :value="item.operationTypeId">
@@ -101,10 +110,17 @@ export default {
   ul {
     margin-bottom: 2em;
     li {
-      margin-bottom: 3.1em;
+      margin-bottom: 1em;
       margin-left: -1em;
       list-style: none;
+      font-size: 14px;
     }
+  }
+  /deep/.ant-steps {
+    display: -webkit-box;
+  }
+  /deep/.ant-steps-item {
+    margin-bottom: 24px;
   }
   .step {
     margin-left: 16px;

@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 17:12:55
- * @LastEditTime: 2022-06-14 16:49:42
+ * @LastEditTime: 2022-06-17 19:37:34
  * @LastEditors: 林伟群
  * @Description: 问题复核
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRecheck.vue
@@ -33,9 +33,12 @@
             placeholder="请输入复核情况"
           />
         </a-form-model-item>
-        <a-form-item label="复核通过">
-          <a-switch v-model="form.passResult" checkedChildren="是" unCheckedChildren="否" />
-        </a-form-item>
+        <a-form-model-item label="复核状态" prop="passResult">
+          <a-radio-group v-model="form.passResult">
+            <a-radio value="0"> 复核不通过 </a-radio>
+            <a-radio value="1"> 复核通过 </a-radio>
+          </a-radio-group>
+        </a-form-model-item>
         <a-form-item label="附件上传">
           <ProblemUplod @uploadProblem="uploadProblem" :type="2"></ProblemUplod>
         </a-form-item>
@@ -67,12 +70,13 @@ export default {
       form: {
         id: null,
         title: '', // 问题简述，
-        passResult: false, // 原因分析
+        passResult: '', // 复核状态
         reCheckResult: '', // 复核情况
       },
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         reCheckResult: [{ required: true, message: '请输入原因分析', trigger: 'blur' }],
+        passResult: [{ required: true, message: '请选择复核状态', trigger: 'change' }],
       },
       visible: false,
       attachment: [], // 附件上传的数据
@@ -97,7 +101,7 @@ export default {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           const parameter = JSON.parse(JSON.stringify(this.form))
-          parameter.passResult = parameter.passResult ? 1 : 0
+          parameter.passResult = Number(parameter.passResult)
           IssueReCheck(parameter)
             .then((res) => {
               if (res.success) {

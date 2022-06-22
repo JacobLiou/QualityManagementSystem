@@ -90,7 +90,7 @@ export function IssueExecute(parameter) {
  *
  * @author licong
  */
-export function IssueReOpen (parameter) {
+export function IssueReOpen(parameter) {
   return axios({
     url: '/issue/reopen',
     method: 'post',
@@ -103,7 +103,7 @@ export function IssueReOpen (parameter) {
  *
  * @author licong
  */
-export function IssueReCheck (parameter) {
+export function IssueReCheck(parameter) {
   return axios({
     url: '/issue/recheck',
     method: 'post',
@@ -135,6 +135,30 @@ export function IssueHangup(parameter) {
     method: 'post',
     data: parameter
   })
+}
+/**
+ * @description: 问题撤销
+ * @return {*}
+ */
+export function IssueClose(parameter) {
+  return axios({
+    url: "/issue/close",
+    method: "post",
+    data: parameter
+  })
+}
+
+/**
+ * @description: 问题催办
+ * @return {*}
+ */
+export function IssueSendur(parameter) {
+  return axios({
+    url: "/issue/sendurgenotice",
+    method: "get",
+    params: parameter
+  })
+
 }
 
 /**

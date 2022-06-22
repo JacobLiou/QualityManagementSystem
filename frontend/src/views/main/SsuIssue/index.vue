@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-14 10:01:22
+ * @LastEditTime: 2022-06-18 13:41:58
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -131,6 +131,7 @@ export default {
           dataIndex: 'title',
           width: '20em',
           customRender: (text, row, index) => {
+            const color = row.status == 4 ? '#bfc5d1' : '#2F66F9'
             const openDrawer = () => {
               this.$store.commit('SET_BACK_QP', this.queryParam)
               this.$router.push({
@@ -141,7 +142,7 @@ export default {
             return (
               <a
                 href="javascript:;"
-                style="color: '#2F66F9'; display: inline-block; width: 100%; height: 100%"
+                style={'color:' + color + '; display: inline-block; width: 100%; height: 100%'}
                 onClick={openDrawer}
                 title={text}
                 class="clickOutSideClass"
@@ -245,7 +246,8 @@ export default {
             // const contentArray = ['已开启', '已分派', '已处理', '未解决', '已关闭', '已挂起']
             const contentArray = this.$options.filters['dictData']('issue_status')
             const data = contentArray.find((item) => item.code == text)
-            return data?.name
+            const colorArray = ['#1890ff', '#f8b37c', '#229342', '#ff5500', '#bfc5d1', '#f1d710', '#d2b4e0', '#94b0f0']
+            return <a-tag color={colorArray[text]}>{data?.name}</a-tag>
           },
         },
         {

@@ -103,3 +103,15 @@ export function sysOrgDelete(parameter) {
     data: parameter
   })
 }
+
+/**
+ * @description: 根据项目ID和模块ID获取当前指派人列表
+ * @return {*}
+ */
+export function getresponsibilityuser(parameter) {
+  return axios({
+    url: "/SsuEmpOrg/getresponsibilityuser",
+    method: 'get',
+    params: parameter
+  })
+}

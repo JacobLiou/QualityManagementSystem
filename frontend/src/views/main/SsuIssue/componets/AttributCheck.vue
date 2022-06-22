@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-20 17:57:57
- * @LastEditTime: 2022-05-26 15:53:26
+ * @LastEditTime: 2022-06-21 15:06:26
  * @LastEditors: 林伟群
  * @Description: 属性选择组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\AttributCheck.vue
@@ -14,7 +14,7 @@
       <a-checkbox-group @change="checkChange" :defaultValue="checkedValues">
         <a-row :gutter="[12, 12]">
           <a-col :span="12" v-for="(item, index) in attributArray" :key="index">
-            <a-checkbox :value="item.value"> {{ item.label }} </a-checkbox>
+            <a-checkbox :value="item.value" :disabled="item.label == '问题性质评分'"> {{ item.label }} </a-checkbox>
           </a-col>
         </a-row>
       </a-checkbox-group>
@@ -62,8 +62,21 @@ export default {
                 }
                 return itemCheck
               })
-              this.checkedValues = this.initCheckAttr
-              console.log(this.checkedValues)
+              // 筛选出存在的属性
+              this.checkedValues = this.initCheckAttr.filter((item) => {
+                const itemIndex = this.attributArray.findIndex((it) => {
+                  if (it.value == item) return it
+                })
+                if (itemIndex > 0) return item
+              })
+              // 当其为试产模式时，问题性质得分自动生成，跟随性质自动评分，不可操作
+              if (this.moduleType == 2) {
+                const getTrial = this.attributArray.find((item) => {
+                  return item.label == '问题性质评分'
+                })
+                this.checkedValues = [...new Set([...this.checkedValues, getTrial.value])]
+                this.$emit('handleAttribut', this.checkedValues)
+              }
             } else {
               this.attributArray = []
               this.$message.warning('模块属性获取失败')
@@ -81,7 +94,7 @@ export default {
     // 选中的属性
     checkChange(val) {
       this.checkedValues = val
-      console.log(this.checkedValues)
+      console.log('默认选中', this.checkedValues)
     },
     handleOk() {
       this.visible = false
