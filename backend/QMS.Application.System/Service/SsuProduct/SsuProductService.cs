@@ -27,14 +27,12 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProductUser> _ssuProductUserRep;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly ISsuEmpService _ssuEmpService;
-        private readonly ISsuProjectService _ssuProjectService;
         private readonly ICacheService _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProductService(
             IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService cacheService, ISsuEmpService ssuEmpService, ISsuProjectService ssuProjectService
+            ISysEmpService sysEmpService, ICacheService cacheService
         )
         {
             _ssuProductRep = ssuProductRep;
@@ -42,8 +40,6 @@ namespace QMS.Application.System
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
             _cacheService = cacheService;
-            _ssuEmpService = ssuEmpService;
-            _ssuProjectService = ssuProjectService;
         }
 
         /// <summary>
@@ -162,7 +158,7 @@ namespace QMS.Application.System
             var result = detail.Adapt<SsuProductOutput>();
             var productUserId = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId == input.Id)
                 .Select(u => u.EmployeeId).ToList();
-            result.UserList = _ssuEmpService.GetUserList(productUserId).Result.Values.ToList().Adapt<List<UserOutput>>();
+            result.UserList = productUserId.GetUserListById().ToList().Adapt<List<UserOutput>>();
             //设置产品负责人名称
             result.DirectorName = result.DirectorId.GetUserNameById();
             //设置产品所属项目名称

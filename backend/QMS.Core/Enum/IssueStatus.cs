@@ -166,5 +166,11 @@ namespace QMS.Core.Enum
         /// </summary>
         [Description("催办")]
         Notice = 11,
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        [Description("删除")]
+        Delete = 12,
     }
 }

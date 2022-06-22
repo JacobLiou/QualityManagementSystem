@@ -27,13 +27,12 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
         private readonly IRepository<SysUser> _ssuSysuser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly ISsuEmpService _SsuEmpService;
         private readonly ICacheService _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProjectService(
             IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService cacheService, ISsuEmpService ssuEmpService
+            ISysEmpService sysEmpService, ICacheService cacheService
         )
         {
             _ssuProjectRep = ssuProjectRep;
@@ -41,7 +40,6 @@ namespace QMS.Application.System
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
             _cacheService = cacheService;
-            _SsuEmpService = ssuEmpService;
         }
 
         /// <summary>

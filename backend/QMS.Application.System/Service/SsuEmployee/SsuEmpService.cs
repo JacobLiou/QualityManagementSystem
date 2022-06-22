@@ -16,6 +16,8 @@ using Furion.FriendlyException;
 using Furion.DatabaseAccessor.Extensions;
 using System.Linq.Dynamic.Core;
 using QMS.Core;
+using System.ComponentModel.DataAnnotations;
+using Furion.Extras.Admin.NET.Entity.Common;
 
 namespace QMS.Application.System
 {
@@ -29,16 +31,21 @@ namespace QMS.Application.System
         private readonly IRepository<SysEmp> _sysEmpRep;  // 组织机构表仓储
         private readonly ICacheService _cacheService;
         private readonly IRepository<SysUser> _sysUser;
+        private readonly IRepository<SsuProjectUser> _ssuProjectUser;
+        private readonly IRepository<SsuGroupUser> _ssuGroupUser;
         private readonly ISysEmpService _sysEmpService;
         private readonly int CacheMinute = 30;
 
-        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService cacheService, IRepository<SysUser> sysUser, ISysEmpService sysEmpService)
+        public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService cacheService, IRepository<SysUser> sysUser,
+            ISysEmpService sysEmpService, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SsuGroupUser> ssuGroupUser)
         {
             _sysOrgRep = sysOrgRep;
             _sysEmpRep = sysEmpRep;
             _cacheService = cacheService;
             _sysUser = sysUser;
             _sysEmpService = sysEmpService;
+            _ssuProjectUser = ssuProjectUser;
+            _ssuGroupUser = ssuGroupUser;
         }
 
         /// <summary>
@@ -305,5 +312,27 @@ namespace QMS.Application.System
         }
 
         #endregion 用户查找
+
+        /// <summary>
+        /// 根据项目ID和模块ID获取当前指派人列表
+        /// </summary>
+        /// <param name="projectId"></param>
+        /// <param name="modularId"></param>
+        /// <returns></returns>
+        [HttpGet("/SsuEmpOrg/getresponsibilityuser")]
+        public async Task<List<UserOutput>> GetResponsibilityUser([Required][FromQuery] long projectId, [Required][FromQuery] long modularId)
+        {
+            if (projectId == 0 || modularId == 0)
+            {
+                throw Oops.Oh("项目ID或模块ID不能为空");
+            }
+            var projectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == projectId).Select(u => u.EmployeeId).ToList();
+            //模块人员列表先暂时采用"在人员组上新增模块对应的人员列表，管理员后台维护数据库"，后续有变动再做修改
+            var modularUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == modularId).Select(u => u.EmployeeId).ToList();
+            //获取项目人员列表和模块人员列表的交集
+            var userList = projectUser.Intersect(modularUser).ToList();
+            var result = await _sysUser.DetachedEntities.Where(u => userList.Contains(u.Id)).Select(u => u.Adapt<UserOutput>()).ToListAsync();
+            return result;
+        }
     }
 }

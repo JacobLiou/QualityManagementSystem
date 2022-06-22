@@ -308,8 +308,8 @@ namespace QMS.Application.Issues
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             //已挂起，已关闭状态下支持重开启
-            Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
-            Helper.Helper.Assert(common.CurrentAssignment == Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
+            //Helper.Helper.Assert(common.Status == EnumIssueStatus.HasHangUp || common.Status == EnumIssueStatus.Closed, "必须为已挂起或者已关闭状态才能开启");
+            //Helper.Helper.Assert(common.CurrentAssignment == Helper.Helper.GetCurrentUser(), "必须为问题分发人才能重开启问题");
 
             common.Status = EnumIssueStatus.Created;
             await this._issueRep.UpdateNowAsync(common, true);
@@ -341,7 +341,7 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(复核人)");
+            //Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(复核人)");
 
             bool pass = input.PassResult == YesOrNot.Y;
             input.SetIssue(common);
@@ -384,7 +384,7 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
+            //Helper.Helper.Assert(common.CurrentAssignment != null && common.CurrentAssignment == Helper.Helper.GetCurrentUser(), $"当前指派人不是当前用户(执行人)");
 
             input.SetIssue(common);
             IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
@@ -483,10 +483,10 @@ namespace QMS.Application.Issues
 
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(input.CurrentAssignment != 0, "转交时必须指定转交人");
-            Helper.Helper.Assert(input.CurrentAssignment != Helper.Helper.GetCurrentUser(), $"当前用户不能是当前问题的转交人");
-            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.Dispatcher
-                || Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是当前问题的处理人或者分发人，不能进行转交操作");
+            //Helper.Helper.Assert(input.CurrentAssignment != 0, "转交时必须指定转交人");
+            //Helper.Helper.Assert(input.CurrentAssignment != Helper.Helper.GetCurrentUser(), $"当前用户不能是当前问题的转交人");
+            //Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.Dispatcher
+            //    || Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是当前问题的处理人或者分发人，不能进行转交操作");
 
             input.SetIssue(common);
             await this._issueRep.UpdateNowAsync(common, true);
@@ -540,7 +540,7 @@ namespace QMS.Application.Issues
             Helper.Helper.CheckInput(input);
             Issue common = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-            Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
+            //Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == common.CurrentAssignment, "当前用户不是分发用户，无法执行关闭操作");
 
             input.SetIssue(common);
 
@@ -1307,6 +1307,13 @@ namespace QMS.Application.Issues
             var result = new List<EnumIssueButton>();
             result.Add(EnumIssueButton.Copy);
             result.Add(EnumIssueButton.Detail);
+
+            //超级管理员才能进行删除动作
+            var adminType = CurrentUserInfo.IsSuperAdmin;
+            if (adminType)
+            {
+                result.Add(EnumIssueButton.Delete);
+            }
             if (currentAssignment == null || currentAssignment == 0)
             {
                 return result;
