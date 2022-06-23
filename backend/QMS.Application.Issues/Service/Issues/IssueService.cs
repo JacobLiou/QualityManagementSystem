@@ -1207,7 +1207,7 @@ namespace QMS.Application.Issues
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpGet("sendurgenotice")]
+        [HttpPost("sendurgenotice")]
         public async Task SendUrgeNotice(BaseId input)
         {
             Helper.Helper.CheckInput(input);
@@ -1346,7 +1346,7 @@ namespace QMS.Application.Issues
 
                     case EnumIssueStatus.Dispatched:
                         result.Add(EnumIssueButton.Edit);
-                        //result.Add(EnumIssueButton.ReDispatch);
+                        result.Add(EnumIssueButton.ReDispatch);
                         result.Add(EnumIssueButton.HangUp);
                         result.Add(EnumIssueButton.Close);
                         result.Add(EnumIssueButton.Notice);

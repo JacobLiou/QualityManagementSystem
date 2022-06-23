@@ -17,9 +17,9 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// <summary>
         /// 问题序号（格式为：模块缩写+时间年月日+三位数自增种子，如TST20220620002）
         /// </summary>
-        [ExcelColumnName("问题序号")]
-        [ExcelColumnWidth(20)]
-        public virtual string SerialNumber { get; set; }
+        //[ExcelColumnName("问题序号")]
+        //[ExcelColumnWidth(20)]
+        //public virtual string SerialNumber { get; set; }
 
         /// <summary>
         /// 项目编号

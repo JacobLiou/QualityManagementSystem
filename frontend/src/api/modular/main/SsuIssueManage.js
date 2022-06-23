@@ -155,8 +155,8 @@ export function IssueClose(parameter) {
 export function IssueSendur(parameter) {
   return axios({
     url: "/issue/sendurgenotice",
-    method: "get",
-    params: parameter
+    method: "post",
+    data: parameter
   })
 
 }
