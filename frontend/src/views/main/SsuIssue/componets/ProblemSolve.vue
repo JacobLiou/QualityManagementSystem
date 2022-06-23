@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 09:56:36
- * @LastEditTime: 2022-06-22 19:54:34
+ * @LastEditTime: 2022-06-23 09:48:13
  * @LastEditors: 林伟群
  * @Description: 解决问题
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemSolve.vue
@@ -153,7 +153,7 @@ export default {
           { required: true, message: '请输入解决措施', trigger: 'blur' },
           { min: 20, message: '解决措施不少于20', trigger: 'blur' },
         ],
-        solveTime: [{ required: true, message: '请输入解决日期', trigger: 'blur' }],
+        solveTime: [{ required: true, message: '请输入解决日期', trigger: 'change' }],
         solveVersion: [{ required: true, message: '请选择解决版本', trigger: 'change' }],
       },
       dateType: '',
@@ -192,6 +192,7 @@ export default {
       this.visible = true
       this.form.id = record.id
       this.form.title = record.title // 问题简述，
+      this.form.solveTime = moment().format('YYYY-MM-DD')
       this.isShow = isShow
     },
     // 动态属性日期类型

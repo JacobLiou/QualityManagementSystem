@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-26 14:29:27
- * @LastEditTime: 2022-06-22 19:59:27
+ * @LastEditTime: 2022-06-23 10:29:26
  * @LastEditors: 林伟群
  * @Description: 问题分发页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemDistribure.vue
@@ -162,7 +162,13 @@
         </section>
         <section class="add_once">
           <a-form-item label="附件上传" :labelCol="labelCol2">
-            <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file">
+            <a-upload
+              :customRequest="customRequest"
+              :multiple="true"
+              :showUploadList="true"
+              name="file"
+              @change="handleChange"
+            >
               <a-button icon="upload">附件上传</a-button>
             </a-upload>
           </a-form-item>
@@ -240,6 +246,7 @@ export default {
       dateType: '', // 时间类型
       editDate: '',
       attachment: [], // 附件信息
+      uploadInfo: {}, // 文件上传详情
     }
   },
   filters: {
@@ -332,7 +339,7 @@ export default {
       // console.log(value, 'value')
       this.form.id = value.id
       this.form.title = value.title // 问题简述，
-      this.form.forecastSolveTime = value.forecastSolveTime // 预计完成时间
+      this.form.forecastSolveTime = moment().format('YYYY-MM-DD') // 预计完成时间
       this.form.issueClassification = value.issueClassification // 问题分类
       this.form.consequence = value.consequence // 性质
       this.form.currentAssignmentName = value.currentAssignmentName // 执行人idF   要改为指派人
@@ -379,7 +386,6 @@ export default {
           this.form.ccList = newCcList
           const newPerArray = [...new Set(perArray)]
           this.form.ccListName = newPerArray.join()
-          console.log(this.form)
           break
         default:
           const customAttribu = selectType + 'customNameId'
@@ -448,6 +454,11 @@ export default {
     handleAttribut(val) {
       this.initCheckAttr = val
       this.extendAttributeList = val.map((item) => JSON.parse(item))
+      this.extendAttributeList.forEach((item) => {
+        if (item.fieldDataType == 'DateTime' && this.attribuForm[item.fieldCode] == undefined) {
+          this.attribuForm[item.fieldCode] = moment().format('YYYY-MM-DD')
+        }
+      })
       if (this.module == 2) this.handleConsequence(this.form.consequence)
     },
 
@@ -490,7 +501,6 @@ export default {
         console.log(this.attribuForm)
       }
     },
-
     // 禁止部分时间
     disabledDate(current) {
       // 编辑和增加
@@ -499,6 +509,18 @@ export default {
       } else {
         return current && current < moment().subtract(1, 'days')
       }
+    },
+
+    handleChange(info) {
+      if (info.file.status === 'removed') {
+        const fileIndex = this.uploadInfo.fileList.findIndex((item) => {
+          if (item.uid === info.file.uid) {
+            return item
+          }
+        })
+        this.attachment.splice(fileIndex, 1)
+      }
+      this.uploadInfo = info
     },
 
     // 附件上传

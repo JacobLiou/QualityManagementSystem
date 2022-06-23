@@ -1,7 +1,7 @@
 ﻿<!--
  * @Author: 林伟群
  * @Date: 2022-05-11 09:52:50
- * @LastEditTime: 2022-06-22 14:42:42
+ * @LastEditTime: 2022-06-23 10:38:27
  * @LastEditors: 林伟群
  * @Description: 问题管理页面
  * @FilePath: \frontend\src\views\main\SsuIssue\index.vue
@@ -101,7 +101,7 @@ export default {
           title: '序号',
           align: 'left',
           sorter: true,
-          dataIndex: 'id',
+          dataIndex: 'serialNumber',
           width: '10em',
         },
         {

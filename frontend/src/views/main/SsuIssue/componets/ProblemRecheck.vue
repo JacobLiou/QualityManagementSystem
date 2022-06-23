@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-30 17:12:55
- * @LastEditTime: 2022-06-22 15:21:00
+ * @LastEditTime: 2022-06-23 10:33:32
  * @LastEditors: 林伟群
  * @Description: 问题复核
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemRecheck.vue
@@ -92,7 +92,7 @@ export default {
       this.isShow = isShow
     },
     // 附件上传
-    uploadProblem() {
+    uploadProblem(val) {
       this.attachment = val
     },
 

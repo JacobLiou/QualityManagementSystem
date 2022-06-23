@@ -1,14 +1,14 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 09:45:03
- * @LastEditTime: 2022-06-14 15:07:53
+ * @LastEditTime: 2022-06-23 10:31:11
  * @LastEditors: 林伟群
  * @Description: 文件上传
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemUplod.vue
 -->
 <template>
   <section>
-    <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file">
+    <a-upload :customRequest="customRequest" :multiple="true" :showUploadList="true" name="file" @change="handleChange">
       <a-button icon="upload">附件上传</a-button>
     </a-upload>
   </section>
@@ -21,9 +21,21 @@ export default {
   data() {
     return {
       attachment: [],
+      uploadInfo: {},
     }
   },
   methods: {
+    handleChange(info) {
+      if (info.file.status === 'removed') {
+        const fileIndex = this.uploadInfo.fileList.findIndex((item) => {
+          if (item.uid === info.file.uid) {
+            return item
+          }
+        })
+        this.attachment.splice(fileIndex, 1)
+      }
+      this.uploadInfo = info
+    },
     // 附件上传
     customRequest(data) {
       const { file } = data

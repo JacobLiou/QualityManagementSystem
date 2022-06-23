@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-31 10:51:13
- * @LastEditTime: 2022-06-22 15:23:44
+ * @LastEditTime: 2022-06-23 10:33:40
  * @LastEditors: 林伟群
  * @Description: 问题验证组件
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\ProblemValidate.vue
@@ -105,7 +105,7 @@ export default {
       this.isShow = isShow
     },
     // 附件上传
-    uploadProblem() {
+    uploadProblem(val) {
       this.attachment = val
     },
     // 确定

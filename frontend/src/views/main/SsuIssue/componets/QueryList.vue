@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-11 15:54:20
- * @LastEditTime: 2022-06-15 16:32:18
+ * @LastEditTime: 2022-06-23 10:16:43
  * @LastEditors: 林伟群
  * @Description: 高级筛选
  * @FilePath: \frontend\src\views\main\SsuIssue\componets\QueryList.vue
@@ -232,6 +232,7 @@ export default {
             break
         }
       }
+      console.log(this.queryParam)
       this.$emit('queryLsit', this.queryParam)
       this.visible = false
     },
@@ -244,10 +245,12 @@ export default {
     // 重置
     handleReset() {
       this.nameList = ''
-      this.queryParam = {}
       this.stateDate = ''
       this.endDate = ''
       this.CreatorType = 'Creator'
+      for (const key in this.queryParam) {
+        this.queryParam[key] = undefined
+      }
     },
     // 取消
     handleCancel() {

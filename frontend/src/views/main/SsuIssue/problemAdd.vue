@@ -1,7 +1,7 @@
 <!--
  * @Author: 林伟群
  * @Date: 2022-05-19 10:30:06
- * @LastEditTime: 2022-06-22 19:34:28
+ * @LastEditTime: 2022-06-23 09:58:50
  * @LastEditors: 林伟群
  * @Description: 问题增加页面
  * @FilePath: \frontend\src\views\main\SsuIssue\problemAdd.vue
@@ -318,8 +318,8 @@ export default {
       // 编辑
       this.getIssueDetail(id)
     }
-    if (this.copyAdd) {
-      this.form.discoverTime = null
+    if (!this.isEdit) {
+      this.form.discoverTime = moment().format('YYYY-MM-DD')
     }
     this.initList()
     this.getFromData()
@@ -810,8 +810,12 @@ export default {
     handleAttribut(val) {
       this.initCheckAttr = val
       this.extendAttributeList = val.map((item) => JSON.parse(item))
+      this.extendAttributeList.forEach((item) => {
+        if (item.fieldDataType == 'DateTime' && this.attribuForm[item.fieldCode] == undefined) {
+          this.attribuForm[item.fieldCode] = moment().format('YYYY-MM-DD')
+        }
+      })
       if (this.form.module == 2) this.handleConsequence(this.form.consequence)
-      console.log('新增属性', this.extendAttributeList)
     },
     // 试产模块 ，问题性质评分
     handleConsequence(value) {
