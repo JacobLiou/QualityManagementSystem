@@ -146,7 +146,7 @@ export default {
       this.$refs.addForm.form.setFieldsValue({
         directorId: Number(checkUser[0].id),
       })
-      this.$refs.addForm.directorIdName = perArray.join()
+      this.$refs.addForm.directorName = perArray.join()
     },
     /**
      * 查询参数组装
