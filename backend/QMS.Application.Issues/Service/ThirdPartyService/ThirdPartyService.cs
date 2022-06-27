@@ -11,10 +11,10 @@ using QMS.Core;
 namespace QMS.Application.Issues
 {
     [ApiDescriptionSettings("问题管理服务", Name = "ThirdParty", Order = 100)]
-
     public class ThirdPartyService : IDynamicApiController, IScoped
     {
         private readonly IHttpContextAccessor _contextAccessor;
+
         public ThirdPartyService(IHttpContextAccessor contextAccessor)
         {
             _contextAccessor = contextAccessor;
@@ -35,7 +35,7 @@ namespace QMS.Application.Issues
                 .SetBody(projectIds.ToArray())
                 .PostAsAsync<ThirdPartyApiModel<Dictionary<long, ProjectModelFromThirdParty>>>();
 
-            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"项目集合不存在");
+            //Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"项目集合不存在");
 
             return response.data;
         }
@@ -55,7 +55,7 @@ namespace QMS.Application.Issues
                 .SetBody(projectIds)
                 .PostAsAsync<ThirdPartyApiModel<Dictionary<long, ProductModelFromThirdParty>>>();
 
-            Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"产品集合不存在");
+            //Helper.Helper.Assert(response != null && response.data != null && response.data.Count > 0, $"产品集合不存在");
 
             return response.data;
         }

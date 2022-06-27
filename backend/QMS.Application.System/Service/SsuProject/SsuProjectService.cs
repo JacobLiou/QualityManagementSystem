@@ -58,9 +58,10 @@ namespace QMS.Application.System
         [HttpGet("/SsuProject/page")]
         public async Task<PageResult<SsuProjectOutput>> Page([FromQuery] SsuProjectInput input)
         {
+            var ssuProjectProduct = _ssuProjectProduct.DetachedEntities.Where(input.ProductId != 0, u => u.ProductId == input.ProductId).Select(u => u.ProjectId);
             var ssuProjects = await _ssuProjectRep.DetachedEntities
-                                     //.Where(!string.IsNullOrEmpty(input.ProjectName), u => u.ProjectName == input.ProjectName)
                                      .Where(!string.IsNullOrEmpty(input.ProjectName), u => u.ProjectName.Contains(input.ProjectName))
+                                     .Where(input.ProductId != 0, u => ssuProjectProduct.Contains(u.Id))
                                      .OrderBy(PageInputOrder.OrderBuilder<SsuProjectInput>(input))
                                      .ProjectToType<SsuProjectOutput>()
                                      .ToADPagedListAsync(input.PageNo, input.PageSize);
@@ -123,7 +124,7 @@ namespace QMS.Application.System
             var issueList = _issueRep.DetachedEntities.Where(u => u.ProjectId == input.Id).Select(u => u.SerialNumber).ToList();
             if (issueList != null && issueList.Count() > 0)
             {
-                throw Oops.Oh("序号为：" + String.Join(",", issueList) + "正在使用该项目，禁止删除");
+                throw Oops.Oh("序号为：" + String.Join(",", issueList) + ",正在使用该项目，禁止删除");
             }
 
             var ssuProject = await _ssuProjectRep.FirstOrDefaultAsync(u => u.Id == input.Id);
@@ -163,10 +164,13 @@ namespace QMS.Application.System
             var ssuProjectProduct = await _ssuProjectProduct.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
             if (ssuProjectProduct != null)
             {
-                ssuProjectProduct.ProjectId = input.Id;
-                ssuProjectProduct.ProductId = input.ProductId;
-                await _ssuProjectProduct.UpdateAsync(ssuProjectProduct);
+                await _ssuProjectProduct.DeleteAsync(ssuProjectProduct);
             }
+            ssuProjectProduct = new SsuProjectProduct();
+            ssuProjectProduct.ProjectId = input.Id;
+            ssuProjectProduct.ProductId = input.ProductId;
+            await _ssuProjectProduct.InsertAsync(ssuProjectProduct);
+
 
             //更新项目组人员列表
             var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();

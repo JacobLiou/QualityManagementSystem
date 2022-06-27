@@ -107,7 +107,14 @@ namespace QMS.Application.System
             var issueList = _issueRep.DetachedEntities.Where(u => u.ProductId == input.Id).Select(u => u.SerialNumber).ToList();
             if (issueList != null && issueList.Count() > 0)
             {
-                throw Oops.Oh("序号为：" + String.Join(",", issueList) + "正在使用该产品，禁止删除");
+                throw Oops.Oh("序号为：" + String.Join(",", issueList) + ",正在使用该产品，禁止删除");
+            }
+
+            //删除产品项目关联表数据
+            var ssuProductProject = _ssuProjectProduct.DetachedEntities.Where(u => u.ProductId == input.Id).ToList().Select(u => u.ProjectId.GetProjectNameById());
+            if (ssuProductProject != null && ssuProductProject.Count() > 0)
+            {
+                throw Oops.Oh("项目为：" + String.Join(",", ssuProductProject) + ",正在关联该产品，禁止删除");
             }
 
             var ssuProduct = await _ssuProductRep.FirstOrDefaultAsync(u => u.Id == input.Id);
@@ -118,13 +125,6 @@ namespace QMS.Application.System
             if (ssuProductUser != null)
             {
                 await _ssuProductUserRep.DeleteAsync(ssuProductUser);
-            }
-
-            //删除产品项目关联表数据
-            var ssuProductProject = await _ssuProjectProduct.DetachedEntities.FirstOrDefaultAsync(u => u.ProductId == input.Id);
-            if (ssuProductProject != null)
-            {
-                await _ssuProjectProduct.DeleteAsync(ssuProductProject);
             }
         }
 

@@ -11,8 +11,8 @@
     <div class="add_title">{{ isStorage ? '问题新增' : '问题编辑' }}</div>
     <section class="form_1">
       <a-form-model ref="ruleForm" :labelCol="labelCol" :wrapperCol="wrapperCol" :model="form" :rules="rules">
-        <a-form-model-item label="产品线">
-          <a-select v-model="form.productId" placeholder="请选择产品">
+        <a-form-model-item label="产品线" prop="productId">
+          <a-select v-model="form.productId" placeholder="请选择产品" @change="productChange">
             <a-select-option v-for="(item, index) in productData" :key="index" :value="item.id">{{
               item.productName
             }}</a-select-option>
@@ -234,6 +234,7 @@
 </template>
 
 <script>
+import { SsuProjectPage } from '@/api/modular/main/SsuProjectManage'
 import { SsuProjectList } from '@/api/modular/main/SsuProjectManage'
 import { SsuProductList } from '@/api/modular/main/SsuProductManage'
 import { IssueAdd, IssueAttachmentSaveId, IssueDetail, IssueEdit } from '@/api/modular/main/SsuIssueManage'
@@ -278,6 +279,7 @@ export default {
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         currentAssignment: [{ required: true, message: '请选择指派人', trigger: 'change' }],
+        productId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
         projectId: [{ required: true, message: '请选择所属项目', trigger: 'change' }],
         module: [{ required: true, message: '请选择模块', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
@@ -446,7 +448,7 @@ export default {
     // 获取相应的字段
     getFromData() {
       // 项目
-      SsuProjectList()
+      /* SsuProjectList()
         .then((res) => {
           if (res.success) {
             this.projectData = res.data
@@ -456,7 +458,7 @@ export default {
         })
         .finally((res) => {
           this.confirmLoading = false
-        })
+        }) */
       // 产品
       SsuProductList()
         .then((res) => {
@@ -464,6 +466,25 @@ export default {
             this.productData = res.data
           } else {
             this.$message.error('产品列表读取失败')
+          }
+        })
+        .finally((res) => {
+          this.confirmLoading = false
+        })
+    },
+
+    //根据产品线加载项目列表
+    productChange(){
+      this.projectData =[]
+      this.form.projectId = undefined      
+      // 项目
+      const productId = this.form.productId
+      SsuProjectPage({ productId })
+        .then((res) => {
+          if (res.success) {
+            this.projectData = res.data.rows
+          } else {
+            this.$message.error('项目列表读取失败')
           }
         })
         .finally((res) => {
