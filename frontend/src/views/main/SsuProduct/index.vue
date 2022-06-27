@@ -112,20 +112,7 @@ export default {
           align: 'center',
           sorter: true,
           dataIndex: 'productType',
-        },
-        {
-          title: '产品线',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'productLine',
-          scopedSlots: { customRender: 'productLinescopedSlots' },
-        },
-        {
-          title: '所属项目',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'projectName',
-        },
+        },        
         {
           title: '状态',
           align: 'center',

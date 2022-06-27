@@ -70,11 +70,11 @@ namespace QMS.Application.System
                 //设置项目负责人名称
                 output.DirectorName = output.DirectorId.GetUserNameById();
                 //设置产品信息
-                var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.ProductId);
+                var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.Id);
                 if (product != null)
                 {
                     output.ProductId = product.ProductId;
-                    output.ProductName = product.ProductId.GetUserNameById();
+                    output.ProductName = product.ProductId.GetProductNameById();
                 }
                 //获取项目的关联人员列表
                 var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
@@ -205,11 +205,11 @@ namespace QMS.Application.System
             //设置项目负责人名称
             output.DirectorName = output.DirectorId.GetUserNameById();
             //设置产品信息
-            var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.ProductId);
+            var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.Id);
             if (product != null)
             {
                 output.ProductId = product.ProductId;
-                output.ProductName = product.ProductId.GetUserNameById();
+                output.ProductName = product.ProductId.GetProductNameById();
             }
             return output;
         }

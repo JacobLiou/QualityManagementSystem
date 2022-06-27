@@ -109,11 +109,6 @@ export default {
     },
   },
 
-  created() {        
-    console.log('yuxinsong')
-    this.getFromData()
-  },
-
   methods: {
     // 初始化方法,新增/编辑/复制
     AEC(record, type = 'add') {
@@ -133,6 +128,7 @@ export default {
               userIdList: newUserIdList.map((item) => item.id),
             })
             this.directorName = record.directorName // todo项目负责人name字段待定
+            this.productName = record.productName
             console.log(this.form.getFieldsValue())
           }, 100)
           this.titleName = '编辑项目'
@@ -147,6 +143,7 @@ export default {
               userIdList: newUserIdList.map((item) => item.id),
             })
             this.directorName = record.directorName // todo项目负责人name字段待定
+            this.productName = record.productName
           }, 100)
           this.titleName = '新增项目'
           break
@@ -187,22 +184,6 @@ export default {
         productId: valueObj.value,
       })
       this.productName = valueObj.label
-    },
-
-    // 获取相应的字段
-    getFromData() {    
-      // 产品
-      SsuProductList()
-        .then((res) => {
-          if (res.success) {
-            this.productData = res.data
-          } else {
-            this.$message.error('产品列表读取失败')
-          }
-        })
-        .finally((res) => {
-          this.confirmLoading = false
-        })
     },
 
     // 模糊搜索选中人员
