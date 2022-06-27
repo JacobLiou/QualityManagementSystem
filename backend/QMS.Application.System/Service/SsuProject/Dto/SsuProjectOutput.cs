@@ -24,6 +24,16 @@ namespace QMS.Application.System
         public string DirectorName { get; set; }
 
         /// <summary>
+        /// 所属产品
+        /// </summary>
+        public long ProductId { get; set; }
+
+        /// <summary>
+        /// 所属产品名称
+        /// </summary>
+        public string ProductName { get; set; }
+
+        /// <summary>
         /// 排序
         /// </summary>
         public int Sort { get; set; }

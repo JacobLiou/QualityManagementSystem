@@ -22,6 +22,11 @@ namespace QMS.Application.System
         public virtual long DirectorId { get; set; }
 
         /// <summary>
+        /// 所属产品
+        /// </summary>
+        public virtual long ProductId { get; set; }
+
+        /// <summary>
         /// 排序
         /// </summary>
         public virtual int Sort { get; set; }
@@ -48,6 +53,12 @@ namespace QMS.Application.System
         /// </summary>
         [Required(ErrorMessage = "项目负责人为必填项")]
         public virtual long DirectorId { get; set; }
+
+        /// <summary>
+        /// 所属产品
+        /// </summary>
+        [Required(ErrorMessage = "所属产品为必填项")]
+        public virtual long ProductId { get; set; }
 
         /// <summary>
         /// 排序

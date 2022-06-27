@@ -208,7 +208,7 @@ export default {
           this.$message.success('删除成功')
           this.$refs.table.refresh()
         } else {
-          this.$message.error('删除失败') // + res.message
+          this.$message.error('删除失败,'  + res.message)
         }
       })
     },

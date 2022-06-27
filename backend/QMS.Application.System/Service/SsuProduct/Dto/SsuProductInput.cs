@@ -21,15 +21,15 @@ namespace QMS.Application.System
         /// </summary>
         public virtual string ProductType { get; set; }
 
-        /// <summary>
-        /// 产品线
-        /// </summary>
-        public virtual EnumProductLine? ProductLine { get; set; }
+        ///// <summary>
+        ///// 产品线
+        ///// </summary>
+        //public virtual EnumProductLine? ProductLine { get; set; }
 
-        /// <summary>
-        /// 所属项目
-        /// </summary>
-        public virtual long ProjectId { get; set; }
+        ///// <summary>
+        ///// 所属项目
+        ///// </summary>
+        //public virtual long ProjectId { get; set; }
 
         /// <summary>
         /// 状态
@@ -70,15 +70,15 @@ namespace QMS.Application.System
         /// </summary>
         public virtual string ProductType { get; set; }
 
-        /// <summary>
-        /// 产品线
-        /// </summary>
-        public virtual EnumProductLine? ProductLine { get; set; }
+        ///// <summary>
+        ///// 产品线
+        ///// </summary>
+        //public virtual EnumProductLine? ProductLine { get; set; }
 
-        /// <summary>
-        /// 所属项目
-        /// </summary>
-        public virtual long ProjectId { get; set; }
+        ///// <summary>
+        ///// 所属项目
+        ///// </summary>
+        //public virtual long ProjectId { get; set; }
 
         /// <summary>
         /// 状态

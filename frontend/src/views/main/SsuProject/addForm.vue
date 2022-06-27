@@ -26,6 +26,15 @@
             <a-button @click="changePersonnel('directorId')"> 选择 </a-button>
           </section>
         </a-form-item>
+        <a-form-item label="所属产品" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <SelectUser
+            v-decorator="['productId', { rules: [{ required: true, message: '请输入并选择所属产品' }] }]"
+            title="请输入并选择所属产品"
+            @handlerSelectUser="handlerSelectProductId"
+            :userSelect="productSelect"  
+            queryType="SsuProductPage"          
+          ></SelectUser>        
+        </a-form-item>
         <a-form-item label="排序" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-input-number
             placeholder="请输入排序"
@@ -58,6 +67,7 @@
 
 <script>
 import { SsuProjectAdd, SsuProjectEdit } from '@/api/modular/main/SsuProjectManage'
+import { SsuProductList } from '@/api/modular/main/SsuProductManage'
 import { getfuzzyusers } from '@/api/modular/main/SsuGroupManage'
 import SelectUser from '@/components/SelectUser/SelectUser'
 export default {
@@ -78,8 +88,10 @@ export default {
       directorName: '',
       mockData: [],
       targetKeys: [],
+      productData:[],
+      productName:'',
       titleName: '新增项目',
-      optionType: 'add', // 操作类型
+      optionType: 'add', // 操作类型      
     }
   },
   computed: {
@@ -89,12 +101,24 @@ export default {
         name: this.directorName,
       }
     },
+    productSelect(){
+      return{
+        id: this.form.getFieldsValue().productId,
+        name: this.productName,
+      }
+    },
   },
+
+  created() {        
+    console.log('yuxinsong')
+    this.getFromData()
+  },
+
   methods: {
     // 初始化方法,新增/编辑/复制
     AEC(record, type = 'add') {
       this.visible = true
-      this.optionType = type
+      this.optionType = type      
       const userList = record?.userList
       let newUserIdList = this.editUserList(userList)
       switch (type) {
@@ -104,6 +128,7 @@ export default {
               id: record.id,
               projectName: record.projectName,
               directorId: record.directorId,
+              productId: record.productId,
               sort: record.sort,
               userIdList: newUserIdList.map((item) => item.id),
             })
@@ -117,6 +142,7 @@ export default {
             this.form.setFieldsValue({
               projectName: record.projectName,
               directorId: record.directorId,
+              productId: record.productId,
               sort: record.sort,
               userIdList: newUserIdList.map((item) => item.id),
             })
@@ -153,6 +179,30 @@ export default {
         }
       })
       return newUserIdList
+    },
+
+    // 模糊选中产品id
+    handlerSelectProductId(valueObj) {
+      this.form.setFieldsValue({
+        productId: valueObj.value,
+      })
+      this.productName = valueObj.label
+    },
+
+    // 获取相应的字段
+    getFromData() {    
+      // 产品
+      SsuProductList()
+        .then((res) => {
+          if (res.success) {
+            this.productData = res.data
+          } else {
+            this.$message.error('产品列表读取失败')
+          }
+        })
+        .finally((res) => {
+          this.confirmLoading = false
+        })
     },
 
     // 模糊搜索选中人员
@@ -256,6 +306,7 @@ export default {
     },
     handleCancel() {
       this.directorName = ''
+      this.productName = ''
       this.mockData = []
       this.targetKeys = []
       this.form.resetFields()

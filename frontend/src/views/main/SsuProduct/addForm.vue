@@ -32,27 +32,6 @@
             v-decorator="['productType', { rules: [{ required: true, message: '请输入产品型号' }] }]"
           />
         </a-form-item>
-        <a-form-item label="产品线" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <a-select
-            style="width: 100%"
-            placeholder="请选择产品线"
-            v-decorator="['productLine', { rules: [{ required: true, message: '请选择产品线！' }] }]"
-          >
-            <a-select-option v-for="(item, index) in productLineData" :key="index" :value="Number(item.code)">{{
-              item.name
-            }}</a-select-option>
-          </a-select>
-        </a-form-item>
-        <!-- 所属项目需要改为下拉选择 -->
-        <a-form-item label="所属项目" :labelCol="labelCol" :wrapperCol="wrapperCol">
-          <SelectUser
-            v-decorator="['projectId', { rules: [{ required: true, message: '请输入并选择所属项目' }] }]"
-            title="请输入并选择所属项目"
-            @handlerSelectUser="handlerSelectProjectId"
-            :userSelect="projectSelect"
-            queryType="SsuProjectPage"
-          ></SelectUser>
-        </a-form-item>
         <a-form-item label="状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-select
             style="width: 100%"
@@ -114,7 +93,6 @@ export default {
         xs: { span: 24 },
         sm: { span: 15 },
       },
-      productLineData: [],
       statusData: [],
       projectData: [],
       classificationIdData: [],
@@ -136,19 +114,11 @@ export default {
         name: this.directorName,
       }
     },
-    projectSelect() {
-      return {
-        id: this.form.getFieldsValue().projectId,
-        name: this.projectName,
-      }
-    },
   },
   methods: {
     // 初始化方法
     AEC(record, type = 'add') {
       this.visible = true
-      const productLineOption = this.$options
-      this.productLineData = productLineOption.filters['dictData']('product_line')
       const statusOption = this.$options
       this.statusData = statusOption.filters['dictData']('product_status')
       const classificationIdOption = this.$options
@@ -163,8 +133,6 @@ export default {
               id: record.id,
               productName: record.productName,
               productType: record.productType,
-              productLine: record.productLine,
-              projectId: record.projectId,
               status: record.status,
               classificationId: record.classificationId,
               directorId: record.directorId,
@@ -180,8 +148,6 @@ export default {
             this.form.setFieldsValue({
               productName: record.productName,
               productType: record.productType,
-              productLine: record.productLine,
-              projectId: record.projectId,
               status: record.status,
               classificationId: record.classificationId,
               directorId: record.directorId,
@@ -231,14 +197,7 @@ export default {
     },
     changePersonnel(value) {
       this.$emit('changePersonnel', value)
-    },
-    // 模糊选中项目id
-    handlerSelectProjectId(valueObj) {
-      this.form.setFieldsValue({
-        projectId: valueObj.value,
-      })
-      this.projectName = valueObj.label
-    },
+    },  
     filterOption(inputValue, option) {
       return option.description.indexOf(inputValue) > -1
     },

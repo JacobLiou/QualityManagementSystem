@@ -19,20 +19,20 @@ namespace QMS.Application.System
         /// </summary>
         public string ProductType { get; set; }
 
-        /// <summary>
-        /// 产品线
-        /// </summary>
-        public EnumProductLine ProductLine { get; set; }
+        ///// <summary>
+        ///// 产品线
+        ///// </summary>
+        //public EnumProductLine ProductLine { get; set; }
 
-        /// <summary>
-        /// 所属项目
-        /// </summary>
-        public long ProjectId { get; set; }
+        ///// <summary>
+        ///// 所属项目
+        ///// </summary>
+        //public long ProjectId { get; set; }
 
-        /// <summary>
-        /// 所属项目名称
-        /// </summary>
-        public string ProjectName { get; set; }
+        ///// <summary>
+        ///// 所属项目名称
+        ///// </summary>
+        //public string ProjectName { get; set; }
 
         /// <summary>
         /// 状态

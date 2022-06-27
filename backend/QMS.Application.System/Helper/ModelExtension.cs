@@ -36,7 +36,7 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 根据人员ID获取人员名称
+        /// 根据项目ID获取项目名称
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -44,7 +44,19 @@ namespace QMS.Application.System
         {
             var projectService = App.GetService<ISsuProjectService>();
             var name = projectService.GetProjectList(new List<long>() { id }).Result.Values.FirstOrDefault()?.ProjectName;
-            return name;
+            return name == null ? "" : name;
+        }
+
+        /// <summary>
+        /// 根据产品ID获取产品名称
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static string GetProductNameById(this long id)
+        {
+            var productService = App.GetService<ISsuProductService>();
+            var name = productService.GetProductList(new List<long>() { id }).Result.Values.FirstOrDefault()?.ProductName;
+            return name == null ? "" : name;
         }
     }
 }

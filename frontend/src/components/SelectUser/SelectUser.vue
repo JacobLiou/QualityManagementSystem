@@ -33,6 +33,7 @@
 import debounce from 'lodash/debounce'
 import { getfuzzyusers } from '@/api/modular/main/SsuGroupManage'
 import { SsuProjectPage } from '@/api/modular/main/SsuProjectManage'
+import { SsuProductPage } from '@/api/modular/main/SsuProductManage'
 export default {
   props: {
     title: {
@@ -90,6 +91,26 @@ export default {
                   const data = {
                     id: item.id,
                     name: item.projectName,
+                  }
+                  return data
+                })
+
+                this.fetching = false
+              }
+            })
+            .catch(() => {})
+          break
+        case 'SsuProductPage':
+          SsuProductPage({ ProductName: value })
+            .then((res) => {
+              if (fetchId !== this.lastFetchId) {
+                return
+              }
+              if (res.success) {
+                this.data = res.data.rows?.map((item) => {
+                  const data = {
+                    id: item.id,
+                    name: item.productName,
                   }
                   return data
                 })

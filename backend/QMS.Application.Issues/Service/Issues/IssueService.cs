@@ -1214,25 +1214,6 @@ namespace QMS.Application.Issues
             Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
             Helper.Helper.Assert(issue.CurrentAssignment != null && issue.CurrentAssignment != 0, "当前问题的当前指派人为空");
-            string errmsg = "当前用户不是当前问题的操作人";
-            switch (issue.Status)
-            {
-                case EnumIssueStatus.Created:
-                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.CreatedUserId && issue.CreatedUserId != null && issue.CreatedUserId != 0, errmsg);
-                    break;
-
-                case EnumIssueStatus.Dispatched:
-                case EnumIssueStatus.HasRechecked:
-                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher && issue.Dispatcher != null && issue.Dispatcher != 0, errmsg);
-                    break;
-
-                case EnumIssueStatus.Solved:
-                    Helper.Helper.Assert(Helper.Helper.GetCurrentUser() == issue.Dispatcher || (Helper.Helper.GetCurrentUser() == issue.Executor && issue.Executor != null && issue.Executor != 0), errmsg);
-                    break;
-
-                default:
-                    break;
-            }
 
             _noticeService.SendNotice(issue.Id.ToString(), issue.CurrentAssignment.ToString(), issue.Title);
 

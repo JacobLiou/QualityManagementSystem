@@ -63,6 +63,7 @@ namespace QMS.Application.Issues
 
             var issueOperations = await _issueOperationRep.DetachedEntities
                                      .Where(u => u.IssueId == input.IssueId)
+                                     .Where(u => u.OperationTypeId != Core.Enum.EnumIssueOperationType.Upload)
                                      .ProjectToType<IssueOperationOutput>().ToListAsync();
 
             return new PageResult<IssueOperationOutput>
@@ -134,7 +135,6 @@ namespace QMS.Application.Issues
         //public async Task<List<IssueOperationOutput>> List([FromQuery] IssueOperationInput input)
         //{
         //    return await _issueOperationRep.DetachedEntities.ProjectToType<IssueOperationOutput>().ToListAsync();
-        //}    
-
+        //}
     }
 }

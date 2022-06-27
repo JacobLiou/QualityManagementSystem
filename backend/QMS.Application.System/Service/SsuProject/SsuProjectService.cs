@@ -10,6 +10,7 @@ using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core;
+using QMS.Core.Entity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -25,14 +26,18 @@ namespace QMS.Application.System
     {
         private readonly IRepository<SsuProject, MasterDbContextLocator> _ssuProjectRep;
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
+        private readonly IRepository<SsuProjectProduct> _ssuProjectProduct;
+        private readonly IRepository<SsuProduct> _ssuProduct;
         private readonly IRepository<SysUser> _ssuSysuser;
+        private readonly IRepository<Issue, IssuesDbContextLocator> _issueRep;
         private readonly ISysEmpService _sysEmpService;
         private readonly ICacheService _cacheService;
         private readonly int CacheMinute = 30;
 
         public SsuProjectService(
             IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
-            ISysEmpService sysEmpService, ICacheService cacheService
+            ISysEmpService sysEmpService, ICacheService cacheService, IRepository<Issue, IssuesDbContextLocator> issueRep, IRepository<SsuProjectProduct> ssuProjectProduct
+            , IRepository<SsuProduct> ssuProduct
         )
         {
             _ssuProjectRep = ssuProjectRep;
@@ -40,6 +45,9 @@ namespace QMS.Application.System
             _ssuSysuser = ssuSysuser;
             _sysEmpService = sysEmpService;
             _cacheService = cacheService;
+            _issueRep = issueRep;
+            _ssuProjectProduct = ssuProjectProduct;
+            _ssuProduct = ssuProduct;
         }
 
         /// <summary>
@@ -61,6 +69,13 @@ namespace QMS.Application.System
             {
                 //设置项目负责人名称
                 output.DirectorName = output.DirectorId.GetUserNameById();
+                //设置产品信息
+                var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.ProductId);
+                if (product != null)
+                {
+                    output.ProductId = product.ProductId;
+                    output.ProductName = product.ProductId.GetUserNameById();
+                }
                 //获取项目的关联人员列表
                 var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
                 if (userList != null && userList.Count > 0)
@@ -82,10 +97,18 @@ namespace QMS.Application.System
             var ssuProject = input.Adapt<SsuProject>();
             var result = await _ssuProjectRep.InsertAsync(ssuProject);
 
+            //新增项目关联人员数据记录
             if (result != null && result.Entity.Id != 0 && input.UserIdList.Count() > 0)
             {
                 var list = input.UserIdList.Select(u => new SsuProjectUser() { ProjectId = result.Entity.Id, EmployeeId = u });
                 await _ssuProjectUser.InsertAsync(list);
+            }
+
+            //新增项目关联产品数据记录
+            if (result != null && result.Entity.Id != 0 && input.ProductId != 0)
+            {
+                var ProjectProduct = new SsuProjectProduct() { ProductId = input.ProductId, ProjectId = ssuProject.Id };
+                await _ssuProjectProduct.InsertAsync(ProjectProduct);
             }
         }
 
@@ -97,13 +120,27 @@ namespace QMS.Application.System
         [HttpPost("/SsuProject/delete")]
         public async Task Delete(DeleteSsuProjectInput input)
         {
+            var issueList = _issueRep.DetachedEntities.Where(u => u.ProjectId == input.Id).Select(u => u.SerialNumber).ToList();
+            if (issueList != null && issueList.Count() > 0)
+            {
+                throw Oops.Oh("序号为：" + String.Join(",", issueList) + "正在使用该项目，禁止删除");
+            }
+
             var ssuProject = await _ssuProjectRep.FirstOrDefaultAsync(u => u.Id == input.Id);
             await _ssuProjectRep.DeleteAsync(ssuProject);
 
+            //删除项目关联人员数据记录
             var ssuProjectUser = await _ssuProjectUser.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
             if (ssuProjectUser != null)
             {
                 await _ssuProjectUser.DeleteAsync(ssuProjectUser);
+            }
+
+            //删除项目关联产品数据记录
+            var ssuProjectProduct = await _ssuProjectProduct.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
+            if (ssuProjectProduct != null)
+            {
+                await _ssuProjectProduct.DeleteAsync(ssuProjectProduct);
             }
         }
 
@@ -122,6 +159,14 @@ namespace QMS.Application.System
             await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: true);
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheMinute);
 
+            //更新项目产品关联关系记录
+            var ssuProjectProduct = await _ssuProjectProduct.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
+            if (ssuProjectProduct != null)
+            {
+                ssuProjectProduct.ProjectId = input.Id;
+                ssuProjectProduct.ProductId = input.ProductId;
+                await _ssuProjectProduct.UpdateAsync(ssuProjectProduct);
+            }
 
             //更新项目组人员列表
             var existsList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
@@ -131,7 +176,6 @@ namespace QMS.Application.System
             {
                 await _ssuProjectUser.InsertAsync(intersectionList);
             }
-
             //获取在项目组中存在的ID，但是不存在于新增的ID列表中的ID，执行删除操作
             var differenceList = existsList.Except(input.UserIdList).ToList();
             var ssuProjectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id && differenceList.Contains(u.EmployeeId)).ToList();
@@ -154,13 +198,20 @@ namespace QMS.Application.System
             {
                 throw Oops.Oh("项目不存在");
             }
-            var result = detail.Adapt<SsuProjectOutput>();
+            var output = detail.Adapt<SsuProjectOutput>();
             var projectUserId = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == input.Id)
                 .Select(u => u.EmployeeId).ToList();
-            result.UserList = projectUserId.GetUserListById().Adapt<List<UserOutput>>();
+            output.UserList = projectUserId.GetUserListById().Adapt<List<UserOutput>>();
             //设置项目负责人名称
-            result.DirectorName = result.DirectorId.GetUserNameById();
-            return result;
+            output.DirectorName = output.DirectorId.GetUserNameById();
+            //设置产品信息
+            var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.ProductId);
+            if (product != null)
+            {
+                output.ProductId = product.ProductId;
+                output.ProductName = product.ProductId.GetUserNameById();
+            }
+            return output;
         }
 
         /// <summary>
@@ -186,6 +237,16 @@ namespace QMS.Application.System
             {
                 //设置项目负责人名称
                 output.DirectorName = output.DirectorId.GetUserNameById();
+
+                //设置产品信息
+                var product = _ssuProjectProduct.DetachedEntities.FirstOrDefault(u => u.ProjectId == output.ProductId);
+                if (product != null)
+                {
+                    output.ProductId = product.ProductId;
+                    output.ProductName = product.ProductId.GetUserNameById();
+                }
+
+                //设置关联人员列表
                 var userList = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == output.Id).Select(u => u.EmployeeId).ToList();
                 if (userList != null && userList.Count > 0)
                 {

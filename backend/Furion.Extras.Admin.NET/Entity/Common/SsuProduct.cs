@@ -14,7 +14,6 @@ namespace Furion.Extras.Admin.NET.Entity.Common
     [Comment("产品表")]
     public class SsuProduct : DEntityTenant, IEntityTypeBuilder<SsuProduct, MasterDbContextLocator>
     {
-
         //[Key]
         //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         //[Comment("产品编号")]
@@ -30,19 +29,19 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         [Required]
         public string ProductType { get; set; }
 
-        [Comment("产品线")]
-        [MaxLength(100)]
-        [Required]
-        public EnumProductLine ProductLine { get; set; }
+        //[Comment("产品线")]
+        //[MaxLength(100)]
+        //[Required]
+        //public EnumProductLine ProductLine { get; set; }
 
 
-        [Comment("所属项目")]
-        [MaxLength(100)]
-        public long ProjectId { get; set; }
+        //[Comment("所属项目")]
+        //[MaxLength(100)]
+        //public long ProjectId { get; set; }
 
-        [ForeignKey(nameof(ProjectId))]
-        [NotMapped]
-        public SsuProject Project { get; set; }
+        //[ForeignKey(nameof(ProjectId))]
+        //[NotMapped]
+        //public SsuProject Project { get; set; }
 
         [Comment("状态")]
         [MaxLength(100)]
@@ -77,21 +76,25 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         //************************************************************************
 
         #region 关联
+
         [NotMapped]
         public ICollection<SsuProject> SsuProjects { get; set; }
+
         [NotMapped]
         public List<SsuProjectProduct> SsuProjectsProducts { get; set; }
 
         [NotMapped]
         public ICollection<SysEmp> SysEmps { get; set; }
+
         [NotMapped]
         public List<SsuProductUser> SsuProductUsers { get; set; }
-        #endregion
+
+        #endregion 关联
 
         public void Configure(EntityTypeBuilder<SsuProduct> entityBuilder, DbContext dbContext, Type dbContextLocator)
         {
             // 项目、产品关联
-            entityBuilder.HasMany(p=>p.SsuProjects).WithMany(p=>p.SsuProducts) .UsingEntity<SsuProjectProduct>(
+            entityBuilder.HasMany(p => p.SsuProjects).WithMany(p => p.SsuProducts).UsingEntity<SsuProjectProduct>(
                 u => u.HasOne(c => c.Project).WithMany(c => c.SsuProjectsProducts).HasForeignKey(c => c.ProjectId),
                 u => u.HasOne(c => c.Product).WithMany(c => c.SsuProjectsProducts).HasForeignKey(c => c.ProductId),
                 u =>
@@ -114,7 +117,6 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         public long ProductId { get; set; }
 
         public SsuProduct Product { get; set; }
-
     }
 
     [Table("ssu_product_user")]
