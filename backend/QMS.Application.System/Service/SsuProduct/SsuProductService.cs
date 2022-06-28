@@ -140,7 +140,8 @@ namespace QMS.Application.System
             if (!isExist) throw Oops.Oh("产品组不存在");
 
             var ssuProduct = input.Adapt<SsuProduct>();
-            await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
+            //await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
+            await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: false);
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheMinute);
 
             //更新产品组人员列表

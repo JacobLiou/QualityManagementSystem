@@ -47,7 +47,8 @@
           <a-select
             style="width: 100%"
             placeholder="请选择产品分类"
-            v-decorator="['classificationId', { rules: [{ required: true, message: '请选择产品分类！' }] }]"
+            allowClear="true"
+            v-decorator="['classificationId']"
           >
             <a-select-option v-for="(item, index) in classificationIdData" :key="index" :value="Number(item.code)">{{
               item.name
@@ -118,7 +119,7 @@ export default {
   methods: {
     // 初始化方法
     AEC(record, type = 'add') {
-      this.visible = true
+      this.visible = true      
       const statusOption = this.$options
       this.statusData = statusOption.filters['dictData']('product_status')
       const classificationIdOption = this.$options
@@ -239,9 +240,9 @@ export default {
         form: { validateFields },
       } = this
       this.confirmLoading = true
-      validateFields((errors, values) => {
+      validateFields((errors, values) => {        
         if (!errors) {
-          if (this.optionType == 'edit') {
+          if (this.optionType == 'edit') {            
             this.EProduct(values)
           } else {
             this.ACProduct(values)
@@ -269,7 +270,7 @@ export default {
         })
     },
     // 编辑产品
-    EProduct(values) {
+    EProduct(values) {      
       SsuProductEdit(values)
         .then((res) => {
           if (res.success) {

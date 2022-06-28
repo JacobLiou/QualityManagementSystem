@@ -912,6 +912,14 @@ namespace QMS.Application.Issues
             }
         }
 
+        /// <summary>
+        /// 业务逻辑上判断导入的Excel数据是否符合要求
+        /// </summary>
+        /// <returns></returns>
+        public async Task CheckExcelImport(IEnumerable<dynamic> collection)
+        {
+        }
+
         #endregion 问题数据导入
 
         #region 问题相关附件的信息保存和获取

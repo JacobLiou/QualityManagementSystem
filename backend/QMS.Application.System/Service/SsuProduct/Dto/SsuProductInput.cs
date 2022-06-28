@@ -39,7 +39,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品分类
         /// </summary>
-        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductClassfication ClassificationId { get; set; }
+        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductClassfication? ClassificationId { get; set; }
 
         /// <summary>
         /// 排序
@@ -88,7 +88,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品分类
         /// </summary>
-        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductClassfication ClassificationId { get; set; }
+        public virtual Furion.Extras.Admin.NET.Entity.Common.Enum.EnumProductClassfication? ClassificationId { get; set; }
 
         /// <summary>
         /// 排序

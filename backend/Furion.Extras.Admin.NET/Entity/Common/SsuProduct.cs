@@ -49,7 +49,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
 
 
         [Comment("产品分类")]
-        public EnumProductClassfication ClassificationId { get; set; }
+        public EnumProductClassfication? ClassificationId { get; set; }
 
 
         //[Comment("创建时间")]

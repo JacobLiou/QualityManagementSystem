@@ -57,12 +57,14 @@ Vue.filter('dictType', function (code, value) {
   // eslint-disable-next-line eqeqeq
   const tree = dictTypeTree.filter(item => item.code == code)[0].children
   if (tree === undefined || tree.length === 0) {
-    return '无此字典'
+    //return '无此字典'
+    return ' '
   }
   // eslint-disable-next-line eqeqeq
   const values = tree.filter(item => item.code == value)
   if (values.length === undefined || values.length === 0) {
-    return '无此字典'
+    //return '无此字典'
+    return ' '
   }
   return values[0].name
 })
