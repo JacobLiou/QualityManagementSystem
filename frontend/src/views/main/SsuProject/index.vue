@@ -35,7 +35,7 @@
       >
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuProject:add')">
           <a-button type="primary" v-if="hasPerm('SsuProject:add')" icon="plus" @click="$refs.addForm.AEC()"
-            >新增项目</a-button
+            >新增产品项目</a-button
           >
         </template>
         <span slot="action" slot-scope="text, record">

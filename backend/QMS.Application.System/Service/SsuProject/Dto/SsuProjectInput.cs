@@ -32,6 +32,11 @@ namespace QMS.Application.System
         public virtual int Sort { get; set; }
 
         /// <summary>
+        /// 项目描述
+        /// </summary>
+        public virtual string Description { get; set; }
+
+        /// <summary>
         /// 关联人员列表
         /// </summary>
         public virtual IEnumerable<long> UserIdList { get; set; }
@@ -66,6 +71,11 @@ namespace QMS.Application.System
         [Required(ErrorMessage = "排序值为必填项")]
         [DataValidation(SystemValidationTypes.NumberUnNegativeNumber, ErrorMessage = "排序值应大于等于0")]
         public virtual int Sort { get; set; }
+
+        /// <summary>
+        /// 项目描述
+        /// </summary>
+        public virtual string Description { get; set; }
 
         /// <summary>
         /// 关联人员列表

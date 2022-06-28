@@ -26,14 +26,22 @@
             <a-button @click="changePersonnel('directorId')"> 选择 </a-button>
           </section>
         </a-form-item>
-        <a-form-item label="所属产品" :labelCol="labelCol" :wrapperCol="wrapperCol">
+        <a-form-item label="所属产品线" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <SelectUser
-            v-decorator="['productId', { rules: [{ required: true, message: '请输入并选择所属产品' }] }]"
-            title="请输入并选择所属产品"
+            v-decorator="['productId', { rules: [{ required: true, message: '请输入并选择所属产品线' }] }]"
+            title="请输入并选择所属产品线"
             @handlerSelectUser="handlerSelectProductId"
             :userSelect="productSelect"  
             queryType="SsuProductPage"          
           ></SelectUser>        
+        </a-form-item>
+        <a-form-item label="项目描述" :labelCol="labelCol" :wrapperCol="wrapperCol">
+          <a-input
+            placeholder="请输入项目描述"
+            style="width: 100%"
+            :min="0"
+            v-decorator="['description']"
+          />
         </a-form-item>
         <a-form-item label="排序" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-input-number
@@ -90,7 +98,8 @@ export default {
       targetKeys: [],
       productData:[],
       productName:'',
-      titleName: '新增项目',
+      description:'',
+      titleName: '新增产品项目',
       optionType: 'add', // 操作类型      
     }
   },
@@ -124,6 +133,7 @@ export default {
               projectName: record.projectName,
               directorId: record.directorId,
               productId: record.productId,
+              description: record.description,
               sort: record.sort,
               userIdList: newUserIdList.map((item) => item.id),
             })
@@ -131,7 +141,7 @@ export default {
             this.productName = record.productName
             console.log(this.form.getFieldsValue())
           }, 100)
-          this.titleName = '编辑项目'
+          this.titleName = '编辑产品项目'
           break
         case 'copy':
           setTimeout(() => {
@@ -139,13 +149,14 @@ export default {
               projectName: record.projectName,
               directorId: record.directorId,
               productId: record.productId,
+              description: record.description,
               sort: record.sort,
               userIdList: newUserIdList.map((item) => item.id),
             })
             this.directorName = record.directorName // todo项目负责人name字段待定
             this.productName = record.productName
           }, 100)
-          this.titleName = '新增项目'
+          this.titleName = '新增产品项目'
           break
         default:
           setTimeout(() => {

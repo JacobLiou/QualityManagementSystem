@@ -103,7 +103,7 @@ export default {
       projectName: '',
       mockData: [],
       targetKeys: [],
-      titleName: '新增项目',
+      titleName: '新增产品线',
       optionType: 'add', // 操作类型
     }
   },
@@ -141,7 +141,7 @@ export default {
             this.projectName = record.projectName
             this.directorName = record.directorName
           }, 100)
-          this.titleName = '编辑产品'
+          this.titleName = '编辑产品线'
           break
         case 'copy':
           setTimeout(() => {
@@ -156,7 +156,7 @@ export default {
             this.projectName = record.projectName
             this.directorName = record.directorName
           }, 100)
-          this.titleName = '新增产品'
+          this.titleName = '新增产品线'
           break
         default:
           setTimeout(() => {

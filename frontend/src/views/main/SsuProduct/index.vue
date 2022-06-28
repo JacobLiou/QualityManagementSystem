@@ -49,7 +49,7 @@
       >
         <template class="table-operator" slot="operator" v-if="hasPerm('SsuProduct:add')">
           <a-button type="primary" v-if="hasPerm('SsuProduct:add')" icon="plus" @click="$refs.addForm.AEC()"
-            >新增产品</a-button
+            >新增产品线</a-button
           >
         </template>
         <span slot="productLinescopedSlots" slot-scope="text">

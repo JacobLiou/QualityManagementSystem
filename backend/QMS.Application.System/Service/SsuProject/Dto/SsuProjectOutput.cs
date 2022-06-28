@@ -39,6 +39,11 @@ namespace QMS.Application.System
         public int Sort { get; set; }
 
         /// <summary>
+        /// 项目描述
+        /// </summary>
+        public virtual string Description { get; set; }
+
+        /// <summary>
         /// 项目编号
         /// </summary>
         public long Id { get; set; }

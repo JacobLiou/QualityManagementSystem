@@ -1,6 +1,6 @@
 ﻿<template>
   <a-modal
-    title="编辑项目"
+    title="编辑产品项目"
     :width="900"
     :visible="visible"
     :confirmLoading="confirmLoading"

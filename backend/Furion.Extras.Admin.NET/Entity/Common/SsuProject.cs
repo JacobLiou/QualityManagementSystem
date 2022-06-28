@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Furion.Extras.Admin.NET.Entity.Common
 {
-
     /// <summary>
     /// 项目表
     /// </summary>
@@ -51,17 +50,28 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         //[Comment("软删除")]
         //public bool IsDeleted { get; set; }
 
+        /// <summary>
+        /// 项目描述
+        /// </summary>
+        [Comment("项目描述")]
+        [MaxLength(2000)]
+        public virtual string Description { get; set; }
 
         #region 项目、产品、人员关联
+
         [NotMapped]
         public ICollection<SsuProduct> SsuProducts { get; set; }
+
         [NotMapped]
         public List<SsuProjectProduct> SsuProjectsProducts { get; set; }
+
         [NotMapped]
         public ICollection<SysEmp> SysEmps { get; set; }
+
         [NotMapped]
         public List<SsuProjectUser> SsuProjectUsers { get; set; }
-        #endregion
+
+        #endregion 项目、产品、人员关联
 
         /// <summary>
         /// 多对多配置关系
@@ -80,10 +90,12 @@ namespace Furion.Extras.Admin.NET.Entity.Common
     {
         [Comment("项目编号")]
         public long ProjectId { get; set; }
+
         public SsuProject Project { get; set; }
 
         [Comment("参与人员")]
         public long EmployeeId { get; set; }
+
         public SysEmp Employee { get; set; }
     }
 }
