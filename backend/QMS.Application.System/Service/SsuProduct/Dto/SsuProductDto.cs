@@ -13,10 +13,10 @@ namespace QMS.Application.System
         /// </summary>
         public string ProductName { get; set; }
 
-        /// <summary>
-        /// 产品型号
-        /// </summary>
-        public string ProductType { get; set; }
+        ///// <summary>
+        ///// 产品型号
+        ///// </summary>
+        //public string ProductType { get; set; }
 
         /// <summary>
         /// 产品线
@@ -46,7 +46,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品负责人
         /// </summary>
-        public long DirectorId { get; set; }
+        public long? DirectorId { get; set; }
 
         /// <summary>
         /// Id主键

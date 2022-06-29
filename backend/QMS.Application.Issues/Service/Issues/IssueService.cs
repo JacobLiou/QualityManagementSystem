@@ -915,9 +915,17 @@ namespace QMS.Application.Issues
         /// <summary>
         /// 业务逻辑上判断导入的Excel数据是否符合要求
         /// </summary>
+        /// <param name="item">excel数据行</param>
         /// <returns></returns>
-        public async Task CheckExcelImport(IEnumerable<dynamic> collection)
+        public async Task CheckExcelImport(dynamic item)
         {
+            var productId = Convert.ToInt64(item.产品编号);
+            var projectId = Convert.ToInt64(item.项目编号);
+
+            if (projectId == 0 || productId == 0)
+            {
+                return;
+            }
         }
 
         #endregion 问题数据导入

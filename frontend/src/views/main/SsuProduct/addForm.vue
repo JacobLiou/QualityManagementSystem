@@ -18,19 +18,13 @@
         <a-form-item label="产品负责人" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <section class="from_chilen">
             <SelectUser
-              v-decorator="['directorId', { rules: [{ required: true, message: '请输入并选择产品负责人' }] }]"
+              v-decorator="['directorId']"
               title="请输入并选择产品负责人"
               @handlerSelectUser="handlerSelectUser"
               :userSelect="userSelect"
             ></SelectUser>
             <a-button @click="changePersonnel('directorId')"> 选择 </a-button>
           </section>
-        </a-form-item>
-        <a-form-item label="产品型号" :labelCol="labelCol" :wrapperCol="wrapperCol" has-feedback>
-          <a-input
-            placeholder="请输入产品型号"
-            v-decorator="['productType', { rules: [{ required: true, message: '请输入产品型号' }] }]"
-          />
         </a-form-item>
         <a-form-item label="状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <a-select
@@ -132,8 +126,7 @@ export default {
           setTimeout(() => {
             this.form.setFieldsValue({
               id: record.id,
-              productName: record.productName,
-              productType: record.productType,
+              productName: record.productName,              
               status: record.status,
               classificationId: record.classificationId,
               directorId: record.directorId,
@@ -147,8 +140,7 @@ export default {
         case 'copy':
           setTimeout(() => {
             this.form.setFieldsValue({
-              productName: record.productName,
-              productType: record.productType,
+              productName: record.productName,              
               status: record.status,
               classificationId: record.classificationId,
               directorId: record.directorId,

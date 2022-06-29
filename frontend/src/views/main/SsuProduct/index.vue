@@ -106,13 +106,7 @@ export default {
           align: 'center',
           sorter: true,
           dataIndex: 'productName',
-        },
-        {
-          title: '产品型号',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'productType',
-        },        
+        },           
         {
           title: '状态',
           align: 'center',

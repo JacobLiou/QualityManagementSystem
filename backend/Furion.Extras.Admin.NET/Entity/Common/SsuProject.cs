@@ -28,8 +28,11 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         //[Required]
         //public string ProjectCode { get; set; }
 
+        /// <summary>
+        /// 项目负责人
+        /// </summary>
         [Comment("负责人")]
-        public long DirectorId { get; set; }
+        public long? DirectorId { get; set; }
 
         //[Comment("创建人")]
         //public long CreatorId { get; set; }

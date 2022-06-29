@@ -19,7 +19,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 项目负责人
         /// </summary>
-        public virtual long DirectorId { get; set; }
+        public virtual long? DirectorId { get; set; }
 
         /// <summary>
         /// 所属产品
@@ -56,8 +56,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 项目负责人
         /// </summary>
-        [Required(ErrorMessage = "项目负责人为必填项")]
-        public virtual long DirectorId { get; set; }
+        public virtual long? DirectorId { get; set; }
 
         /// <summary>
         /// 所属产品

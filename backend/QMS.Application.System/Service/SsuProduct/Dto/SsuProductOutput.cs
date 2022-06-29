@@ -14,10 +14,10 @@ namespace QMS.Application.System
         /// </summary>
         public string ProductName { get; set; }
 
-        /// <summary>
-        /// 产品型号
-        /// </summary>
-        public string ProductType { get; set; }
+        ///// <summary>
+        ///// 产品型号
+        ///// </summary>
+        //public string ProductType { get; set; }
 
         ///// <summary>
         ///// 产品线

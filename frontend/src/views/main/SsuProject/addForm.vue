@@ -18,7 +18,7 @@
         <a-form-item label="项目负责人" :labelCol="labelCol" :wrapperCol="wrapperCol">
           <section class="from_chilen">
             <SelectUser
-              v-decorator="['directorId', { rules: [{ required: true, message: '请输入并选择项目负责人' }] }]"
+              v-decorator="['directorId']"
               title="请输入并选择项目负责人"
               @handlerSelectUser="handlerSelectUser"
               :userSelect="userSelect"

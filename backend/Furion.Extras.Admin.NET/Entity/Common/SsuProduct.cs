@@ -24,10 +24,10 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         [Required]
         public string ProductName { get; set; }
 
-        [Comment("产品型号")]
-        [MaxLength(100)]
-        [Required]
-        public string ProductType { get; set; }
+        //[Comment("产品型号")]
+        //[MaxLength(100)]
+        //[Required]
+        //public string ProductType { get; set; }
 
         //[Comment("产品线")]
         //[MaxLength(100)]
@@ -71,7 +71,7 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         //public bool IsDeleted { get; set; }
 
         [Comment("负责人")]
-        public long DirectorId { get; set; }
+        public long? DirectorId { get; set; }
 
         //************************************************************************
 

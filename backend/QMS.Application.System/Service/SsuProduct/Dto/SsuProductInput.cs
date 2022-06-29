@@ -16,10 +16,10 @@ namespace QMS.Application.System
         /// </summary>
         public virtual string ProductName { get; set; }
 
-        /// <summary>
-        /// 产品型号
-        /// </summary>
-        public virtual string ProductType { get; set; }
+        ///// <summary>
+        ///// 产品型号
+        ///// </summary>
+        //public virtual string ProductType { get; set; }
 
         ///// <summary>
         ///// 产品线
@@ -49,7 +49,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品负责人
         /// </summary>
-        public virtual long DirectorId { get; set; }
+        public virtual long? DirectorId { get; set; }
 
         /// <summary>
         /// 关联人员列表
@@ -65,10 +65,10 @@ namespace QMS.Application.System
         [Required]
         public virtual string ProductName { get; set; }
 
-        /// <summary>
-        /// 产品型号
-        /// </summary>
-        public virtual string ProductType { get; set; }
+        ///// <summary>
+        ///// 产品型号
+        ///// </summary>
+        //public virtual string ProductType { get; set; }
 
         ///// <summary>
         ///// 产品线
@@ -99,8 +99,7 @@ namespace QMS.Application.System
         /// <summary>
         /// 产品负责人
         /// </summary>
-        [Required]
-        public virtual long DirectorId { get; set; }
+        public virtual long? DirectorId { get; set; }
 
         /// <summary>
         /// 关联人员列表

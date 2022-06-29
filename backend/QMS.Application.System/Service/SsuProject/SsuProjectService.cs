@@ -157,7 +157,7 @@ namespace QMS.Application.System
             if (!isExist) throw Oops.Oh("项目组不存在");
 
             var ssuProject = input.Adapt<SsuProject>();
-            await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: true);
+            await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: false);
             await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheMinute);
 
             //更新项目产品关联关系记录
