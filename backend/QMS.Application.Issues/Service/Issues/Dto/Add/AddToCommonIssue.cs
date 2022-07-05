@@ -8,7 +8,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// <summary>
         /// 问题简述
         /// </summary>
-        [ExcelColumnName("标题")]
+        [ExcelColumnName("问题简述")]
         [ExcelColumnIndex(0)]
         [ExcelColumnWidth(30)]
         [Required]
@@ -24,7 +24,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// <summary>
         /// 项目编号
         /// </summary>
-        [ExcelColumnName("项目编号")]
+        [ExcelColumnName("项目名称")]
         [ExcelColumnWidth(20)]
         [Required]
         public virtual long ProjectId { get; set; }
@@ -32,7 +32,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// <summary>
         /// 产品编号
         /// </summary>
-        [ExcelColumnName("产品编号")]
+        [ExcelColumnName("产品线名称")]
         [ExcelColumnWidth(20)]
         public virtual long? ProductId { get; set; }
 
@@ -56,14 +56,13 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// 分发人
         /// </summary>
         /// 新增时数据库不存储分发人数据，先暂时保留这个字段，但是将改字段设置成非必录，后续再删除
-        [ExcelColumnName("分发人编号")]
-        [ExcelColumnWidth(20)]
+        [ExcelIgnore]
         public virtual long? Dispatcher { get; set; }
 
         /// <summary>
         /// 当前指派给
         /// </summary>
-        [ExcelColumnName("当前指派给")]
+        [ExcelColumnName("当前指派人名称")]
         [ExcelColumnWidth(20)]
         [Required]
         public long? CurrentAssignment { get; set; }
@@ -86,7 +85,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Add
         /// <summary>
         /// 发现人
         /// </summary>
-        [ExcelColumnName("发现人编号")]
+        [ExcelColumnName("发现人名称")]
         [ExcelColumnWidth(20)]
         public virtual long? Discover { get; set; }
 

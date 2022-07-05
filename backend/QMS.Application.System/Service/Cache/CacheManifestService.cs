@@ -1,5 +1,8 @@
-﻿using Furion.DependencyInjection;
+﻿using Furion;
+using Furion.DatabaseAccessor;
+using Furion.DependencyInjection;
 using Furion.DynamicApiController;
+using Furion.Extras.Admin.NET;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,6 +72,18 @@ namespace QMS.Application.System.Service.Cache
         public async Task RemoveCache(IEnumerable<string> keys)
         {
             await _cache.RemoveCache(keys);
+        }
+
+        /// <summary>
+        /// 手动循环清除所有权限缓存
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("system/cachemanifest/removeallpermisson")]
+        public async Task RemoveAllPermisson()
+        {
+            var user = App.GetService<IRepository<SysUser>>();
+            var list = user.DetachedEntities.Select(u => "permission_" + u.Id).ToList();
+            await this.RemoveCache(list);
         }
     }
 }

@@ -4,6 +4,7 @@ using Furion.DependencyInjection;
 using Furion.DynamicApiController;
 using Furion.Extras.Admin.NET;
 using Furion.Extras.Admin.NET.Service;
+using Furion.FriendlyException;
 using Furion.JsonSerialization;
 using Mapster;
 using Microsoft.AspNetCore.Http;
@@ -877,55 +878,237 @@ namespace QMS.Application.Issues
         public async Task ImportIssues(IFormFile file)
         {
             Helper.Helper.CheckInput(file);
-
             Helper.Helper.Assert(!string.IsNullOrEmpty(file.FileName), "文件为空");
-
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
-            IEnumerable<dynamic> collection = MiniExcel.Query(file.OpenReadStream(), true)
-                .TakeWhile(item => item.标题 != null && item.问题模块 != null && item.问题性质 != null && item.问题分类 != null && item.问题来源 != null);
+            var collection = MiniExcel.Query(file.OpenReadStream(), useHeaderRow: true)
+                .TakeWhile(item => item.问题简述 != null && item.详情 != null && item.产品线名称 != null && item.项目名称 != null && item.问题模块 != null
+                && item.问题分类 != null && item.当前指派人名称 != null && item.问题性质 != null && item.问题来源 != null);
 
             long userId = CurrentUserInfo.UserId;
 
+            List<string> result = new List<string>();
+            List<InIssue> issuList = new List<InIssue>();
             foreach (var item in collection)
             {
-                var issue = new InIssue()
+                string msg = "";    //记录校验数据的错误信息
+                var issue = this.CheckExcelImport(item, out msg);
+                if (issue == null)
                 {
-                    Title = item.标题,
-                    Description = item.详情,
-                    ProjectId = Convert.ToInt64(item.项目编号),
-                    ProductId = Convert.ToInt64(item.产品编号),
-                    Module = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块),
-                    Consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质),
-                    IssueClassification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类),
-                    //Dispatcher = Convert.ToInt64(item.分发人编号),
-                    Source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源),
-                    Discover = Convert.ToInt64(item.发现人编号),
-                    DiscoverTime = Convert.ToDateTime(item.发现日期),
-                    Status = EnumIssueStatus.Created,
-                    //CreatorId = item.提出人编号 == null ? userId : Convert.ToInt64(item.提出人编号),
-                    //CreateTime = Convert.ToDateTime(item.提出日期),
-                    //CC = Convert.ToInt64(item.被抄送人编号)
-                };
+                    result.Add("【" + Convert.ToString(item.问题简述) + "：" + msg + "】");
+                    break;
+                }
+                else
+                {
+                    issuList.Add(issue);
+                }
+            }
+            if (result != null && result.Count() > 0)
+            {
+                string msg = string.Join(",", result);
+                throw Oops.Oh("标题为：" + msg + "请检查后重新导入");
+            }
 
-                await this.Add(issue);
+            //循环新增
+            foreach (var item in issuList)
+            {
+                await this.Add(item);
             }
         }
 
         /// <summary>
-        /// 业务逻辑上判断导入的Excel数据是否符合要求
+        /// 业务逻辑上判断导入的Excel数据是否符合要求，符合要求则返回对应的新增数据包
         /// </summary>
         /// <param name="item">excel数据行</param>
+        /// <param name="msg">记录校验数据的错误信息</param>
         /// <returns></returns>
-        public async Task CheckExcelImport(dynamic item)
+        public InIssue CheckExcelImport(dynamic item, out string msg)
         {
-            var productId = Convert.ToInt64(item.产品编号);
-            var projectId = Convert.ToInt64(item.项目编号);
-
-            if (projectId == 0 || productId == 0)
+            InIssue issue = new InIssue();
+            issue = this.CheckExcelIssue(item, out msg);
+            if (issue == null)
             {
-                return;
+                return null;
             }
+            issue.ExtendAttribute = this.CheckExcelIssueExtAttr(item, out msg);
+            if (!string.IsNullOrEmpty(msg))
+            {
+                return null;
+            }
+            return issue;
+        }
+
+        /// <summary>
+        /// 业务逻辑上判断导入的Excel的Issue表数据是否符合要求
+        /// </summary>
+        /// <param name="item">excel数据行</param>
+        /// <param name="msg">记录校验数据的错误信息</param>
+        /// <returns></returns>
+        public InIssue CheckExcelIssue(dynamic item, out string msg)
+        {
+            string title = Convert.ToString(item.问题简述);
+            string description = Convert.ToString(item.详情);
+            string productName = Convert.ToString(item.产品线名称);
+            string projectName = Convert.ToString(item.项目名称);
+            string currentAssignmentName = Convert.ToString(item.当前指派人名称);
+            if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(productName) || string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(currentAssignmentName))
+            {
+                msg = "请问输入问题简述，产品线名称，产品项目名称或当前指派人名称";
+                return null;
+            }
+
+            //判断项目，产品和当前指派人是否存在
+            var productId = productName.GetProductIdByName();
+            var projectId = projectName.GetProjectIdByName();
+            var currentAssignment = currentAssignmentName.GetEmpIdByName();
+            if (productId == 0 || projectId == 0 || currentAssignment == 0)
+            {
+                msg = "请确保输入正确的产品线名称，产品项目名称或当前指派人名称";
+                return null;
+            }
+
+            //判断枚举值是否存在
+            var modular = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块);
+            var consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质);
+            var classification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类);
+            var source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源);
+            if (modular == (EnumModule)(-1) || consequence == (EnumConsequence)(-1) || classification == (EnumIssueClassification)(-1) || source == (EnumIssueSource)(-1))
+            {
+                msg = "请输入正确的问题模块名称，问题性质名称，问题分类名称或问题来源名称";
+                return null;
+            }
+
+            //根据模块值获取该值对应的模块的ID（此处是为了获取到模块和项目的人员交集）
+            string modularValue = Convert.ToString(item.问题模块);
+            var modularId = modularValue.GetModularIdByValue();
+            //判断当前指派是否存在于项目和模块的交集人员列表
+            var userList = Helper.Helper.GetUserByProjectModularId(projectId, modularId);
+            if (userList == null || userList.Count() <= 0 || !userList.Select(u => u.Id).ToList().Contains(currentAssignment))
+            {
+                msg = "当前指派人不存在该模块和项目中，请确认";
+                return null;
+            }
+
+            //判断当前数据是否已经存在于数据库中（录入数据和现有数据完全相同的情况下才能判断到）
+            var isExists = _issueRep.DetachedEntities.FirstOrDefault(u => u.ProductId == productId && u.ProjectId == projectId && u.Module == modular && u.Consequence == consequence
+            && u.IssueClassification == classification && u.Source == source && u.Title == title);
+            if (isExists != null)
+            {
+                msg = "该数据行已经存在于系统中";
+                return null;
+            }
+
+            //创建用于新建的数据包
+            var issue = new InIssue()
+            {
+                Title = title,
+                Description = description,
+                ProductId = productId,
+                ProjectId = projectId,
+                CurrentAssignment = currentAssignment,
+                Module = modular,
+                Consequence = consequence,
+                IssueClassification = classification,
+                Source = source,
+                Status = EnumIssueStatus.Closed    //Excel导入数据状态默认为关闭状态，导入后不用重新走流程
+            };
+
+            msg = "";
+            return issue;
+        }
+
+        /// <summary>
+        /// 业务逻辑上判断导入的Excel的扩展属性表数据是否符合要求
+        /// </summary>
+        /// <param name="item">excel数据行</param>
+        /// <param name="msg">记录校验数据的错误信息</param>
+        /// <returns></returns>
+        public string CheckExcelIssueExtAttr(dynamic item, out string msg)
+        {
+            List<FieldValue> fieldValues = new List<FieldValue>();
+            msg = "";
+            //获取问题模块下的所有扩展属性
+            var modular = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块);
+            var extendAttr = _issueAttrRep.DetachedEntities.Where(u => u.Module == modular);
+            var nameList = extendAttr.Select(u => u.AttibuteName).ToList();
+            foreach (dynamic obj in item)
+            {
+                string key = obj.Key;
+                if (nameList.Contains(key))
+                {
+                    var extendAttribute = extendAttr.FirstOrDefault(u => u.AttibuteName == key);
+                    FieldValue value = new FieldValue();
+                    value.FieldCode = extendAttribute.AttributeCode;
+                    value.FieldDataType = extendAttribute.ValueType;
+                    value.Module = extendAttribute.Module;
+                    value.FieldId = extendAttribute.Id;
+                    value.FieldName = extendAttribute.AttibuteName;
+                    switch (value.FieldDataType)
+                    {
+                        case "Enum":
+                            var enumValue = Helper.Helper.GetIntFromEnumDescription(obj.Value);
+                            if (enumValue != -1)
+                            {
+                                value.Value = enumValue;
+                            }
+                            else
+                            {
+                                msg += key + "-" + obj.Value + "：输入不正确；";
+                            }
+                            break;
+
+                        case "DateTime":
+                            if (DateTime.TryParse(obj.Value, out DateTime date))
+                            {
+                                value.Value = date.ToString("yyyy-MM-dd");
+                            }
+                            else
+                            {
+                                msg += key + "-" + obj.Value + "：日期输入不正确；";
+                            }
+                            break;
+                    }
+                    value.Value = obj.Value;
+                    fieldValues.Add(value);
+                }
+            }
+
+            //如果是试产模块则再默认增加问题性质评分一项
+            if (modular == EnumModule.TrialProduce)
+            {
+                FieldValue value = new FieldValue();
+                value.FieldCode = "ImpactScore";
+                value.FieldDataType = "decimal";
+                value.Module = EnumModule.TrialProduce;
+                value.FieldId = 76;
+                value.FieldName = "问题性质评分";
+
+                var consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质);
+                switch (consequence)
+                {
+                    case EnumConsequence.Deadly:
+                        value.Value = "10";
+                        break;
+
+                    case EnumConsequence.Serious:
+                        value.Value = "3";
+                        break;
+
+                    case EnumConsequence.General:
+                        value.Value = "1";
+                        break;
+
+                    case EnumConsequence.Prompt:
+                        value.Value = "0.3";
+                        break;
+                }
+            }
+
+            if (fieldValues.Count() <= 0)
+            {
+                return "";
+            }
+            return JSON.Serialize(fieldValues);
         }
 
         #endregion 问题数据导入

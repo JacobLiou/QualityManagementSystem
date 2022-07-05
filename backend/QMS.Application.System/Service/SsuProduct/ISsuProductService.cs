@@ -23,6 +23,7 @@ namespace QMS.Application.System
 
         Task InsertProductGroup(long productId, IEnumerable<long> userIds);
 
-        Task<Dictionary<long, SsuProduct>> GetProductList(IEnumerable<long> productIds);
+
+        Task<List<SsuProduct>> GetProductList(IEnumerable<UpdateSsuProductInput> productInput);
     }
 }

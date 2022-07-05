@@ -32,7 +32,7 @@ namespace QMS.Application.System
         private readonly IRepository<Issue, IssuesDbContextLocator> _issueRep;
         private readonly ISysEmpService _sysEmpService;
         private readonly ICacheService _cacheService;
-        private readonly int CacheMinute = 30;
+        private readonly int CacheHours = 12;
 
         public SsuProjectService(
             IRepository<SsuProject, MasterDbContextLocator> ssuProjectRep, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SysUser> ssuSysuser,
@@ -158,7 +158,7 @@ namespace QMS.Application.System
 
             var ssuProject = input.Adapt<SsuProject>();
             await _ssuProjectRep.UpdateAsync(ssuProject, ignoreNullValues: false);
-            await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheMinute);
+            await _cacheService.SetCacheByHours(CoreCommonConst.PROJECTID + input.Id, ssuProject, CacheHours);
 
             //更新项目产品关联关系记录
             var ssuProjectProduct = await _ssuProjectProduct.DetachedEntities.FirstOrDefaultAsync(u => u.ProjectId == input.Id);
@@ -325,28 +325,48 @@ namespace QMS.Application.System
         /// <summary>
         /// 根据项目ID列表获取项目详细信息列表
         /// </summary>
-        /// <param name="projectIds"></param>
+        /// <param name="projectInput"></param>
         /// <returns></returns>
         [HttpPost("/SsuProject/getprojectlist")]
-        public async Task<Dictionary<long, SsuProject>> GetProjectList(IEnumerable<long> projectIds)
+        public async Task<List<SsuProject>> GetProjectList(IEnumerable<UpdateSsuProjectInput> projectInput)
         {
-            Dictionary<long, SsuProject> Dcit = new Dictionary<long, SsuProject>();
-            var products = _ssuProjectRep.DetachedEntities.Where(u => projectIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
-            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
-            foreach (SsuProject obj in products.Values)
+            List<SsuProject> list = new List<SsuProject>();
+            //先从缓存处取值
+            foreach (UpdateSsuProjectInput input in projectInput)
             {
-                var cacheProduct = _cacheService.GetCache<SsuProject>(CoreCommonConst.PROJECTID + obj.Id);
-                if (cacheProduct.Result != null)
+                var cacheProductId = await _cacheService.GetCache<SsuProject>(CoreCommonConst.PROJECTID + input.Id);
+                var cacheProductName = await _cacheService.GetCache<SsuProject>(CoreCommonConst.PROJECTNAME + input.ProjectName);
+                if (cacheProductId != null)
                 {
-                    Dcit.Add(obj.Id, cacheProduct.Result);
+                    list.Add(cacheProductId);
                 }
-                else
+                else if (cacheProductName != null)
                 {
-                    Dcit.Add(obj.Id, obj);
-                    await _cacheService.SetCacheByMinutes(CoreCommonConst.PROJECTID + obj.Id, obj, CacheMinute);
+                    list.Add(cacheProductName);
                 }
             }
-            return Dcit;
+            //缓存中不存在值的则从数据库中获取
+            var otherInput = projectInput.Where(u => !list.Select(t => t.Id).Contains(u.Id) && !list.Select(t => t.ProjectName).Contains(u.ProjectName) && u.Id != 0);
+            if (otherInput == null || otherInput.Count() <= 0)
+            {
+                return list;
+            }
+
+            var otherName = otherInput.Where(u => !string.IsNullOrEmpty(u.ProjectName)).Select(u => u.ProjectName);
+            var otherId = otherInput.Where(u => u.Id != 0).Select(u => u.Id);
+            var projects = _ssuProjectRep.DetachedEntities
+                .Where(otherName.Count() > 0, u => otherName.Contains(u.ProjectName))
+                .Where(otherId.Count() > 0, u => otherId.Contains(u.Id))
+                .Where(u => u.IsDeleted == false)
+                .ToList();
+            //针对每个产品ID和名称都做一次缓存，所以此处采用循环的方式
+            foreach (SsuProject obj in projects)
+            {
+                list.Add(obj);
+                await _cacheService.SetCacheByHours(CoreCommonConst.PROJECTID + obj.Id, obj, CacheHours);
+                await _cacheService.SetCacheByHours(CoreCommonConst.PROJECTNAME + obj.ProjectName, obj, CacheHours);
+            }
+            return list;
         }
     }
 }

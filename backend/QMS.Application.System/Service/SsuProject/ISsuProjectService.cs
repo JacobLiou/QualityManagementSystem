@@ -25,6 +25,6 @@ namespace QMS.Application.System
 
         Task InsertProjectGroup(long projectId, IEnumerable<long> userIds);
 
-        Task<Dictionary<long, SsuProject>> GetProjectList(IEnumerable<long> projectIds);
+        Task<List<SsuProject>> GetProjectList(IEnumerable<UpdateSsuProjectInput> projectInput);
     }
 }

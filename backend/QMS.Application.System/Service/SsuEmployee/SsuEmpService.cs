@@ -34,7 +34,7 @@ namespace QMS.Application.System
         private readonly IRepository<SsuProjectUser> _ssuProjectUser;
         private readonly IRepository<SsuGroupUser> _ssuGroupUser;
         private readonly ISysEmpService _sysEmpService;
-        private readonly int CacheMinute = 30;
+        private readonly int CacheHours = 12;
 
         public SsuEmpService(IRepository<SysOrg> sysOrgRep, IRepository<SysEmp> sysEmpRep, ICacheService cacheService, IRepository<SysUser> sysUser,
             ISysEmpService sysEmpService, IRepository<SsuProjectUser> ssuProjectUser, IRepository<SsuGroupUser> ssuGroupUser)
@@ -257,34 +257,51 @@ namespace QMS.Application.System
             return result;
         }
 
-
-
         /// <summary>
         /// 根据人员ID列表获取人员详细信息列表
         /// </summary>
-        /// <param name="userIds"></param>
+        /// <param name="userInput"></param>
         /// <returns></returns>
         [HttpPost("/SsuEmpOrg/getuserlist")]
-        public async Task<Dictionary<long, SysUser>> GetUserList(IEnumerable<long> userIds)
+        public async Task<List<SysUser>> GetUserList(IEnumerable<SsuUserInput> userInput)
         {
-            Dictionary<long, SysUser> Dcit = new Dictionary<long, SysUser>();
-            var products = _sysUser.DetachedEntities.Where(u => userIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
-            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
-            foreach (SysUser obj in products.Values)
+            List<SysUser> list = new List<SysUser>();
+            //先从缓存处取值
+            foreach (SsuUserInput input in userInput)
             {
-                //人员表存在租户ID进行数据隔离，此处缓存需要租户ID做区分
-                var cacheProduct = _cacheService.GetCache<SysUser>(CoreCommonConst.USERID + GetTenantId() + obj.Id);
-                if (cacheProduct.Result != null)
+                var cacheUserId = await _cacheService.GetCache<SysUser>(CoreCommonConst.USERID + GetTenantId() + "_" + input.Id);
+                var cacheUserName = await _cacheService.GetCache<SysUser>(CoreCommonConst.USERNAME + GetTenantId() + "_" + input.Name);
+                if (cacheUserId != null)
                 {
-                    Dcit.Add(obj.Id, cacheProduct.Result);
+                    list.Add(cacheUserId);
                 }
-                else
+                else if (cacheUserName != null)
                 {
-                    Dcit.Add(obj.Id, obj);
-                    await _cacheService.SetCacheByMinutes(CoreCommonConst.USERID + GetTenantId() + obj.Id, obj, CacheMinute);
+                    list.Add(cacheUserName);
                 }
             }
-            return Dcit;
+            //缓存处不存在值则从数据库中取值并缓存在数据库中
+            var otherInput = userInput.Where(u => !list.Select(t => t.Id).Contains(u.Id) && !list.Select(t => t.Name).Contains(u.Name) && u.Id != 0);
+            if (otherInput == null || otherInput.Count() <= 0)
+            {
+                return list;
+            }
+
+            var otherName = otherInput.Where(u => !string.IsNullOrEmpty(u.Name)).Select(u => u.Name);
+            var otherId = otherInput.Where(u => u.Id != 0).Select(u => u.Id);
+            var userlist = _sysUser.DetachedEntities
+                .Where(otherName.Count() > 0, u => otherName.Contains(u.Name))
+                .Where(otherId.Count() > 0, u => otherId.Contains(u.Id))
+                .Where(u => u.IsDeleted == false)
+                .ToList();
+            //针对每个人员ID和名称都做一次缓存，所以此处采用循环的方式
+            foreach (SysUser obj in userlist)
+            {
+                list.Add(obj);
+                await _cacheService.SetCacheByHours(CoreCommonConst.USERID + GetTenantId() + "_" + obj.Id, obj, CacheHours);
+                await _cacheService.SetCacheByHours(CoreCommonConst.USERNAME + GetTenantId() + "_" + obj.Name, obj, CacheHours);
+            }
+            return list;
         }
 
         /// <summary>
@@ -326,12 +343,19 @@ namespace QMS.Application.System
             {
                 throw Oops.Oh("项目ID或模块ID不能为空");
             }
+            var cacheProjectModular = _cacheService.GetCache<List<UserOutput>>(CoreCommonConst.PROJECT_MODULAR + projectId + "_" + modularId);
+            if (cacheProjectModular.Result != null && cacheProjectModular.Result.Count() > 0)
+            {
+                return cacheProjectModular.Result;
+            }
+
             var projectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == projectId).Select(u => u.EmployeeId).ToList();
             //模块人员列表先暂时采用"在人员组上新增模块对应的人员列表，管理员后台维护数据库"，后续有变动再做修改
             var modularUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == modularId).Select(u => u.EmployeeId).ToList();
             //获取项目人员列表和模块人员列表的交集
             var userList = projectUser.Intersect(modularUser).ToList();
             var result = await _sysUser.DetachedEntities.Where(u => userList.Contains(u.Id)).Select(u => u.Adapt<UserOutput>()).ToListAsync();
+            await _cacheService.SetCache<List<UserOutput>>(CoreCommonConst.PROJECT_MODULAR + projectId + "_" + modularId, result);
             return result;
         }
     }

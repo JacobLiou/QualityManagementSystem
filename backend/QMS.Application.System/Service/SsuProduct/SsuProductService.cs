@@ -31,7 +31,7 @@ namespace QMS.Application.System
         private readonly IRepository<Issue, IssuesDbContextLocator> _issueRep;
         private readonly ISysEmpService _sysEmpService;
         private readonly ICacheService _cacheService;
-        private readonly int CacheMinute = 30;
+        private readonly int CacheHours = 12;
 
         public SsuProductService(
             IRepository<SsuProduct, MasterDbContextLocator> ssuProductRep, IRepository<SsuProductUser> ssuProductUserRep, IRepository<SysUser> ssuSysuser,
@@ -142,7 +142,7 @@ namespace QMS.Application.System
             var ssuProduct = input.Adapt<SsuProduct>();
             //await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: true);
             await _ssuProductRep.UpdateAsync(ssuProduct, ignoreNullValues: false);
-            await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheMinute);
+            await _cacheService.SetCacheByHours(CoreCommonConst.PRODUCTID + input.Id, ssuProduct, CacheHours);
 
             //更新产品组人员列表
             var existsList = _ssuProductUserRep.DetachedEntities.Where(u => u.ProductId.Equals(input.Id)).Select(u => u.EmployeeId).ToList();
@@ -284,30 +284,50 @@ namespace QMS.Application.System
         }
 
         /// <summary>
-        /// 根据产品ID列表获取产品详细信息列表
+        /// 获取产品详细信息列表并做缓存
         /// </summary>
-        /// <param name="productIds"></param>
+        /// <param name="productInput"></param>
         /// <returns></returns>
         [HttpPost("/SsuProduct/getproductlist")]
-        public async Task<Dictionary<long, SsuProduct>> GetProductList(IEnumerable<long> productIds)
+        public async Task<List<SsuProduct>> GetProductList(IEnumerable<UpdateSsuProductInput> productInput)
         {
-            Dictionary<long, SsuProduct> Dcit = new Dictionary<long, SsuProduct>();
-            var products = _ssuProductRep.DetachedEntities.Where(u => productIds.Contains(u.Id) && u.IsDeleted == false).ToDictionary(u => u.Id);
-            //针对每个产品ID都做一次缓存，所以此处采用循环的方式
-            foreach (SsuProduct obj in products.Values)
+            List<SsuProduct> list = new List<SsuProduct>();
+            //先从缓存处取值
+            foreach (UpdateSsuProductInput input in productInput)
             {
-                var cacheProduct = _cacheService.GetCache<SsuProduct>(CoreCommonConst.PRODUCTID + obj.Id);
-                if (cacheProduct.Result != null)
+                var cacheProductId = _cacheService.GetCache<SsuProduct>(CoreCommonConst.PRODUCTID + input.Id);
+                var cacheProductName = _cacheService.GetCache<SsuProduct>(CoreCommonConst.PRODUCTNAME + input.ProductName);
+                if (cacheProductId.Result != null)
                 {
-                    Dcit.Add(obj.Id, cacheProduct.Result);
+                    list.Add(cacheProductId.Result);
                 }
-                else
+                else if (cacheProductName.Result != null)
                 {
-                    Dcit.Add(obj.Id, obj);
-                    await _cacheService.SetCacheByMinutes(CoreCommonConst.PRODUCTID + obj.Id, obj, CacheMinute);
+                    list.Add(cacheProductName.Result);
                 }
             }
-            return Dcit;
+            //缓存中不存在该项值则从数据库中取值并缓存
+            var otherInput = productInput.Where(u => !list.Select(t => t.Id).Contains(u.Id) && !list.Select(t => t.ProductName).Contains(u.ProductName));
+            if (otherInput == null || otherInput.Count() <= 0)
+            {
+                return list;
+            }
+
+            var otherName = otherInput.Where(u => !string.IsNullOrEmpty(u.ProductName)).Select(u => u.ProductName);
+            var otherId = otherInput.Where(u => u.Id != 0).Select(u => u.Id);
+            var products = _ssuProductRep.DetachedEntities
+                .Where(otherName.Count() > 0, u => otherName.Contains(u.ProductName))
+                .Where(otherId.Count() > 0, u => otherId.Contains(u.Id))
+                .Where(u => u.IsDeleted == false)
+                .ToList();
+            //针对每个产品ID和名称都做一次缓存，所以此处采用循环的方式
+            foreach (SsuProduct obj in products)
+            {
+                list.Add(obj);
+                await _cacheService.SetCacheByHours(CoreCommonConst.PRODUCTID + obj.Id, obj, CacheHours);
+                await _cacheService.SetCacheByHours(CoreCommonConst.PRODUCTNAME + obj.ProductName, obj, CacheHours);
+            }
+            return list;
         }
     }
 }

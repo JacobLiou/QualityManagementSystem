@@ -77,6 +77,7 @@ namespace QMS.Application.Issues
             return res;
         }
 
+
         [NonAction]
         public async Task SetUserName(long userId, string objStr)
         {
@@ -99,6 +100,14 @@ namespace QMS.Application.Issues
         public async Task<string> GetProductName(long productId)
         {
             var cacheKey = CoreCommonConst.PRODUCTID + productId;
+
+            var res = await _cache.GetStringAsync(cacheKey);
+            return res;
+        }
+
+        public async Task<string> GetUserByProjectModularId(long projectId, long modularId)
+        {
+            var cacheKey = CoreCommonConst.PROJECT_MODULAR + projectId + "_" + modularId;
 
             var res = await _cache.GetStringAsync(cacheKey);
             return res;
