@@ -144,42 +144,7 @@ const userAccount = [
       'show': false
     },
     'component': 'Console'
-  },
-
-  // 问题页面重构页面（未动态引入）
-  {
-    'name': 'problemInfo',
-    'path': '/problemInfo',
-    'pid': 0,
-    'id': 183183,
-    'meta': { title: '问题详情', icon: null, show: false, target: '', link: null },
-    'component': 'problemInfo'
-  },
-  {
-    'name': 'problemAdd',
-    'path': '/problemAdd',
-    'pid': 0,
-    'id': 183183,
-    'meta': { title: '问题新增', icon: null, show: false, target: '', link: null },
-    'component': 'problemAdd'
-  },
-  {
-    'name': 'problemTable',
-    'path': '/problemTable',
-    'pid': 0,
-    'id': 183183,
-    'meta': { title: '问题管理', icon: null, show: false, target: '', link: null },
-    'component': 'problemTable'
-  },
-  {
-    'name': 'problemDistribure',
-    'path': '/problemDistribure',
-    'pid': 0,
-    'id': 183183,
-    'meta': { title: '问题分发', icon: null, show: false, target: '', link: null },
-    'component': 'problemDistribure'
-  },
-
+  }
 
 ]
 
