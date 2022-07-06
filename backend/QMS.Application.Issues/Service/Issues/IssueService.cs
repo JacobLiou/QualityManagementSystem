@@ -136,6 +136,14 @@ namespace QMS.Application.Issues
             {
                 _noticeService.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
             }
+            //问题新增发送消息给抄送人
+            if (input.CCList != null && input.CCList.Count > 0)
+            {
+                foreach (long id in input.CCList)
+                {
+                    _noticeService.SendNotice(id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
+                }
+            }
 
             await IssueLogger.Log(
                 this._issueOperateRep,

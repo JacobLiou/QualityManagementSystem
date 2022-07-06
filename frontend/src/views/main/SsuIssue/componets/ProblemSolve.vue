@@ -174,9 +174,21 @@ export default {
   },
   created() {},
   watch: {
-    isVersion: {
-      handler() {
-        this.getVersionList()
+    isVersion : {
+      handler() {     
+        if(this.visible || this.isVersion)
+        {
+          this.getVersionList()  
+        }              
+      },
+      immediate: true,
+    },
+    visible : {
+      handler() {  
+        if(this.visible || this.isVersion)
+        {
+          this.getVersionList()  
+        }                         
       },
       immediate: true,
     },
@@ -193,7 +205,7 @@ export default {
       this.form.id = record.id
       this.form.title = record.title // 问题简述，
       this.form.solveTime = moment().format('YYYY-MM-DD')
-      this.isShow = isShow
+      this.isShow = isShow            
     },
     // 动态属性日期类型
     attributDateType(fieldCode) {

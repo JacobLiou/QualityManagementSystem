@@ -29,49 +29,11 @@ namespace QMS.Application.System
         private readonly ILoginVerify _login;
         private readonly IRepository<SysUserRole> _sysUserRole;
         private readonly IConfiguration _configuration;
-
-        ////企业微信重定向至登录界面
-        //private readonly string RedirectUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect";
-
-        ////企业微信获取access_token信息
-        //private readonly string AccessTokenUrl = "https://qyapi.weixin.qq.com/cgi-bin/gettoken";
-
-        ////获取扫码用户ID
-        //private readonly string UserIdUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo";
-
-        ////获取扫码用户信息
-        //private readonly string UserInfoUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/get";
-
-        ////企业微信发送信息URL
-        //private readonly string SendMessageUrl = " https://qyapi.weixin.qq.com/cgi-bin/message/send";
-
-        ////网页授权链接
-        //private readonly string WebOAuthUrl = "https://open.weixin.qq.com/connect/oauth2/authorize";
-
-        ////获取部门列表
-        //private readonly string DepartmentListUrl = "https://qyapi.weixin.qq.com/cgi-bin/department/list";
-
-        ////获取部门下的用户列表
-        //private readonly string DepartmentUserUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/list";
-
-        //private readonly string Appid = "ww44dc5ededfe4a954";
-        //private readonly string Corpsecret = "4-WoTdHkSNnUbnpxhI3PT1pAZTRmerr9AtsMV-HweDY";
-        //private readonly string Agentid = "1000017";
-        //private readonly string Status = "web_login@gyoss9";
-        //private readonly long DefaultOrgId = 142307070910547;    //默认组织机构ID
-        //private readonly string DefaultOrgName = "首航新能源";   //默认组织机构名称
-        //private readonly long Role = 142307070910557;            //默认角色
-        //private readonly long TenantId = 142307070918781;        //默认租户ID
-        //private readonly long SysPos = 142307070910554;          //默认员工职位ID
-
-        ////private readonly string LoginUrl = "http%3A%2F%2Fqms.sofarsolar.com:8001";
-        //private readonly string LoginUrl = "http://qms.sofarsolar.com:8001/system/qyWechat/loginAndRegister";
-
-        //private readonly int CacheHour = 2;
+        private readonly IEventPublisher _eventPublisher;
 
         public QYWeChatOAuth(ICacheService cache, IRepository<SysUser> user, IRepository<SysOauthUser> oauthUser, IRepository<SysEmp> emp,
             ILoginVerify loginVerify, IRepository<SysUserRole> sysUserRole, IRepository<SysEmpPos> sysEmpPosRep, IRepository<SysOrg> sysOrgRep,
-            IConfiguration configuration)
+            IConfiguration configuration, IEventPublisher eventPublisher)
         {
             _cache = cache;
             _sysUserRep = user;
@@ -82,6 +44,7 @@ namespace QMS.Application.System
             _sysEmpPosRep = sysEmpPosRep;
             _sysOrgRep = sysOrgRep;
             _configuration = configuration;
+            _eventPublisher = eventPublisher;
         }
 
         /// <summary>
@@ -300,7 +263,23 @@ namespace QMS.Application.System
             message.Agentid = Convert.ToInt32(_configuration["QYWechatConfiguration:Agentid"]);
             var messResule = await $"{_configuration["QYWechatConfiguration:SendMessageUrl"]}?access_token={token}".SetBody(JSON.Serialize(message)).PostAsAsync<QYWechatResult>();
             if (messResule.Errcode != 0)
+            {
+                await _eventPublisher.PublishAsync(new ChannelEventSource("Create:ExLog",
+                new SysLogEx
+                {
+                    Account = CurrentUserInfo.Account,
+                    Name = CurrentUserInfo.Name,
+                    ClassName = "QYWeChatOAuth",
+                    MethodName = "QYWechatSendMessage",
+                    ExceptionName = "企业微信发送消息失败",
+                    ExceptionMsg = messResule.Errmsg,
+                    ExceptionSource = "QYWeChatOAuth",
+                    StackTrace = "",
+                    ParamsObj = touser + "," + toparty + "," + totag + "," + title + "," + description + "," + url,
+                    ExceptionTime = DateTimeOffset.Now
+                }));
                 throw Oops.Oh($"{messResule.Errmsg}");
+            }
             return $"发送信息成功,消息ID为{messResule.Msgid}";
         }
 

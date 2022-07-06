@@ -220,10 +220,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             {
                 List<long> cc = JSON.Deserialize<List<long>>(issue.CCs);
 
-                this.CC = JSON.Serialize(cc.Select<long, string>(id=>id.GetNameByEmpId()));
+                this.CC = JSON.Serialize(cc.Select<long, string>(id => id.GetNameByEmpId()));
             }
 
-            this.Description = detail.Description;
+            this.Description = detail.Description.FormatRichText();
             this.Batch = detail.Batch;
             this.Count = detail.Count;
             this.SolveVersion = detail.SolveVersion;

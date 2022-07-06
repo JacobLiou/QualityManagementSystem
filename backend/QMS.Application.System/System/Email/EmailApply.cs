@@ -1,6 +1,7 @@
 ﻿using Furion;
 using Furion.DatabaseAccessor;
 using Furion.DependencyInjection;
+using Furion.EventBus;
 using Furion.Extras.Admin.NET;
 using Furion.FriendlyException;
 using System.ComponentModel;
@@ -15,6 +16,7 @@ namespace QMS.Application.System
     /// </summary>
     public class EmailApplpy : ITransient, IEmailApplpy
     {
+        private static IEventPublisher _eventPublisher;
         private readonly IRepository<SysUser> _sysUserRep;  // 用户表仓储
         private readonly string StmpServer = "smtp.sofarsolar.com";                          //smtp服务器地址
         private readonly string MailAccount = "platformservice@sofarsolar.com";              //邮箱账号
@@ -24,10 +26,11 @@ namespace QMS.Application.System
         private readonly ICacheService _cache;
         private readonly int CacheMinute = 1;
 
-        public EmailApplpy(IRepository<SysUser> sysUserRep, ICacheService cache)
+        public EmailApplpy(IRepository<SysUser> sysUserRep, ICacheService cache, IEventPublisher eventPublisher)
         {
             _sysUserRep = sysUserRep;
             _cache = cache;
+            _eventPublisher = eventPublisher;
         }
 
         /// <summary>
@@ -99,7 +102,20 @@ namespace QMS.Application.System
             if (e.Error != null)
             {
                 // 增加错误日志
-                Serilog.Log.Error("SendMails Error：" + e.Error.ToString());
+                _eventPublisher.PublishAsync(new ChannelEventSource("Create:ExLog",
+                new SysLogEx
+                {
+                    Account = CurrentUserInfo.Account,
+                    Name = CurrentUserInfo.Name,
+                    ClassName = "EmailApplpy",
+                    MethodName = "SendEmail",
+                    ExceptionName = "邮件发送失败",
+                    ExceptionMsg = e.Error.ToString(),
+                    ExceptionSource = "SendEmail",
+                    StackTrace = e.GetDescription(),
+                    ParamsObj = "",
+                    ExceptionTime = DateTimeOffset.Now
+                }));
                 throw Oops.Oh("SendMails Error：" + e.Error.ToString());
             }
         }

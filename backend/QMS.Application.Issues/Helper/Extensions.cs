@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace QMS.Application.Issues.Helper
 {
@@ -86,6 +87,38 @@ namespace QMS.Application.Issues.Helper
             str = str.Replace("_", "").Replace("-", "");
 
             return str.Substring(0, 1).ToUpper() + str.Substring(1);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public static string FormatRichText(this string txt)
+        {
+            //移除标签
+            txt = Regex.Replace(txt, "<style[^>]*?>[\\s\\S]*?<\\/style>", "");//删除css
+            txt = Regex.Replace(txt, "<script[^>]*?>[\\s\\S]*?<\\/script>", "");//删除js
+            txt = Regex.Replace(txt, "<[^>]+>", "");//删除html标记
+            txt = Regex.Replace(txt, "\\s*|\t|\r|\n", "");//去除tab、空格、空行
+            txt = Regex.Replace(txt, "&nbsp;", "");
+            txt = txt.Replace(" ", "");
+            txt = txt.Replace("\"", "");//去除异常的引号" " "
+            txt = txt.Replace("\"", "");
+            //移除多余属性
+            txt = Regex.Replace(txt, "<source.*?>", "");
+            txt = Regex.Replace(txt, "<video.*?>", "");
+            txt = Regex.Replace(txt, "</video>", "");
+            txt = Regex.Replace(txt, "class[^=]*=[\"']*[^\"'>]+[\"']*", "");
+            txt = Regex.Replace(txt, "style[^=]*=[\"']*[^\"'>]+[\"']*", "");
+            txt = Regex.Replace(txt, "width[^=]*=[\"']*[^\"'>]+[\"']*", "");
+            txt = Regex.Replace(txt, "height[^=]*=[\"']*[^\"'>]+[\"']*", "");
+            txt = Regex.Replace(txt, "href[^=]*=[\"']*[^\"'>]+[\"']*", "");//去除a标签 href
+            txt = Regex.Replace(txt, "<style[^>]*?>[\\s\\S]*?<\\/style>", "");//去除style
+            txt = Regex.Replace(txt, "<script[^>]*?>[\\s\\S]*?<\\/script>", "");//去除script
+            txt = Regex.Replace(txt, "&nbsp;", "");
+            txt = Regex.Replace(txt, "<p></p>", "");
+            txt = Regex.Replace(txt, "figure", "p");
+            return txt;
         }
     }
 }
