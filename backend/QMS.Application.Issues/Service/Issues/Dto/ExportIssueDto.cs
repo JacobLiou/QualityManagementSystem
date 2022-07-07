@@ -9,9 +9,13 @@ namespace QMS.Application.Issues.Service.Issue.Dto
 {
     public class ExportIssueDto
     {
-        [ExcelColumnName("问题编号")]
+        [ExcelIgnore]
         [Comment("问题编号")]
         public long Id { get; set; }
+
+        [ExcelColumnName("问题序号")]
+        [Comment("问题序号")]
+        public string SerialNumber { get; set; }
 
         [ExcelColumnName("问题简述")]
         [Comment("问题简述")]
@@ -181,7 +185,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         public ExportIssueDto(Core.Entity.Issue issue, IssueDetail detail)
         {
             this.Id = issue.Id;
-
+            this.SerialNumber = issue.SerialNumber;
             this.Title = issue.Title;
             this.Module = issue.Module.GetEnumDescription();
             this.Consequence = issue.Consequence.GetEnumDescription();
