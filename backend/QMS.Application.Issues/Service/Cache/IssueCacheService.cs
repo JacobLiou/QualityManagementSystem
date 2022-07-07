@@ -15,10 +15,10 @@ namespace QMS.Application.Issues
     [ApiDescriptionSettings("问题管理服务", Name = "IssueColumn", Order = 100)]
     public class IssueCacheService : IDynamicApiController, ISingleton
     {
-        private readonly IDistributedCache _cache;
+        private readonly QMSDistributedCache _cache;
 
         public IssueCacheService(
-            IDistributedCache cache
+            QMSDistributedCache cache
         )
         {
             this._cache = cache;
@@ -37,7 +37,7 @@ namespace QMS.Application.Issues
         {
             var cacheKey = Constants.USER_COLUMNS + userId;
 
-            await _cache.SetStringAsync(cacheKey, json, this.GetCacheEntryOptions());
+            await _cache.SetStringAsync(cacheKey, json, 30);
         }
 
         [NonAction]
@@ -54,7 +54,7 @@ namespace QMS.Application.Issues
         {
             var cacheKey = Constants.FIELD_STRUCT;
 
-            await _cache.SetStringAsync(cacheKey, fieldStructDicStr, this.GetCacheEntryOptions(120));
+            await _cache.SetStringAsync(cacheKey, fieldStructDicStr, 120);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace QMS.Application.Issues
         {
             var cacheKey = CoreCommonConst.USERID + this.GetTenantId() + userId;
 
-            await _cache.SetStringAsync(cacheKey, objStr, this.GetCacheEntryOptions());
+            await _cache.SetStringAsync(cacheKey, objStr, 30);
         }
 
 
@@ -113,20 +113,18 @@ namespace QMS.Application.Issues
             return res;
         }
 
-        private DistributedCacheEntryOptions GetCacheEntryOptions(int minutes = 30)
-        {
-            DistributedCacheEntryOptions cacheOption = new DistributedCacheEntryOptions();
-            cacheOption.SetAbsoluteExpiration(TimeSpan.FromMinutes(minutes));
-
-            return cacheOption;
-        }
+        
 
         [NonAction]
         public async Task SetString(string key, string value)
         {
             await _cache.SetStringAsync(key, value);
         }
-
+        [NonAction]
+        public bool Exists(string cacheKey)
+        {
+            return _cache.Equals(cacheKey);
+        }
         [NonAction]
         public async Task<string> GetString(string key)
         {

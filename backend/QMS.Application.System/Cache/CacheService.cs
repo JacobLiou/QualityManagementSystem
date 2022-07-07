@@ -2,6 +2,7 @@
 using Furion.DynamicApiController;
 using Furion.JsonSerialization;
 using Microsoft.Extensions.Caching.Distributed;
+using QMS.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,9 @@ namespace QMS.Application.System
     /// </summary>
     public class CacheService : IDynamicApiController, ICacheService, ITransient
     {
-        private readonly IDistributedCache _cache;
+        private readonly QMSDistributedCache _cache;
 
-        public CacheService(IDistributedCache cache)
+        public CacheService(QMSDistributedCache cache)
         {
             _cache = cache;
         }

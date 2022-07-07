@@ -1712,7 +1712,11 @@ namespace QMS.Application.Issues
         #endregion 问题按钮显示获取
 
         #region 获取问题序号
-
+        public static string GetTenantId()
+        {
+            if (App.User == null) return string.Empty;
+            return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
+        }
         /// <summary>
         /// 获取新的问题序号
         /// </summary>
@@ -1752,7 +1756,7 @@ namespace QMS.Application.Issues
                 }
 
                 //缓存Key值，如NPI_20220622
-                var key = abbreviation + "_" + DateTime.Now.ToString("yyyyMMdd");
+                var key = GetTenantId() + "_" + abbreviation + "_" + DateTime.Now.ToString("yyyyMMdd");
                 string result = _issueCacheService.GetString(key).Result;
                 if (string.IsNullOrEmpty(result))
                 {
