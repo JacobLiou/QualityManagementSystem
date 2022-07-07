@@ -85,7 +85,7 @@
             <SelectUser
               title="请输入发现人"
               @handlerSelectUser="handlerSelectUser"
-              selectType="discoverName"
+              selectType="discover"
               :userSelect="userSelectDis"
             ></SelectUser>
             <a-button @click="changePersonnel('discover')"> 选择 </a-button>
@@ -563,11 +563,11 @@ export default {
     },
     // 禁止部分时间
     disabledDate(current) {
-      // 编辑和增加
+      // 编辑和增加           
       if (this.isEdit && this.editDate && this.copyAdd == 0) {
-        return current.valueOf() < moment(this.editDate).valueOf()
+        return current.valueOf() > moment(this.editDate).valueOf()
       } else {
-        return current && current < moment().subtract(1, 'days')
+        return current > moment().subtract(0, 'days')
       }
     },
 
@@ -580,9 +580,9 @@ export default {
           this.form.currentAssignment = valueObj.value
           this.form.currentAssignmentName = valueObj.label
           break
-        case 'discover': // 发现
-          this.form.currentAssignment = valueObj.value
-          this.form.currentAssignmentName = valueObj.label
+        case 'discover': // 发现人   
+          this.form.discover = valueObj.value
+          this.form.discoverName = valueObj.label                
           break
         case 'ccList': // 抄送
           const { value } = valueObj

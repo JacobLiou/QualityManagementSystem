@@ -32,7 +32,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, long>> ids = new List<Dictionary<string, long>>();
-            foreach (long id in projectIds)
+            foreach (long id in projectIds.ToList().Distinct())
             {
                 var param = new Dictionary<string, long>()
                 {
@@ -42,7 +42,7 @@ namespace QMS.Application.Issues
             }
             var response =
                 //await Constants.PROJECTS_URL
-                await "http://localhost:5566/SsuProject/getprojectlist"
+                await "http://172.16.16.33:8001/SsuProject/getprojectlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -66,7 +66,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, string>> ids = new List<Dictionary<string, string>>();
-            foreach (string name in projectNames)
+            foreach (string name in projectNames.ToList().Distinct())
             {
                 var param = new Dictionary<string, string>()
                 {
@@ -76,7 +76,7 @@ namespace QMS.Application.Issues
             }
             var response =
                 //await Constants.PROJECTS_URL
-                await "http://localhost:5566/SsuProject/getprojectlist"
+                await "http://172.16.16.33:8001/SsuProject/getprojectlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -99,7 +99,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, long>> ids = new List<Dictionary<string, long>>();
-            foreach (long id in productIds)
+            foreach (long id in productIds.ToList().Distinct())
             {
                 var param = new Dictionary<string, long>()
                 {
@@ -109,7 +109,7 @@ namespace QMS.Application.Issues
             }
 
             var response =
-                await "http://localhost:5566/SsuProduct/getproductlist"
+                await "http://172.16.16.33:8001/SsuProduct/getproductlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -132,7 +132,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, string>> names = new List<Dictionary<string, string>>();
-            foreach (string name in productNames)
+            foreach (string name in productNames.ToList().Distinct())
             {
                 var param = new Dictionary<string, string>()
                 {
@@ -143,7 +143,7 @@ namespace QMS.Application.Issues
 
             var response =
                 //    await Constants.PRODUCTS_URL
-                await "http://localhost:5566/SsuProduct/getproductlist"
+                await "http://172.16.16.33:8001/SsuProduct/getproductlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -174,7 +174,7 @@ namespace QMS.Application.Issues
             //get请求下，通过SetQueries方法设置请求参数无法正常请求，此处先暂时通过这种方式
             var response =
                 //await Constants.PROJECT_MODULAR_URL
-                await $"{"http://localhost:5566/SsuEmpOrg/getresponsibilityuser?" + param.ToQueryString()}"
+                await $"{"http://172.16.16.33:8001/SsuEmpOrg/getresponsibilityuser?" + param.ToQueryString()}"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -203,7 +203,7 @@ namespace QMS.Application.Issues
 
             var response =
                 //await Constants.USER_URL
-                await "http://localhost:5566/SsuEmpOrg/getuserlist"
+                await "http://172.16.16.33:8001/SsuEmpOrg/getuserlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -233,7 +233,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, string>> names = new List<Dictionary<string, string>>();
-            foreach (string name in userNames)
+            foreach (string name in userNames.ToList().Distinct())
             {
                 var param = new Dictionary<string, string>()
                 {
@@ -244,7 +244,7 @@ namespace QMS.Application.Issues
 
             var response =
                 //await Constants.USER_URL
-                await "http://localhost:5566/SsuEmpOrg/getuserlist"
+                await "http://172.16.16.33:8001/SsuEmpOrg/getuserlist"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -268,7 +268,7 @@ namespace QMS.Application.Issues
             var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
 
             List<Dictionary<string, string>> values = new List<Dictionary<string, string>>();
-            foreach (string value in modularValue)
+            foreach (string value in modularValue.ToList().Distinct())
             {
                 var param = new Dictionary<string, string>()
                 {
@@ -279,7 +279,7 @@ namespace QMS.Application.Issues
 
             var response =
                 //await Constants.MODULAR_URL
-                await "http://localhost:5566/dictonaryservice/getdictdetail"
+                await "http://172.16.16.33:8001/dictonaryservice/getdictdetail"
                 .SetHeaders(new
                 {
                     Authorization = authHeader

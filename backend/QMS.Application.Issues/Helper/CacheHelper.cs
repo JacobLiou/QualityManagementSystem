@@ -126,6 +126,10 @@ namespace QMS.Application.Issues.Helper
                 return JSON.Deserialize<ProjectModelFromThirdParty>(cacheStr).Id;
             }
             Dictionary<string, ProjectModelFromThirdParty> project = Helper.GetThirdPartyService().GetProjectByNames(new List<string>() { name }).Result;
+            if (project == null || !project.Keys.Contains(name))
+            {
+                return 0;
+            }
             var projectId = project.FirstOrDefault(u => u.Key == name).Value.Id;
             return projectId;
         }
@@ -263,7 +267,12 @@ namespace QMS.Application.Issues.Helper
                 return JSON.Deserialize<UserModelFromThirdParty>(cacheStr).Id;
             }
             //缓存不存在则调用system下的接口获取值
-            long id = Helper.GetThirdPartyService().GetUserByName(new List<string>() { name }).Result.Values.FirstOrDefault().Id;
+            var user = Helper.GetThirdPartyService().GetUserByName(new List<string>() { name }).Result;
+            if (user == null || !user.Keys.Contains(name))
+            {
+                return 0;
+            }
+            long id = user.Values.FirstOrDefault().Id;
 
             return id;
         }
@@ -283,7 +292,12 @@ namespace QMS.Application.Issues.Helper
                 return JSON.Deserialize<ModularModelFromThirdParty>(cacheStr).Id;
             }
             //缓存不存在则调用system下的接口获取值
-            long id = Helper.GetThirdPartyService().GetModularByValue(new List<string>() { value }).Result.Values.FirstOrDefault().Id;
+            var modular = Helper.GetThirdPartyService().GetModularByValue(new List<string>() { value }).Result;
+            if (modular == null || !modular.Keys.Contains(value))
+            {
+                return 0;
+            }
+            long id = modular.Values.FirstOrDefault().Id;
             return id;
         }
 

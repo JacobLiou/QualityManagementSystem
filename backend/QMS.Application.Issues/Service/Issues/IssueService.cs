@@ -136,6 +136,14 @@ namespace QMS.Application.Issues
             {
                 _noticeService.SendNotice(issueEntity.Entity.Id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
             }
+            //问题新增发送消息给抄送人
+            if (input.CCList != null && input.CCList.Count > 0)
+            {
+                foreach (long id in input.CCList)
+                {
+                    _noticeService.SendNotice(id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
+                }
+            }
 
             await IssueLogger.Log(
                 this._issueOperateRep,
@@ -759,7 +767,7 @@ namespace QMS.Application.Issues
             // 根据保存的项目id和产品id调用第三方服务获取对应的名称
             if (issues.Count > 0)
             {
-                Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Select<ExportIssueDto, long>(issue => issue.ProjectId));
+                Dictionary<long, ProjectModelFromThirdParty> projects = await Helper.Helper.GetThirdPartyService().GetProjectByIds(issues.Where(model => model.ProductId != null).Select<ExportIssueDto, long>(issue => (long)issue.ProjectId));
                 Dictionary<long, ProductModelFromThirdParty> products = await Helper.Helper.GetThirdPartyService().GetProductByIds(issues.Where(model => model.ProductId != null).Select<ExportIssueDto, long>(issue => (long)issue.ProductId));
 
                 foreach (var item in issues)
@@ -1760,8 +1768,13 @@ namespace QMS.Application.Issues
                 string result = _issueCacheService.GetString(key).Result;
                 if (string.IsNullOrEmpty(result))
                 {
-                    result = _issueRep.DetachedEntities.OrderByDescending(u => u.CreateTime).FirstOrDefault(u => u.Module == modular)?.SerialNumber;
+                    result = _issueRep.DetachedEntities.OrderByDescending(u => u.CreateTime).FirstOrDefault(u => u.Module == modular && u.CreateTime.Date == DateTime.Now.Date)?.SerialNumber;
                     if (string.IsNullOrEmpty(result))
+                    {
+                        result = abbreviation + DateTime.Now.ToString("yyyyMMdd") + seedNum.ToString("000");
+                    }
+                    //截取字符串中的日期部分
+                    if (result.Substring(3, 8) != DateTime.Now.ToString("yyyyMMdd"))
                     {
                         result = abbreviation + DateTime.Now.ToString("yyyyMMdd") + seedNum.ToString("000");
                     }
@@ -1769,7 +1782,7 @@ namespace QMS.Application.Issues
                 int.TryParse(result.Substring(result.Length - 3, 3), out seedNum);
                 seedNum++;
                 result = abbreviation + DateTime.Now.ToString("yyyyMMdd") + seedNum.ToString("000");
-                _issueCacheService.SetString(key, result, 24, 0, 0).Wait();
+                _issueCacheService.SetString(key, result, 12, 0, 0).Wait();
                 return result;
             }
         }

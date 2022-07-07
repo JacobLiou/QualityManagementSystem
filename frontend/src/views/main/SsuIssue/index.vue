@@ -148,21 +148,21 @@ export default {
         {
           title: '待办人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'currentAssignName',
           width: '8em',
         },
         {
           title: '项目',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'projectName',
           width: '8em',
         },
         {
           title: '产品',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'productName',
           width: '8em',
         },
@@ -219,7 +219,7 @@ export default {
         {
           title: '提出人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'creatorName',
           width: '6em',
         },
@@ -234,7 +234,7 @@ export default {
         {
           title: '发现人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'discoverName',
           width: '6em',
         },
@@ -248,7 +248,7 @@ export default {
         {
           title: '分发人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'dispatcherName',
           width: '6em',
         },
@@ -269,7 +269,7 @@ export default {
         {
           title: '解决人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'executorName',
           width: '6em',
         },
@@ -283,7 +283,7 @@ export default {
         {
           title: '验证人',
           align: 'left',
-          sorter: true,
+          sorter: false,
           dataIndex: 'verifierName',
           width: '6em',
         },
