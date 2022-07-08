@@ -3,6 +3,7 @@ using Furion.DatabaseAccessor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
+using QMS.Application.Issues.Service.Issue.Dto.Add;
 using QMS.Core;
 using QMS.Core.Entity;
 using System.Text;
@@ -13,6 +14,7 @@ namespace QMS.Application.Issues.Helper
     internal static partial class Helper
     {
         #region Download、Upload
+
         public static async Task<IActionResult> ExportExcel(object data, string fileName = null)
         {
             Assert(data != null, "数据为空，无法下载文件!");
@@ -29,9 +31,11 @@ namespace QMS.Application.Issues.Helper
                     FileDownloadName = HttpUtility.UrlEncode(fileName + ".xlsx", Encoding.GetEncoding("UTF-8"))
                 });
         }
-        #endregion
+
+        #endregion Download、Upload
 
         #region Assert
+
         public static async Task<Issue> CheckIssueExist(IRepository<Issue, IssuesDbContextLocator> issueRep, long id)
         {
             Issue issue = await issueRep.DetachedEntities.FirstOrDefaultAsync(issue => issue.Id == id);
@@ -53,6 +57,23 @@ namespace QMS.Application.Issues.Helper
         public static void CheckInput(object input)
         {
             Helper.Assert(input != null, "接口需要的传入参数为null");
+        }
+
+        /// <summary>
+        /// 判断是否已经存在相同记录的问题
+        /// </summary>
+        /// <param name="issueRep"></param>
+        /// <param name="input"></param>
+        public static void CheckRepeatInput(IRepository<Issue, IssuesDbContextLocator> issueRep, InIssue input)
+        {
+            var issue = issueRep.DetachedEntities.FirstOrDefault(u => u.ProductId == input.ProductId && u.ProjectId == input.ProjectId
+            && u.Module == input.Module && u.IssueClassification == input.IssueClassification
+            && u.CurrentAssignment == input.CurrentAssignment && u.Consequence == input.Consequence
+            && u.Title == input.Title);
+            if (issue != null)
+            {
+                throw new ArgumentException($"已存在序号为:{issue.SerialNumber}的数据相同的数据行");
+            }
         }
 
         public static void Assert(bool result, string errorMsg = "参数错误")
@@ -78,9 +99,11 @@ namespace QMS.Application.Issues.Helper
                 throw new ArgumentException(errorMsg);
             }
         }
-        #endregion
+
+        #endregion Assert
 
         #region 日期转换
+
         public static DateTime GetDateTime(this string time)
         {
             //Assert(time != null);
@@ -115,13 +138,16 @@ namespace QMS.Application.Issues.Helper
 
             return time?.ToString("yyyy-MM-dd HH:mm:ss");
         }
-        #endregion
+
+        #endregion 日期转换
 
         #region 第三方服务接口
+
         public static ThirdPartyService GetThirdPartyService()
         {
             return App.GetService<ThirdPartyService>();
         }
-        #endregion
+
+        #endregion 第三方服务接口
     }
 }

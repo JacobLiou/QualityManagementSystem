@@ -97,6 +97,7 @@ namespace QMS.Application.Issues
         public async Task<BaseId> Add(InIssue input)
         {
             Helper.Helper.CheckInput(input);
+            Helper.Helper.CheckRepeatInput(this._issueRep, input);
 
             var issue = input.Adapt<Issue>();
             if (input.CCList != null && input.CCList.Count > 0)
@@ -141,7 +142,7 @@ namespace QMS.Application.Issues
             {
                 foreach (long id in input.CCList)
                 {
-                    _noticeService.SendNotice(id.ToString(), input.CurrentAssignment.ToString(), issueEntity.Entity.Title);
+                    _noticeService.SendNotice(issueEntity.Entity.Id.ToString(), id.ToString(), issueEntity.Entity.Title);
                 }
             }
 
@@ -916,11 +917,16 @@ namespace QMS.Application.Issues
                 string msg = string.Join(",", result);
                 throw Oops.Oh("标题为：" + msg + "请检查后重新导入");
             }
-
-            //循环新增
-            foreach (var item in issuList)
+            //通过事务循环新增
+            using (var transaction = _issueRep.Database.BeginTransaction())
             {
-                await this.Add(item);
+                //循环新增
+                foreach (var item in issuList)
+                {
+                    await this.Add(item);
+                }
+                // 提交事务
+                transaction.Commit();
             }
         }
 
@@ -1720,11 +1726,13 @@ namespace QMS.Application.Issues
         #endregion 问题按钮显示获取
 
         #region 获取问题序号
+
         public static string GetTenantId()
         {
             if (App.User == null) return string.Empty;
             return App.User.FindFirst(ClaimConst.TENANT_ID)?.Value + "_";
         }
+
         /// <summary>
         /// 获取新的问题序号
         /// </summary>

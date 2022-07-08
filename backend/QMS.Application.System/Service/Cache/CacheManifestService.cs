@@ -42,7 +42,7 @@ namespace QMS.Application.System.Service.Cache
             IEnumerable<string> list = await GetAllCacheKeys();
             if (list != null && list.Count() > 0)
             {
-                foreach (string key in list)
+                foreach (string key in list.Distinct())
                 {
                     var value = await _cache.GetCache<string>(key);
                     dict[key] = value;
@@ -58,32 +58,70 @@ namespace QMS.Application.System.Service.Cache
         [HttpGet("system/cachemanifest/removeallcache")]
         public async Task RemoveAllCache()
         {
-            List<string> list = new List<string>();
-            list.Add(CacheKeys.CACHE_ALL_KEY);
-            await _cache.RemoveCache(list);
+            IEnumerable<string> list = await GetAllCacheKeys();
+            await _cache.RemoveCache(list.Distinct());
         }
 
         /// <summary>
-        /// 清除缓存
-        /// </summary>
-        /// <param name="keys"></param>
-        /// <returns></returns>
-        [HttpPost("system/cachemanifest/removecache")]
-        public async Task RemoveCache(IEnumerable<string> keys)
-        {
-            await _cache.RemoveCache(keys);
-        }
-
-        /// <summary>
-        /// 手动循环清除所有权限缓存
+        /// 清除所有权限缓存(permission_)
         /// </summary>
         /// <returns></returns>
         [HttpPost("system/cachemanifest/removeallpermisson")]
         public async Task RemoveAllPermisson()
         {
-            var user = App.GetService<IRepository<SysUser>>();
-            var list = user.DetachedEntities.Select(u => "permission_" + u.Id).ToList();
-            await this.RemoveCache(list);
+            IEnumerable<string> list = await GetAllCacheKeys();
+            var newList = list.Where(u => u.Contains("permission_"));
+            if (newList != null && newList.Count() > 0)
+            {
+                await _cache.RemoveCache(newList.Distinct());
+            }
+        }
+
+        /// <summary>
+        /// 清除所有菜单缓存
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("system/cachemanifest/removeallmenu")]
+        public async Task RemoveAllMenu()
+        {
+            IEnumerable<string> list = await GetAllCacheKeys();
+            var newList = list.Where(u => u.Contains("menu_"));
+            if (newList != null && newList.Count() > 0)
+            {
+                await _cache.RemoveCache(newList.Distinct());
+            }
+        }
+
+        /// <summary>
+        /// 清除指定用户ID的缓存
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPost("system/cachemanifest/removeuseridcache")]
+        public async Task RemoveUserIdCache(long id)
+        {
+            IEnumerable<string> list = await GetAllCacheKeys();
+            var newList = list.Where(u => u.Contains(id.ToString()));
+            if (newList != null && newList.Count() > 0)
+            {
+                await _cache.RemoveCache(newList.Distinct());
+            }
+        }
+
+        /// <summary>
+        /// 清除指定用户名或者指定账户名的缓存
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [HttpPost("system/cachemanifest/removeusernamecache")]
+        public async Task RemoveUserCache(string input)
+        {
+            var userService = App.GetService<IRepository<SysUser>>();
+            var user = userService.DetachedEntities.FirstOrDefault(u => u.Name == input || u.Account == input);
+            if (user != null)
+            {
+                await this.RemoveUserIdCache(user.Id);
+            }
         }
     }
 }

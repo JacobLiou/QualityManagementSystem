@@ -8,8 +8,12 @@
 
         Task RemoveAllCache();
 
-        Task RemoveCache(IEnumerable<string> keys);
-
         Task RemoveAllPermisson();
+
+        Task RemoveAllMenu();
+
+        Task RemoveUserIdCache(long id);
+
+        Task RemoveUserCache(string input);
     }
 }

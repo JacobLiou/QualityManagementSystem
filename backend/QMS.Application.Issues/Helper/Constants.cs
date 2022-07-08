@@ -16,7 +16,7 @@ namespace QMS.Application.Issues.Helper
 
         public static readonly string USER_URL = Constants.URL_ROOT + "SsuEmpOrg/getuserlist";
 
-        public static readonly string PROJECT_MODULAR_URL = Constants.URL_ROOT + "SsuProduct/getresponsibilityuser";
+        public static readonly string PROJECT_MODULAR_URL = Constants.URL_ROOT + "SsuEmpOrg/getresponsibilityuser";
 
         public static readonly string MODULAR_URL = Constants.URL_ROOT + "dictonaryservice/getdictdetail";
 

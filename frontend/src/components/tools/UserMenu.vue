@@ -81,7 +81,7 @@
   import {
     message
   } from 'ant-design-vue/es'
-  import { messagesendtoAll } from '@/utils/messagesend'
+  import { messagesendtoAll,messagesendtosomeone } from '@/utils/messagesend'
   export default {
     name: 'UserMenu',
     components: {
@@ -196,7 +196,9 @@
       },
       // 发送消息测试
       sendMessage() {
-        messagesendtoAll(Object.assign({ title: '测试标题', message: '这是消息内容', messagetype: 1 }))
+        console.log(this.userInfo.id)
+        //messagesendtoAll(Object.assign({ title: '测试标题', message: '这是消息内容', messagetype: 1 }))
+        messagesendtosomeone(Object.assign({ userId: this.userInfo.id,title: '测试标题', message: '这是消息内容', messagetype: 1 }))
       },
     },
     // signalr接收的信息
