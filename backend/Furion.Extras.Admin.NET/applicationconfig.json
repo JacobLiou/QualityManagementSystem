@@ -30,7 +30,7 @@
   },
   "Cache": {
     "CacheType": "RedisCache", // RedisCache  /   MemoryCache
-    "RedisConnectionString": "172.16.16.33:6379,password=sofar-monitor",
+    "RedisConnectionString": "172.29.99.21:6379,password=Sofar998",
     "InstanceName": "qms_"
   },
   "SnowId": {

@@ -41,8 +41,7 @@ namespace QMS.Application.Issues
                 ids.Add(param);
             }
             var response =
-                //await Constants.PROJECTS_URL
-                await "http://172.16.16.33:8001/SsuProject/getprojectlist"
+                await Constants.PROJECTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -75,8 +74,7 @@ namespace QMS.Application.Issues
                 ids.Add(param);
             }
             var response =
-                //await Constants.PROJECTS_URL
-                await "http://172.16.16.33:8001/SsuProject/getprojectlist"
+                await Constants.PROJECTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -109,7 +107,7 @@ namespace QMS.Application.Issues
             }
 
             var response =
-                await "http://172.16.16.33:8001/SsuProduct/getproductlist"
+                await Constants.PRODUCTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -142,8 +140,7 @@ namespace QMS.Application.Issues
             }
 
             var response =
-                //    await Constants.PRODUCTS_URL
-                await "http://172.16.16.33:8001/SsuProduct/getproductlist"
+                await Constants.PRODUCTS_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -173,8 +170,7 @@ namespace QMS.Application.Issues
 
             //get请求下，通过SetQueries方法设置请求参数无法正常请求，此处先暂时通过这种方式
             var response =
-                //await Constants.PROJECT_MODULAR_URL
-                await $"{"http://172.16.16.33:8001/SsuEmpOrg/getresponsibilityuser?" + param.ToQueryString()}"
+                await $"{Constants.PROJECT_MODULAR_URL + param.ToQueryString()}"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -202,8 +198,7 @@ namespace QMS.Application.Issues
             Ids.Add(param);
 
             var response =
-                //await Constants.USER_URL
-                await "http://172.16.16.33:8001/SsuEmpOrg/getuserlist"
+                await Constants.USER_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -243,8 +238,7 @@ namespace QMS.Application.Issues
             }
 
             var response =
-                //await Constants.USER_URL
-                await "http://172.16.16.33:8001/SsuEmpOrg/getuserlist"
+                await Constants.USER_URL
                 .SetHeaders(new
                 {
                     Authorization = authHeader
