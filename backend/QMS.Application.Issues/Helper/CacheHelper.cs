@@ -64,7 +64,7 @@ namespace QMS.Application.Issues.Helper
             foreach (var item in types)
             {
                 map = EnumUtil.GetEnumDescDictionary(item);
-                if (map.ContainsValue(value))
+                if (map.ContainsValue(Convert.ToString(value).Trim()))
                 {
                     return map.FirstOrDefault(m => m.Value == value).Key;
                 }
@@ -404,5 +404,46 @@ namespace QMS.Application.Issues.Helper
         }
 
         #endregion 缓存扩展字段结构信息
+
+        #region 字典类型和字典值
+
+        public static List<DictDataFromThridParty> GetDictData(this string typeCode)
+        {
+            var cache = App.GetService<IDistributedCache>();
+            string cacheStr = cache.GetString(CoreCommonConst.DICTTYPECODE + typeCode);
+
+            //缓存存在则获取缓存值
+            if (!string.IsNullOrEmpty(cacheStr))
+            {
+                return JSON.Deserialize<List<DictDataFromThridParty>>(cacheStr);
+            }
+            //缓存不存在则调用system下的接口获取值
+            var dictData = Helper.GetThirdPartyService().GetDictDataByCode(typeCode).Result;
+            if (dictData == null || dictData.Count <= 0)
+            {
+                return null;
+            }
+            //对应的admin.net下的接口本身不存缓存，所有此处做下缓存,缓存时间为12个小时
+            cache.SetStringAsync(CoreCommonConst.DICTTYPECODE + typeCode, JSON.Serialize(dictData),
+                new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = new TimeSpan(12, 0, 0) });
+            return dictData;
+        }
+
+        public static string GetEnumDisplayByCodeAndValue(string typeCode, string dataCode)
+        {
+            List<DictDataFromThridParty> dictData = typeCode.GetDictData();
+            if (dictData == null || dictData.Count <= 0)
+            {
+                return "";
+            }
+            var value = dictData.Where(u => u.Code == dataCode).Select(u => u.Value).FirstOrDefault();
+            if (string.IsNullOrEmpty(value))
+            {
+                return "";
+            }
+            return value;
+        }
+
+        #endregion 字典类型和字典值
     }
 }

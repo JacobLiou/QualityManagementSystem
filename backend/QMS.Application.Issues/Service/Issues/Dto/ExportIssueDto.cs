@@ -1,6 +1,8 @@
-﻿using Furion.JsonSerialization;
+﻿using Furion;
+using Furion.JsonSerialization;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs.Attributes;
+using QMS.Application.Issues.Field;
 using QMS.Application.Issues.Helper;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
@@ -13,45 +15,45 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("问题编号")]
         public long Id { get; set; }
 
-        [ExcelColumnName("问题序号")]
+        [ColumnExcelName("问题序号")]
         [Comment("问题序号")]
         public string SerialNumber { get; set; }
 
-        [ExcelColumnName("问题简述")]
+        [ColumnExcelName("问题简述")]
         [Comment("问题简述")]
         public string Title { get; set; }
 
-        [ExcelColumnName("项目名称")]
+        [ColumnExcelName("项目名称")]
         [Comment("项目名称")]
         public string ProjectName { get; set; }
 
         [ExcelIgnore]
         public long ProjectId { get; set; }
 
-        [ExcelColumnName("产品名称")]
+        [ColumnExcelName("产品名称")]
         [Comment("产品名称")]
         public string ProductName { get; set; }
 
         [ExcelIgnore]
         public long? ProductId { get; set; }
 
-        [ExcelColumnName("问题模块")]
+        [ColumnExcelName("问题模块")]
         [Comment("问题模块")]
         public string Module { get; set; }
 
-        [ExcelColumnName("问题性质")]
+        [ColumnExcelName("问题性质")]
         [Comment("问题性质")]
         public string Consequence { get; set; }
 
-        [ExcelColumnName("问题分类")]
+        [ColumnExcelName("问题分类")]
         [Comment("问题分类")]
         public string IssueClassification { get; set; }
 
-        [ExcelColumnName("问题来源")]
+        [ColumnExcelName("问题来源")]
         [Comment("问题来源")]
         public string Source { get; set; }
 
-        [ExcelColumnName("问题状态")]
+        [ColumnExcelName("问题状态")]
         [Comment("问题状态")]
         public string Status { get; set; }
 
@@ -59,7 +61,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [ExcelIgnore]
         public EnumIssueStatus IssueStatus { get; set; }
 
-        [ExcelColumnName("提出人")]
+        [ColumnExcelName("提出人")]
         [Comment("提出人")]
         public string Creator { get; set; }
 
@@ -67,23 +69,23 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [ExcelIgnore]
         public long? CreatorId { get; set; }
 
-        [ExcelColumnName("提出日期")]
+        [ColumnExcelName("提出日期")]
         [Comment("提出日期")]
         public string CreateTime { get; set; }
 
-        [ExcelColumnName("关闭日期")]
+        [ColumnExcelName("关闭日期")]
         [Comment("关闭日期")]
         public string CloseTime { get; set; }
 
-        [ExcelColumnName("发现人")]
+        [ColumnExcelName("发现人")]
         [Comment("发现人")]
         public string Discover { get; set; }
 
-        [ExcelColumnName("发现日期")]
+        [ColumnExcelName("发现日期")]
         [Comment("发现日期")]
         public string DiscoverTime { get; set; }
 
-        [ExcelColumnName("分发人")]
+        [ColumnExcelName("分发人")]
         [Comment("分发人")]
         public string Dispatcher { get; set; }
 
@@ -91,19 +93,19 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [ExcelIgnore]
         public long? DispatcherId { get; set; }
 
-        [ExcelColumnName("分发日期")]
+        [ColumnExcelName("分发日期")]
         [Comment("分发日期")]
         public string DispatchTime { get; set; }
 
-        [ExcelColumnName("预计完成日期")]
+        [ColumnExcelName("预计完成日期")]
         [Comment("预计完成日期")]
         public string ForecastSolveTime { get; set; }
 
-        [ExcelColumnName("被抄送人")]
+        [ColumnExcelName("被抄送人")]
         [Comment("被抄送人")]
         public string CC { get; set; }
 
-        [ExcelColumnName("解决人")]
+        [ColumnExcelName("解决人")]
         [Comment("解决人")]
         public string Executor { get; set; }
 
@@ -111,59 +113,59 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [ExcelIgnore]
         public long? ExecutorId { get; set; }
 
-        [ExcelColumnName("解决日期")]
+        [ColumnExcelName("解决日期")]
         [Comment("解决日期")]
         public string SolveTime { get; set; }
 
-        [ExcelColumnName("验证人")]
+        [ColumnExcelName("验证人")]
         [Comment("验证人")]
         public string Verifier { get; set; }
 
-        [ExcelColumnName("验证地点")]
+        [ColumnExcelName("验证地点")]
         [Comment("验证地点")]
         public string VerifierPlace { get; set; }
 
-        [ExcelColumnName("验证日期")]
+        [ColumnExcelName("验证日期")]
         [Comment("验证日期")]
         public string ValidateTime { get; set; }
 
-        [ExcelColumnName("问题详情")]
+        [ColumnExcelName("问题详情")]
         [Comment("问题详情")]
         public string Description { get; set; }
 
-        [ExcelColumnName("原因分析")]
+        [ColumnExcelName("原因分析")]
         [Comment("原因分析")]
         public string Reason { get; set; }
 
-        [ExcelColumnName("解决措施")]
+        [ColumnExcelName("解决措施")]
         [Comment("解决措施")]
         public string Measures { get; set; }
 
-        [ExcelColumnName("验证数量")]
+        [ColumnExcelName("验证数量")]
         [Comment("验证数量")]
         public int? Count { get; set; }
 
-        [ExcelColumnName("验证批次")]
+        [ColumnExcelName("验证批次")]
         [Comment("验证批次")]
         public string Batch { get; set; }
 
-        [ExcelColumnName("验证情况")]
+        [ColumnExcelName("验证情况")]
         [Comment("验证情况")]
         public string Result { get; set; }
 
-        [ExcelColumnName("验证状态")]
+        [ColumnExcelName("验证状态")]
         [Comment("验证状态")]
         public string ValidationStatus { get; set; }
 
-        [ExcelColumnName("解决版本")]
+        [ColumnExcelName("解决版本")]
         [Comment("解决版本")]
         public string SolveVersion { get; set; }
 
-        [ExcelColumnName("备注")]
+        [ColumnExcelName("备注")]
         [Comment("备注")]
         public string Comment { get; set; }
 
-        [ExcelColumnName("挂起情况")]
+        [ColumnExcelName("挂起情况")]
         [Comment("挂起情况")]
         public string HangupReason { get; set; }
 
@@ -178,9 +180,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         /// valueType：字段类型 string
         /// [{"module": 0, "issueId":284932473958469,"fieldId":285613677277253,"fieldCode":"code", "fieldName":"中文代码", "value":"数据","fieldDataType":"string"}]
         /// </summary>
-        [ExcelColumnName("扩展属性")]
         [Comment("扩展属性")]
         public string ExtendAttribute { get; set; }
+
+        public List<FileValueDto> ExtendAttributeList { get; set; }
 
         public ExportIssueDto(Core.Entity.Issue issue, IssueDetail detail)
         {
@@ -224,7 +227,8 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             {
                 List<long> cc = JSON.Deserialize<List<long>>(issue.CCs);
 
-                this.CC = JSON.Serialize(cc.Select<long, string>(id => id.GetNameByEmpId()));
+                //this.CC = JSON.Serialize(cc.Select<long, string>(id => id.GetNameByEmpId()));
+                this.CC = String.Join(",", cc.Select<long, string>(id => id.GetNameByEmpId()));
             }
 
             this.Description = detail.Description.FormatRichText();
@@ -233,6 +237,10 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             this.SolveVersion = detail.SolveVersion;
             this.Comment = detail.Comment;
             this.ExtendAttribute = detail.ExtendAttribute;
+            if (!string.IsNullOrEmpty(detail.ExtendAttribute))
+            {
+                this.ExtendAttributeList = JSON.Deserialize<List<FileValueDto>>(detail.ExtendAttribute);
+            }
             this.Result = detail.Result;
 
             this.Measures = detail.Measures;
@@ -245,6 +253,66 @@ namespace QMS.Application.Issues.Service.Issue.Dto
             this.CreatorId = issue.CreatorId;
             this.DispatcherId = issue.Dispatcher;
             this.ExecutorId = issue.Executor;
+        }
+    }
+
+    public class FileValueDto
+    {
+        /// <summary>
+        /// 问题ID
+        /// </summary>
+        public long IssueId { get; set; }
+
+        /// <summary>
+        /// 属性值
+        /// </summary>
+        public string Value { get; set; }
+
+        /// <summary>
+        /// 模块
+        /// </summary>
+        public EnumModule Module { get; set; }
+
+        /// <summary>
+        /// 字段编号
+        /// 新增时忽略该字段
+        /// </summary>
+        public long FieldId { get; set; }
+
+        /// <summary>
+        /// 字段名
+        /// </summary>
+        [ColumnHead("ceshi2")]
+        public string FieldName { get; set; }
+
+        /// <summary>
+        /// 字段代码
+        /// </summary>
+        public string FieldCode { get; set; }
+
+        /// <summary>
+        /// 字段数据类型
+        /// </summary>
+        public string FieldDataType { get; set; }
+
+        /// <summary>
+        /// 枚举类型下的显示值
+        /// </summary>
+        [ColumnValue("ceshi1")]
+        public string DisplayValue
+        {
+            get
+            {
+                //枚举类型下转换显示
+                if (FieldDataType == "enum")
+                {
+                    return Helper.Helper.GetEnumDisplayByCodeAndValue(this.FieldCode, this.Value);
+                }
+                else
+                {
+                    return this.Value;
+                }
+            }
         }
     }
 }

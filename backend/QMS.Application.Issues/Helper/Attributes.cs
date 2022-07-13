@@ -5,18 +5,18 @@ namespace QMS.Application.Issues.Helper
     {
         public string Name { get; set; }
     }
-    
+
     [AttributeUsage(AttributeTargets.Property)]
     public class ColumnAttribute : Attribute
     {
         public string Name { get; set; }
     }
-    
+
     [AttributeUsage(AttributeTargets.Property)]
     public class NotToModelPropertyAttribute : Attribute
     {
     }
-    
+
     /// <summary>
     /// ListView/DataGrid修改标题名
     /// </summary>
@@ -54,4 +54,41 @@ namespace QMS.Application.Issues.Helper
     public class CanEditAttribute : Attribute
     {
     }
+
+    #region object转dataTable
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    public class ColumnHeadAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        public ColumnHeadAttribute(string name)
+        {
+            this.Name = name;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    public class ColumnValueAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        public ColumnValueAttribute(string name)
+        {
+            this.Name = name;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+    public class ColumnExcelNameAttribute : Attribute
+    {
+        public string Name { get; set; }
+
+        public ColumnExcelNameAttribute(string name)
+        {
+            this.Name = name;
+        }
+    }
+
+    #endregion object转dataTable
 }

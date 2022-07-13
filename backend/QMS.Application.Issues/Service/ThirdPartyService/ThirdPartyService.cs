@@ -272,8 +272,8 @@ namespace QMS.Application.Issues
             }
 
             var response =
-                //await Constants.MODULAR_URL
-                await "http://172.16.16.33:8001/dictonaryservice/getdictdetail"
+                await Constants.MODULAR_URL
+                //await "http://172.16.16.33:8001/dictonaryservice/getdictdetail"
                 .SetHeaders(new
                 {
                     Authorization = authHeader
@@ -283,6 +283,32 @@ namespace QMS.Application.Issues
 
             var result = response.data.ToDictionary(u => u.Value, u => u);
             return result;
+        }
+
+        /// <summary>
+        /// 根据字典Type类型获取该类型下的所有值
+        /// </summary>
+        /// <param name="typeCode"></param>
+        /// <returns></returns>
+        public async Task<List<DictDataFromThridParty>> GetDictDataByCode(string typeCode)
+        {
+            var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
+
+            var param = new Dictionary<string, string>()
+            {
+                ["Code"] = typeCode
+            };
+
+            //get请求下，通过SetQueries方法设置请求参数无法正常请求，此处先暂时通过这种方式
+            var response =
+                await $"{Constants.DICT_DATA_URL + "?" + param.ToQueryString()}"
+                .SetHeaders(new
+                {
+                    Authorization = authHeader
+                })
+                .GetAsAsync<ThirdPartyApiModel<List<DictDataFromThridParty>>>();
+
+            return response.data;
         }
     }
 

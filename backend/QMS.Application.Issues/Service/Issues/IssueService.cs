@@ -26,6 +26,7 @@ using QMS.Application.Issues.Service.ThirdPartyService.Dto;
 using QMS.Core;
 using QMS.Core.Entity;
 using QMS.Core.Enum;
+using System.Data;
 using System.Linq.Dynamic.Core;
 using static QMS.Application.Issues.IssueStatusNoticeService;
 
@@ -842,25 +843,24 @@ namespace QMS.Application.Issues
         public async Task<IActionResult> Export(List<long> input)
         {
             Helper.Helper.CheckInput(input);
-
             Helper.Helper.Assert(input.Count > 0, "没有问题项选中，无法导出");
 
-            // 导出查询到的数据
-            //IQueryable<ExportIssueDto> querable = this.GetExportQuerable(input);
-
-            //this.AddFilter(input, querable);
-
-            //PageResult<ExportIssueDto> list = await querable.ToADPagedListAsync(input.PageNo, input.PageSize);
-
-            // 导出前端选中的数据
-
-            List<ExportIssueDto> list = this._issueRep.DetachedEntities.Where<Issue>(issue => input.Contains(issue.Id)).Join(this._issueDetailRep.DetachedEntities, issue => issue.Id,
+            //获取前端选中的数据
+            List<ExportIssueDto> list = this._issueRep.DetachedEntities.Where<Issue>(issue => input.Contains(issue.Id)).OrderByDescending(u => u.Id).Join(this._issueDetailRep.DetachedEntities, issue => issue.Id,
                                         detailIssue => detailIssue.Id,
                                         (issue, detail) => new ExportIssueDto(issue, detail)).ToList();
-
-            List<ExportIssueDto> colls = await this.UpdateProjectProductNames(list);
-
-            return await Helper.Helper.ExportExcel(colls);
+            //生成数据表
+            var table = DataTableHelper.ObjectToTable(list);
+            //将扩展属性列表转化成一行多列的数据追加到表的行上
+            var attributeList = list.Select(u => u.ExtendAttributeList).ToArray();
+            for (int i = 0; i < attributeList.Length; i++)
+            {
+                if (attributeList[i] != null)
+                {
+                    table = DataTableHelper.AddObjectToTable(table.Rows[i], attributeList[i].ToList());
+                }
+            }
+            return await Helper.Helper.ExportExcel(table);
         }
 
         #endregion 分页查询及导出
@@ -960,11 +960,11 @@ namespace QMS.Application.Issues
         /// <returns></returns>
         public InIssue CheckExcelIssue(dynamic item, out string msg)
         {
-            string title = Convert.ToString(item.问题简述);
-            string description = Convert.ToString(item.详情);
-            string productName = Convert.ToString(item.产品线名称);
-            string projectName = Convert.ToString(item.项目名称);
-            string currentAssignmentName = Convert.ToString(item.当前指派人名称);
+            string title = Convert.ToString(item.问题简述).Trim();
+            string description = Convert.ToString(item.详情).Trim();
+            string productName = Convert.ToString(item.产品线名称).Trim();
+            string projectName = Convert.ToString(item.项目名称).Trim();
+            string currentAssignmentName = Convert.ToString(item.当前指派人名称).Trim();
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(productName) || string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(currentAssignmentName))
             {
                 msg = "请问输入问题简述，产品线名称，产品项目名称或当前指派人名称";
@@ -993,7 +993,7 @@ namespace QMS.Application.Issues
             }
 
             //根据模块值获取该值对应的模块的ID（此处是为了获取到模块和项目的人员交集）
-            string modularValue = Convert.ToString(item.问题模块);
+            string modularValue = Convert.ToString(item.问题模块).Trim();
             var modularId = modularValue.GetModularIdByValue();
             //判断当前指派是否存在于项目和模块的交集人员列表
             var userList = Helper.Helper.GetUserByProjectModularId(projectId, modularId);

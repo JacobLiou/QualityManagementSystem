@@ -44,5 +44,10 @@
         /// 模块value缓存key
         /// </summary>
         public const string MODULARVALUE = "modular_value";
+
+        /// <summary>
+        /// 字典类型缓存Key
+        /// </summary>
+        public const string DICTTYPECODE = "dicttype_code_";
     }
 }
