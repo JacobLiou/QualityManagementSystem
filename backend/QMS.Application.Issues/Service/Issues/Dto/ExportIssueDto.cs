@@ -23,21 +23,21 @@ namespace QMS.Application.Issues.Service.Issue.Dto
         [Comment("问题简述")]
         public string Title { get; set; }
 
-        [ColumnExcelName("项目名称")]
-        [Comment("项目名称")]
-        public string ProjectName { get; set; }
-
-        [ExcelIgnore]
-        public long ProjectId { get; set; }
-
-        [ColumnExcelName("产品名称")]
+        [ColumnExcelName("产品线名称")]
         [Comment("产品名称")]
         public string ProductName { get; set; }
 
         [ExcelIgnore]
         public long? ProductId { get; set; }
 
-        [ColumnExcelName("问题模块")]
+        [ColumnExcelName("产品项目名称")]
+        [Comment("项目名称")]
+        public string ProjectName { get; set; }
+
+        [ExcelIgnore]
+        public long ProjectId { get; set; }
+
+        [ColumnExcelName("问题跟踪阶段")]
         [Comment("问题模块")]
         public string Module { get; set; }
 

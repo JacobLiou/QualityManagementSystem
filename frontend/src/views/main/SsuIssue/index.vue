@@ -167,7 +167,7 @@ export default {
           width: '8em',
         },
         {
-          title: '模块',
+          title: '问题发生阶段',
           align: 'left',
           sorter: true,
           dataIndex: 'module',

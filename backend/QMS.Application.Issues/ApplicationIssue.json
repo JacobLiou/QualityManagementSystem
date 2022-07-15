@@ -1,3 +1,4 @@
 ﻿{
-  "RemoteServiceHost": "http://qms.sofarsolar.com:8001/"
+  "RemoteServiceHost": "http://qms.sofarsolar.com:8001/",
+  "ExcelTemplateId": 277503259144260 //Excel的模板文件的ID，附件下文件都是根据绑定的ID来获取下载的，所以此处先绑定一个ID进行下载
 }

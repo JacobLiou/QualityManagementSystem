@@ -22,6 +22,8 @@ namespace QMS.Application.Issues.Helper
 
         public static readonly string DICT_DATA_URL = Constants.URL_ROOT + "sysDictType/dropDown";
 
+        public static readonly string DOWN_FILE = URL_ROOT + "sysFileInfo/download";
+
         public const string PROJECT_MARK = "项目";
         public const string PRODUCT_MARK = "产品";
 

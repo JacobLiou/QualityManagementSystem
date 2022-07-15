@@ -310,6 +310,25 @@ namespace QMS.Application.Issues
 
             return response.data;
         }
+
+        public async Task<IActionResult> DownFile(long id)
+        {
+            var authHeader = _contextAccessor.HttpContext.Request.Headers["Authorization"];
+            var param = new Dictionary<string, string>()
+            {
+                ["Id"] = id.ToString()
+            };
+            //get请求下，通过SetQueries方法设置请求参数无法正常请求，此处先暂时通过这种方式
+            var response =
+                await $"{Constants.DOWN_FILE + "?" + param.ToQueryString()}"
+                .SetHeaders(new
+                {
+                    Authorization = authHeader
+                })
+                .GetAsAsync<ThirdPartyApiModel<IActionResult>>();
+
+            return response.data;
+        }
     }
 
     public class ThirdPartyApiModel<T>

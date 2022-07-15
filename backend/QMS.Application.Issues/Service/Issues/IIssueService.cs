@@ -11,13 +11,19 @@ namespace QMS.Application.Issues
     public interface IIssueService
     {
         Task<BaseId> Add(InIssue input);
+
+        Task<BaseId> TrueAdd(InIssue input);
+
         Task Delete(DeleteIssueInput input);
+
         Task<OutputDetailIssue> Get([FromQuery] BaseId input);
+
         //Task<List<IssueOutput>> List([FromQuery] IssueInput input);
         //Task<PageResult<IssueOutput>> Page([FromQuery] IssueInput input);
         Task Edit(UpdateIssueInput input);
 
         Task Execute(InSolve input);
+
         Task Validate(InValidate input);
 
         Task HangUp(InHangup input);

@@ -133,13 +133,13 @@ namespace QMS.Application.System
         public async Task<dynamic> GetOrgTree()
         {
             var dataScopeList = new List<long>();
-            if (!CurrentUserInfo.IsSuperAdmin)
-            {
-                var dataScopes = await GetUserDataScopeIdList();
-                if (dataScopes.Count < 1)
-                    return dataScopeList;
-                dataScopeList = GetDataScopeList(dataScopes);
-            }
+            //if (!CurrentUserInfo.IsSuperAdmin)  此处暂时先不考虑显示权限问题，默认所有人均可以显示
+            //{
+            //    var dataScopes = await GetUserDataScopeIdList();
+            //    if (dataScopes.Count < 1)
+            //        return dataScopeList;
+            //    dataScopeList = GetDataScopeList(dataScopes);
+            //}
             var orgs = await _sysOrgRep.DetachedEntities.Where(dataScopeList.Count > 0, u => dataScopeList.Contains(u.Id))
                                                         .Where(u => u.Status == CommonStatus.ENABLE)
                                                         .OrderBy(u => u.Sort)

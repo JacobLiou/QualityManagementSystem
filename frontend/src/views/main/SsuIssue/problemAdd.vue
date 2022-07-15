@@ -25,8 +25,8 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="模块" prop="module">
-          <a-select v-model="form.module" placeholder="请选择模块" @change="moduleChange">
+        <a-form-model-item label="问题发生阶段" prop="module">
+          <a-select v-model="form.module" placeholder="请选择问题发生阶段" @change="moduleChange">
             <a-select-option v-for="item in moduleData" :key="item.code" :value="Number(item.code)">{{
               item.name
             }}</a-select-option>
@@ -39,9 +39,9 @@
             }}</a-select-option>
           </a-select>
         </a-form-model-item>
-        <a-form-model-item label="当前指派" prop="currentAssignment">
+        <a-form-model-item label="问题跟踪人" prop="currentAssignment">
           <section class="from_chilen">
-            <a-select v-model="form.currentAssignment" placeholder="请选择指派人">
+            <a-select v-model="form.currentAssignment" placeholder="请选择问题跟踪人">
               <a-select-option v-for="item in currentAssignmentData" :key="item.id" :value="Number(item.id)">{{
                 item.name
               }}</a-select-option>

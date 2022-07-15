@@ -45,6 +45,7 @@ namespace QMS.Application.Issues
         private readonly IRepository<IssueExtendAttribute, IssuesDbContextLocator> _issueAttrRep;
         private readonly IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> _issueAttrValueRep;
         private readonly IRepository<IssueColumnDisplay, IssuesDbContextLocator> _issueColumnDisplayRep;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
         private readonly IssueStatusNoticeService _noticeService;
         private readonly IssueCacheService _issueCacheService;
@@ -57,8 +58,8 @@ namespace QMS.Application.Issues
             IRepository<IssueExtendAttributeValue, IssuesDbContextLocator> issueAttrValueRep,
             IRepository<IssueColumnDisplay, IssuesDbContextLocator> issueColumnDisplayRep,
             IssueStatusNoticeService noticeService,
-            IssueCacheService issueCacheService
-
+            IssueCacheService issueCacheService,
+            Microsoft.Extensions.Configuration.IConfiguration configuration
         )
         {
             this._issueRep = issueRep;
@@ -69,6 +70,8 @@ namespace QMS.Application.Issues
             this._issueColumnDisplayRep = issueColumnDisplayRep;
             this._noticeService = noticeService;
             this._issueCacheService = issueCacheService;
+            this._configuration = configuration;
+            ;
         }
 
         #region CRUD
@@ -90,12 +93,31 @@ namespace QMS.Application.Issues
         }
 
         /// <summary>
-        /// 增加问题记录
+        /// 通过事务增加问题记录
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         [HttpPost("add")]
         public async Task<BaseId> Add(InIssue input)
+        {
+            //通过事务新增
+            using (var transaction = _issueRep.Database.BeginTransaction())
+            {
+                var id = await this.TrueAdd(input);
+                //提交事务
+                transaction.Commit();
+
+                return id;
+            }
+        }
+
+        /// <summary>
+        /// 增加问题记录
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [NonAction]
+        public async Task<BaseId> TrueAdd(InIssue input)
         {
             Helper.Helper.CheckInput(input);
             Helper.Helper.CheckRepeatInput(this._issueRep, input);
@@ -108,7 +130,7 @@ namespace QMS.Application.Issues
             //获取序号
             issue.SerialNumber = this.GetNewSerialNumber(issue.Module);
 
-            Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定当前指派人!");
+            Helper.Helper.Assert(issue.CurrentAssignment != null, "创建问题时必须要指定问题跟踪人!");
             input.SetIssuse(issue);
 
             EntityEntry<Issue> issueEntity = await this._issueRep.InsertNowAsync(issue, ignoreNullValues: true);
@@ -153,7 +175,6 @@ namespace QMS.Application.Issues
                 EnumIssueOperationType.New,
                 "新建问题"
             );
-
             return new BaseId() { Id = detail.Id };
         }
 
@@ -167,22 +188,26 @@ namespace QMS.Application.Issues
         [HttpPost("delete")]
         public async Task Delete(DeleteIssueInput input)
         {
-            Helper.Helper.CheckInput(input);
-
-            Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
-
-            if (!issue.IsDeleted)
+            using (var transaction = _issueRep.Database.BeginTransaction())
             {
-                issue.IsDeleted = true;
+                Helper.Helper.CheckInput(input);
 
-                await this._issueRep.UpdateNowAsync(issue);
+                Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
 
-                await IssueLogger.Log(
-                    this._issueOperateRep,
-                    input.Id,
-                    EnumIssueOperationType.Close,
-                    "删除问题"
-                );
+                if (!issue.IsDeleted)
+                {
+                    issue.IsDeleted = true;
+
+                    await this._issueRep.UpdateNowAsync(issue);
+
+                    await IssueLogger.Log(
+                        this._issueOperateRep,
+                        input.Id,
+                        EnumIssueOperationType.Close,
+                        "删除问题"
+                    );
+                }
+                transaction.Commit();
             }
             //else
             //{
@@ -198,60 +223,64 @@ namespace QMS.Application.Issues
         [HttpPost("edit")]
         public async Task Edit(UpdateIssueInput input)
         {
-            Helper.Helper.CheckInput(input);
-
-            Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
-
-            //var isExist = await _issueRep.AnyAsync(u => u.Id == input.Id, false);
-            //if (!isExist) throw Oops.Oh(ErrorCode.D3000);
-
-            //issue = input.Adapt<issue>();
-
-            // 手动更新，防止已有数据丢失
-            input.SetIssue(issue);
-            await _issueRep.UpdateNowAsync(issue, true);
-
-            IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
-
-            if (input.SetIssueDetail(issueDetail))
+            using (var transaction = _issueRep.Database.BeginTransaction())
             {
-                await this._issueDetailRep.UpdateNowAsync(issueDetail);
+                Helper.Helper.CheckInput(input);
 
-                if (!string.IsNullOrEmpty(input.ExtendAttribute))
+                Issue issue = await Helper.Helper.CheckIssueExist(this._issueRep, input.Id);
+
+                //var isExist = await _issueRep.AnyAsync(u => u.Id == input.Id, false);
+                //if (!isExist) throw Oops.Oh(ErrorCode.D3000);
+
+                //issue = input.Adapt<issue>();
+
+                // 手动更新，防止已有数据丢失
+                input.SetIssue(issue);
+                await _issueRep.UpdateNowAsync(issue, true);
+
+                IssueDetail issueDetail = await Helper.Helper.CheckIssueDetailExist(this._issueDetailRep, input.Id);
+
+                if (input.SetIssueDetail(issueDetail))
                 {
-                    // 新增扩展属性时
-                    List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+                    await this._issueDetailRep.UpdateNowAsync(issueDetail);
 
-                    foreach (var item in list)
+                    if (!string.IsNullOrEmpty(input.ExtendAttribute))
                     {
-                        item.IssueId = input.Id;
+                        // 新增扩展属性时
+                        List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+
+                        foreach (var item in list)
+                        {
+                            item.IssueId = input.Id;
+                        }
+
+                        var attrs = JSON.Serialize(list);
+
+                        await this.UpdateAttributeValuesBatch(attrs);
                     }
-
-                    var attrs = JSON.Serialize(list);
-
-                    await this.UpdateAttributeValuesBatch(attrs);
+                    else
+                    {
+                        if (this._issueAttrValueRep.Any(val => val.IssueNum == input.Id))
+                        {
+                            await this._issueAttrValueRep.DeleteNowAsync(this._issueAttrValueRep.Where(val => val.IssueNum == input.Id));
+                        }
+                    }
                 }
-                else
+
+                //如果当前指派人和当前用户不一致则发送消息给当前指派人
+                if (input.CurrentAssignment != Helper.Helper.GetCurrentUser())
                 {
-                    if (this._issueAttrValueRep.Any(val => val.IssueNum == input.Id))
-                    {
-                        await this._issueAttrValueRep.DeleteNowAsync(this._issueAttrValueRep.Where(val => val.IssueNum == input.Id));
-                    }
+                    _noticeService.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
                 }
-            }
 
-            //如果当前指派人和当前用户不一致则发送消息给当前指派人
-            if (input.CurrentAssignment != Helper.Helper.GetCurrentUser())
-            {
-                _noticeService.SendNotice(issue.Id.ToString(), input.CurrentAssignment.ToString(), issue.Title);
+                await IssueLogger.Log(
+                    this._issueOperateRep,
+                    input.Id,
+                    EnumIssueOperationType.Edit,
+                    "更新问题" + JSON.Serialize(input)
+                );
+                transaction.Commit();
             }
-
-            await IssueLogger.Log(
-                this._issueOperateRep,
-                input.Id,
-                EnumIssueOperationType.Edit,
-                "更新问题" + JSON.Serialize(input)
-            );
         }
 
 
@@ -874,8 +903,9 @@ namespace QMS.Application.Issues
         [HttpGet("template")]
         public async Task<IActionResult> Template()
         {
-            var item = this._issueRep.Where(model => model.Title != null).Take(1).ProjectToType<InIssue>();
-            return await Helper.Helper.ExportExcel(item, "IssueTemplate");
+            //指定ID下载Excel模板
+            long id = Convert.ToInt64(_configuration["ExcelTemplateId"]);
+            return Helper.Helper.GetThirdPartyService().DownFile(id).Result;
         }
 
         /// <summary>
@@ -891,8 +921,8 @@ namespace QMS.Application.Issues
             Helper.Helper.Assert(file.FileName, fileName => fileName.Contains("IssueTemplate") && fileName.EndsWith(".xlsx"), "请使用下载的模板进行数据导入");
 
             var collection = MiniExcel.Query(file.OpenReadStream(), useHeaderRow: true)
-                .TakeWhile(item => item.问题简述 != null && item.详情 != null && item.产品线名称 != null && item.项目名称 != null && item.问题模块 != null
-                && item.问题分类 != null && item.当前指派人名称 != null && item.问题性质 != null && item.问题来源 != null);
+                .TakeWhile(item => item.问题简述 != null && item.产品线 != null && item.产品项目 != null && item.问题跟踪阶段 != null
+                && item.问题分类 != null && item.问题跟踪人 != null && item.问题性质 != null && item.问题来源 != null);
 
             long userId = CurrentUserInfo.UserId;
 
@@ -923,9 +953,9 @@ namespace QMS.Application.Issues
                 //循环新增
                 foreach (var item in issuList)
                 {
-                    await this.Add(item);
+                    await this.TrueAdd(item);
                 }
-                // 提交事务
+                //提交事务
                 transaction.Commit();
             }
         }
@@ -962,12 +992,12 @@ namespace QMS.Application.Issues
         {
             string title = Convert.ToString(item.问题简述).Trim();
             string description = Convert.ToString(item.详情).Trim();
-            string productName = Convert.ToString(item.产品线名称).Trim();
-            string projectName = Convert.ToString(item.项目名称).Trim();
-            string currentAssignmentName = Convert.ToString(item.当前指派人名称).Trim();
+            string productName = Convert.ToString(item.产品线).Trim();
+            string projectName = Convert.ToString(item.产品项目).Trim();
+            string currentAssignmentName = Convert.ToString(item.问题跟踪人).Trim();
             if (string.IsNullOrEmpty(title) || string.IsNullOrEmpty(productName) || string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(currentAssignmentName))
             {
-                msg = "请问输入问题简述，产品线名称，产品项目名称或当前指派人名称";
+                msg = "请问输入问题简述，产品线名称，产品项目名称或问题跟踪人名称";
                 return null;
             }
 
@@ -977,29 +1007,29 @@ namespace QMS.Application.Issues
             var currentAssignment = currentAssignmentName.GetEmpIdByName();
             if (productId == 0 || projectId == 0 || currentAssignment == 0)
             {
-                msg = "请确保输入正确的产品线名称，产品项目名称或当前指派人名称";
+                msg = "请确保输入正确的产品线名称，产品项目名称或问题跟踪人名称";
                 return null;
             }
 
             //判断枚举值是否存在
-            var modular = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题模块);
+            var modular = (EnumModule)Helper.Helper.GetIntFromEnumDescription(item.问题跟踪阶段);
             var consequence = (EnumConsequence)Helper.Helper.GetIntFromEnumDescription(item.问题性质);
             var classification = (EnumIssueClassification)Helper.Helper.GetIntFromEnumDescription(item.问题分类);
             var source = (EnumIssueSource)Helper.Helper.GetIntFromEnumDescription(item.问题来源);
             if (modular == (EnumModule)(-1) || consequence == (EnumConsequence)(-1) || classification == (EnumIssueClassification)(-1) || source == (EnumIssueSource)(-1))
             {
-                msg = "请输入正确的问题模块名称，问题性质名称，问题分类名称或问题来源名称";
+                msg = "请输入正确的问题跟踪阶段名称，问题性质名称，问题分类名称或问题来源名称";
                 return null;
             }
 
             //根据模块值获取该值对应的模块的ID（此处是为了获取到模块和项目的人员交集）
-            string modularValue = Convert.ToString(item.问题模块).Trim();
+            string modularValue = Convert.ToString(item.问题跟踪阶段).Trim();
             var modularId = modularValue.GetModularIdByValue();
             //判断当前指派是否存在于项目和模块的交集人员列表
             var userList = Helper.Helper.GetUserByProjectModularId(projectId, modularId);
             if (userList == null || userList.Count() <= 0 || !userList.Select(u => u.Id).ToList().Contains(currentAssignment))
             {
-                msg = "当前指派人不存在该模块和项目中，请确认";
+                msg = "当前问题跟踪人不存在该模块和项目中，请确认";
                 return null;
             }
 

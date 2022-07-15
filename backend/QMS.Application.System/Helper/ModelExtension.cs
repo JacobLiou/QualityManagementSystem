@@ -37,7 +37,7 @@ namespace QMS.Application.System
         public static List<SysUser> GetUserListById(this IEnumerable<long> id)
         {
             var empService = App.GetService<ISsuEmpService>();
-            var list = empService.GetUserList(id.OfType<SsuUserInput>()).Result.ToList();
+            var list = empService.GetUserList(id.Select(u => new SsuUserInput() { Id = u })).Result.ToList();
             return list;
         }
 
