@@ -140,8 +140,8 @@ namespace QMS.Application.Issues
 
             if (!string.IsNullOrEmpty(detail.ExtendAttribute))
             {
-                var list = JSON.Deserialize<List<FieldValue>>(detail.ExtendAttribute);
-
+                var list = JSON.Deserialize<List<FieldValue>>(detail.ExtendAttribute).Where(u => !string.IsNullOrEmpty(u.Value));
+                //当扩展属性未填入值时不保存该属性
                 foreach (var item in list)
                 {
                     item.IssueId = detail.Id;
@@ -247,16 +247,13 @@ namespace QMS.Application.Issues
                     if (!string.IsNullOrEmpty(input.ExtendAttribute))
                     {
                         // 新增扩展属性时
-                        List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+                        List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute).Where(u => !string.IsNullOrEmpty(u.Value)).ToList();
 
                         foreach (var item in list)
                         {
                             item.IssueId = input.Id;
                         }
-
-                        var attrs = JSON.Serialize(list);
-
-                        await this.UpdateAttributeValuesBatch(attrs);
+                        await this.UpdateAttributeValuesBatch(list);
                     }
                     else
                     {
@@ -1252,16 +1249,13 @@ namespace QMS.Application.Issues
             if (!string.IsNullOrEmpty(input.ExtendAttribute))
             {
                 // 新增扩展属性时
-                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute);
+                List<FieldValue> list = JSON.Deserialize<List<FieldValue>>(input.ExtendAttribute).Where(u => !string.IsNullOrEmpty(u.Value)).ToList();
 
                 foreach (var item in list)
                 {
                     item.IssueId = input.Id;
                 }
-
-                var attrs = JSON.Serialize(list);
-
-                await this.UpdateAttributeValuesBatch(attrs);
+                await this.UpdateAttributeValuesBatch(list);
             }
             else
             {
@@ -1285,76 +1279,26 @@ namespace QMS.Application.Issues
             );
         }
 
-        private async Task UpdateAttributeValuesBatch(string ExtendAttribute)
+        private async Task UpdateAttributeValuesBatch(List<FieldValue> list)
         {
-            if (!string.IsNullOrEmpty(ExtendAttribute))
+            Helper.Helper.Assert(list != null && list.Count > 0, "更新扩展字段数据时，数据为空");
+            foreach (var item in list.Where(u => !string.IsNullOrEmpty(u.Value)))
             {
-                List<FieldValue> list = JsonConvert.DeserializeObject<List<FieldValue>>(ExtendAttribute);
-
-                Helper.Helper.Assert(list != null && list.Count > 0, "更新扩展字段数据时，数据为空");
-
-
-                foreach (var item in list)
+                var model = new IssueExtendAttributeValue()
                 {
-                    var model = new IssueExtendAttributeValue()
-                    {
-                        Id = item.FieldId,
-                        IssueNum = item.IssueId,
-                        AttibuteValue = item.Value
-                    };
+                    Id = item.FieldId,
+                    IssueNum = item.IssueId,
+                    AttibuteValue = item.Value
+                };
 
-                    if (this._issueAttrValueRep.Any(model => model.Id == item.FieldId && model.IssueNum == item.IssueId))
-                    {
-                        await this._issueAttrValueRep.UpdateNowAsync(model);
-                    }
-                    else
-                    {
-                        await this._issueAttrValueRep.InsertNowAsync(model);
-                    }
+                if (this._issueAttrValueRep.Any(model => model.Id == item.FieldId && model.IssueNum == item.IssueId))
+                {
+                    await this._issueAttrValueRep.UpdateNowAsync(model);
                 }
-
-                //IEnumerable<long> attrIds = list.Select<FieldValue, long>(model => model.FieldId);
-                //IEnumerable<long> issueIds = list.Select<FieldValue, long>(model => model.IssueId);
-
-                //IEnumerable<IssueExtendAttributeValue> values = this._issueAttrValueRep.Where(
-                //    model =>
-                //    model.IssueNum == list[0].IssueId
-                //    && attrIds.Contains(model.Id)
-                //);
-
-                //int realCount = list.Count;
-
-                //if (realCount > values.Count())
-                //{
-                //    IEnumerable<long> ids = values.Select<IssueExtendAttributeValue, long>(val => val.Id);
-                //    if (ids != null && ids.Any())
-                //    {
-                //        IssueExtendAttributeValue[] insertLists = list.TakeWhile(model => !ids.Contains(model.FieldId))?.Select<FieldValue, IssueExtendAttributeValue>(model => new IssueExtendAttributeValue
-                //        {
-                //            Id = model.FieldId,
-                //            IssueNum = model.IssueId,
-                //            AttibuteValue = model.Value
-                //        })?.ToArray();
-
-                //        if (insertLists != null && insertLists.Any())
-                //        {
-                //            this._issueAttrValueRep.Entities.AddRange(insertLists);
-
-                //            this._issueAttrValueRep.Context.SaveChanges();
-
-                //            list.RemoveAll(model => ids.Contains(model.FieldId));
-                //        }
-                //    }
-                //}
-
-                //this._issueAttrValueRep.Entities.UpdateRange(list.Select(model => new IssueExtendAttributeValue
-                //{
-                //    Id = model.FieldId,
-                //    IssueNum = model.IssueId,
-                //    AttibuteValue = model.Value
-                //}));
-
-                //await this._issueAttrValueRep.Context.SaveChangesAsync();
+                else
+                {
+                    await this._issueAttrValueRep.InsertNowAsync(model);
+                }
             }
         }
 
