@@ -786,7 +786,8 @@ namespace QMS.Application.Issues
                 }
                 );
 
-            return await this.UpdateProjectProductNames(issues);
+            //return await this.UpdateProjectProductNames(issues);
+            return issues;
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace Furion.Extras.Admin.NET.Service.Notice
                 UserId = u,
                 ReadStatus = noticeUserStatus
             });
-            await _sysNoticeUserRep.InsertAsync(noticeUserList);
+            await _sysNoticeUserRep.InsertNowAsync(noticeUserList);
         }
 
         /// <summary>
