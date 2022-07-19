@@ -122,7 +122,7 @@ namespace QMS.Application.Issues.Service.Issue.Dto.Query
         public DateTime? DispatchTime { get; set; }
 
         /// <summary>
-        /// 预计完成时间
+        /// 预计解决时间
         /// </summary>
         public DateTime? ForecastSolveTime { get; set; }
 

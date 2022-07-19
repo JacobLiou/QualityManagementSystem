@@ -1,0 +1,91 @@
+/*---长时间未处理催办规则---
+procedure:问题所处的阶段，对应Issue.Status问题状态字段，状态值如下
+  {
+          新建-0-Created
+          处理中-1-Dispatched
+          待复核-2-Solved
+          未解决-3-UnSolve
+          验证关闭-4-Closed
+          挂起-5-HasHangUp
+          暂存-6-HasTemporary
+          待验证-7-HasRechecked
+  }
+noticeField:催办所要提示的人员字段
+userType:0-本人，1-本人上级，2-本人上级的上级，以此类推
+StartTiemField:时间开始字段，Now代表当前
+EndTiemField:时间结束字段，按照沟通的结果此处为解决日期或预计解决日期
+judge:判断规则，$代表时间结束字段减去时间开始字段，默认单位是天
+times:发送提示的时间点，24小时制
+  */
+{
+  "Rule": [
+    {
+      "procedure": 1,
+      "noticeField": "CurrentAssignment",
+      "userType": 0,
+      "startTiemField": "Now",
+      "endTiemField": "ForecastSolveTime",
+      "judge": "$>0",
+      "times": [
+        "12:00"
+      ]
+    },
+    {
+      "procedure": 1,
+      "noticeField": "CurrentAssignment",
+      "userType": 0,
+      "startTiemField": "Now",
+      "endTiemField": "ForecastSolveTime",
+      "judge": "3>=$",
+      "times": [
+        "9:00",
+        "12:00",
+        "16:00"
+      ]
+    },
+    {
+      "procedure": 1,
+      "noticeField": "CurrentAssignment",
+      "userType": 1,
+      "startTiemField": "Now",
+      "endTiemField": "ForecastSolveTime",
+      "judge": "10>=$>3",
+      "times": [
+        "12:00"
+      ]
+    },
+    {
+      "procedure": 1,
+      "noticeField": "CurrentAssignment",
+      "userType": 2,
+      "startTiemField": "Now",
+      "endTiemField": "SolveTime",
+      "judge": "90>$>10",
+      "times": [
+        "12:00"
+      ]
+    },
+    {
+      "procedure": [ 0, 2, 7 ],
+      "noticeField": "CurrentAssignment",
+      "userType": 0,
+      "startTiemField": "Now",
+      "endTiemField": "SolveTime",
+      "judge": "180>=$>90",
+      "times": [
+        "12:00"
+      ]
+    },
+    {
+      "procedure": [ 0, 2, 7 ],
+      "noticeField": "CurrentAssignment",
+      "userType": 1,
+      "startTiemField": "Now",
+      "endTiemField": "SolveTime",
+      "judge": "$>180",
+      "times": [
+        "12:00"
+      ]
+    }
+  ]
+}

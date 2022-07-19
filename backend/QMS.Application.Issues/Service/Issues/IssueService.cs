@@ -1430,7 +1430,6 @@ namespace QMS.Application.Issues
         /// 定时发送消息
         /// </summary>
         /// <returns></returns>
-        [HttpGet("sendtimingurgenotice")]
         public async Task SendTimingUrgeNotice()
         {
             //获取所有预计完成时间小于等于当前当前时间的问题
@@ -1452,6 +1451,22 @@ namespace QMS.Application.Issues
                     EnumIssueOperationType.Dispatch,
                     $"定时任务向【{issue.Id}】-【{issue.Title}】发送催办消息"
                 );
+            }
+        }
+
+        /// <summary>
+        /// 根据指定规则定时发送催办消息
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("SendTimingUrgeNotice")]
+        public async Task SendTimingUrgeNotice1()
+        {
+            var text1 = _configuration["ExcelTemplateId"];
+            var text = _configuration["Rule"];
+            var ruleList = JSON.Deserialize<List<UrgeRuleDto>>(_configuration["Rule"]);
+            if (ruleList == null || ruleList.Count <= 0)
+            {
+                return;
             }
         }
 

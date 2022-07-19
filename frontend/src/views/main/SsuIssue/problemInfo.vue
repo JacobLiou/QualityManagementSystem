@@ -109,7 +109,7 @@
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
-              <span class="li_title">预计解决时间：</span>
+              <span class="li_title">预计解决日期：</span>
               <div class="li_content">{{ IssueDetailData.forecastSolveTime || '--' }}</div>
             </div>
           </a-col>

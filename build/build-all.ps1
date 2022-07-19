@@ -1,5 +1,5 @@
 # 定义服务器地址
-$remoteIp = "172.16.16.33"
+$remoteIp = "172.16.23.33"
 
 # supervisor 服务名称
 $supervisorServername = "DotnetSmartPrison"

@@ -1,5 +1,5 @@
 # 定义服务器地址
-$remoteIp = "172.16.16.33"
+$remoteIp = "172.16.23.33"
 
 # 定义路径
 $buildFolder = (Get-Item -Path "./" -Verbose).FullName

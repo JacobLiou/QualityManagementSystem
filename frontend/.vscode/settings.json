@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "172.16.23.33",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "yuxinsong",
+            "database": "qms",
+            "username": "root",
+            "password": "123456"
+        }
+    ]
+}
