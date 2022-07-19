@@ -56,10 +56,10 @@
             <a-button @click="changePersonnel('currentAssignment')"> 选择 </a-button>
           </section>
         </a-form-model-item>
-        <a-form-model-item label="预计解决时间" prop="forecastSolveTime">
+        <a-form-model-item label="预计完成时间" prop="forecastSolveTime">
           <a-date-picker
             style="width: 100%"
-            placeholder="请选择预计解决时间"
+            placeholder="请选择预计完成时间"
             v-model="form.forecastSolveTime"
             @change="attributDate"
             @focus="attributDateType('forecastSolveTime')"
@@ -219,7 +219,7 @@ export default {
       form: {
         id: null,
         title: '', // 问题简述，
-        forecastSolveTime: undefined, // 预计解决时间
+        forecastSolveTime: undefined, // 预计完成时间
         issueClassification: undefined, // 问题分类
         consequence: undefined, // 性质
         currentAssignment: null, // 责任人ID
@@ -232,7 +232,7 @@ export default {
       rules: {
         title: [{ required: true, message: '请输入问题简述', trigger: 'blur' }],
         currentAssignmentName: [{ required: true, message: '请选择责任人', trigger: 'change' }],
-        forecastSolveTime: [{ required: true, message: '请选择预计解决时间', trigger: 'change' }],
+        forecastSolveTime: [{ required: true, message: '请选择预计完成时间', trigger: 'change' }],
         issueClassification: [{ required: true, message: '请选择问题分类', trigger: 'change' }],
         consequence: [{ required: true, message: '请选择性质', trigger: 'change' }],
       },
@@ -339,7 +339,7 @@ export default {
       // console.log(value, 'value')
       this.form.id = value.id
       this.form.title = value.title // 问题简述，
-      this.form.forecastSolveTime = moment().format('YYYY-MM-DD') // 预计解决时间
+      this.form.forecastSolveTime = moment().format('YYYY-MM-DD') // 预计完成时间
       this.form.issueClassification = value.issueClassification // 问题分类
       this.form.consequence = value.consequence // 性质
       this.form.currentAssignmentName = value.currentAssignmentName // 执行人idF   要改为指派人

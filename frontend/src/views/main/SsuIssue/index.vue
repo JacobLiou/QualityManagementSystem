@@ -260,7 +260,7 @@ export default {
           width: '8em',
         },
         {
-          title: '预计解决时间',
+          title: '预计完成日期',
           align: 'center',
           sorter: true,
           dataIndex: 'forecastSolveTime',
@@ -302,7 +302,7 @@ export default {
           width: '8em',
         },
         {
-          title: '问题关闭时间',
+          title: '实际完成时间',
           align: 'center',
           sorter: true,
           dataIndex: 'closeTime',
@@ -414,15 +414,13 @@ export default {
     // 筛选查询
     queryParamSelect(value) {
       console.log(value)
-      //筛选查询时，应显示第一页下的数据
-      this.queryParam.PageNo = 1      
       this.queryParam = { ...this.queryParam, ...value }
       console.log(this.queryParam)
       this.getProblemList()
     },
 
     // 排序查询
-    handleTableChange(value) {      
+    handleTableChange(value) {
       this.queryParam = { ...this.queryParam, ...value }
       this.getProblemList()
     },
