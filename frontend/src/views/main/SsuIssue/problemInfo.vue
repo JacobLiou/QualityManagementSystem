@@ -109,7 +109,7 @@
           </a-col>
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
-              <span class="li_title">预计完成时间：</span>
+              <span class="li_title">预计解决日期：</span>
               <div class="li_content">{{ IssueDetailData.forecastSolveTime || '--' }}</div>
             </div>
           </a-col>
@@ -148,13 +148,7 @@
               <span class="li_title">解决日期：</span>
               <div class="li_content">{{ IssueDetailData.solveTime || '--' }}</div>
             </div>
-          </a-col>
-          <a-col :xl="12" :xs="24"
-            ><div class="info-li">
-              <span class="li_title">实际完成时间：</span>
-              <div class="li_content">{{ IssueDetailData.closeTime || '--' }}</div>
-            </div>
-          </a-col>
+          </a-col>         
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">解决版本：</span>
@@ -182,7 +176,7 @@
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证状态：</span>
-              <div class="li_content">{{ statusContent(IssueDetailData.validationStatus) || '--' }}</div>
+              <div class="li_content">{{ validationStatusContent(IssueDetailData.validationStatus) || '--' }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -195,6 +189,12 @@
             ><div class="info-li">
               <span class="li_title">回归验证批次：</span>
               <div class="li_content">{{ IssueDetailData.batch || '--' }}</div>
+            </div>
+          </a-col>
+            <a-col :xl="12" :xs="24"
+            ><div class="info-li">
+              <span class="li_title">问题关闭时间：</span>
+              <div class="li_content">{{ IssueDetailData.closeTime || '--' }}</div>
             </div>
           </a-col>
         </a-row>
@@ -403,6 +403,12 @@ export default {
     statusContent(text) {
       if (text == undefined) return
       const contentArray = this.$options.filters['dictData']('issue_status')
+      const data = contentArray.find((item) => item.code == text)
+      return data.name
+    },
+    validationStatusContent(text) {
+      if (text == undefined) return
+      const contentArray = this.$options.filters['dictData']('issue_validationstatus')
       const data = contentArray.find((item) => item.code == text)
       return data.name
     },

@@ -260,7 +260,7 @@ export default {
           width: '8em',
         },
         {
-          title: '预计完成日期',
+          title: '预计解决日期',
           align: 'center',
           sorter: true,
           dataIndex: 'forecastSolveTime',
