@@ -146,5 +146,8 @@ namespace QMS.Application.System
             
             return _email.SendEmailCode(email, num);
         }
+
+
+       
     }
 }
