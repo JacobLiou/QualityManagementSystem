@@ -32,7 +32,12 @@ namespace Furion.Extras.Admin.NET.Entity.Common
         [MaxLength(50)]
         [Required]
         public string Role { get; set; }
-
+        /// <summary>
+        /// 是否使用
+        /// </summary>
+        [Comment("是否使用")]
+        [Required]
+        public bool IsUse { get; set; }
 
     }
 }

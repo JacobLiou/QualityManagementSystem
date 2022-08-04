@@ -28,10 +28,10 @@ namespace QMS.Application.System.Service
         public string RegisterMonitor(string code, string guid, string name)
         {
 
-            var data = _monitorCode.FirstOrDefault(x => x.Code == code);
+            var data = _monitorCode.FirstOrDefault(x => x.Code == code && x.IsUse == false);
             if (data == null)
             {
-                return null;
+                return "";
             }
             MonitorUser user = new MonitorUser();
             user.Name = name;
@@ -41,8 +41,11 @@ namespace QMS.Application.System.Service
             var insertUser = _monitorUser.Insert(user);
             if (insertUser == null)
             {
-                return null;
+                return "";
             }
+            data.IsUse = true;
+            _monitorCode.Update(data);
+
             guid = Decrypt(guid);
             string check = Encrypt(guid + "|" + data.Role);
 
@@ -64,7 +67,7 @@ namespace QMS.Application.System.Service
                 byte[] rgbIV = iv;
                 byte[] inputByteArray = Encoding.UTF8.GetBytes(encryptString);
 
-        
+
                 var DCSP = Aes.Create();
                 DCSP.Padding = PaddingMode.PKCS7;
                 DCSP.Mode = CipherMode.ECB;
