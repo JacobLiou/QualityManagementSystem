@@ -96,7 +96,7 @@ namespace QMS.Application.Issues
             //构建消息格式
             var msg = new NoticeMsgInput()
             {
-                Url = ProblemInfoUrl + issueId,
+                Url = ProblemInfoUrl + issueId + "&UserID=" + userId,
                 Content = ProblemInfoContent,
                 Title = ProblemInfoTitle + "-" + title,
                 UserIdList = new List<string>() { userId }

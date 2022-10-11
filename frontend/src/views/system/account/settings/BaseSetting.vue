@@ -4,6 +4,9 @@
       <a-col :md="24" :lg="16">
 
         <a-form layout="vertical" :form="form">
+          <a-form-item label="账号">
+            <span>{{userInfo.account}}</span>
+          </a-form-item>
           <a-form-item label="昵称">
             <a-input placeholder="给自己起个昵称吧" v-decorator="['nickName']" />
           </a-form-item>

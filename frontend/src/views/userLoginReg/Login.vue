@@ -438,7 +438,7 @@ export default {
 
     .item-icon {
       font-size: 24px;
-      color: rgba(0, 0, 0, 0.2);
+      color: #09b417;
       margin-left: 16px;
       vertical-align: middle;
       cursor: pointer;

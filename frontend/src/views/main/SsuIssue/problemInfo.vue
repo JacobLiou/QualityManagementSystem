@@ -57,7 +57,7 @@
         <section>
           <a-row :gutter="[6, 6]">
             <a-col :xl="3" :lg="6" :md="8" :xs="6" :key="item.currentKey" v-for="item in operationFilter">
-              <a-button @click="operationType(item.operName)">{{ item.operName }}</a-button>
+              <a-button @click="operationType(item.operName)" :type="item.operType">{{ item.operName }}</a-button>
             </a-col>
           </a-row>
         </section>
@@ -99,6 +99,11 @@
             ><div class="info-li">
               <span class="li_title">状态：</span>
               <div class="li_content">{{ statusContent(IssueDetailData.status) }}</div>
+            </div>
+          </a-col> <a-col :xl="12" :xs="24"
+            ><div class="info-li">
+              <span class="li_title">待办人</span>
+              <div class="li_content">{{ IssueDetailData.currentAssignmentName }}</div>
             </div>
           </a-col>
           <a-col :xl="12" :xs="24"
@@ -155,12 +160,7 @@
               <div class="li_content">{{ IssueDetailData.solveVersion || '--' }}</div>
             </div>
           </a-col>
-          <a-col :xl="12" :xs="24"
-            ><div class="info-li">
-              <span class="li_title">回归验证地点：</span>
-              <div class="li_content">{{ IssueDetailData.verifierPlace || '--' }}</div>
-            </div>
-          </a-col>
+         
           <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">回归验证人：</span>
@@ -179,18 +179,7 @@
               <div class="li_content">{{ validationStatusContent(IssueDetailData.validationStatus) || '--' }}</div>
             </div>
           </a-col>
-          <a-col :xl="12" :xs="24"
-            ><div class="info-li">
-              <span class="li_title">回归验证数量：</span>
-              <div class="li_content">{{ IssueDetailData.count || '--' }}</div>
-            </div>
-          </a-col>
-          <a-col :xl="12" :xs="24"
-            ><div class="info-li">
-              <span class="li_title">回归验证批次：</span>
-              <div class="li_content">{{ IssueDetailData.batch || '--' }}</div>
-            </div>
-          </a-col>
+         
             <a-col :xl="12" :xs="24"
             ><div class="info-li">
               <span class="li_title">问题关闭时间：</span>
@@ -307,67 +296,84 @@ export default {
           {
             operName: '返回',
             operIcon: 'rollback',
+             operType: 'default'
           },
         ]
       // const { admintype } = this.$store.state.user // 获取用户类型 1是超级用户
       const operationArray = [
+       
+        
         {
           operName: '复制',
           operIcon: 'copy',
+          operType: 'default'
         },
         {
           operName: '编辑',
           operIcon: 'edit',
+          operType: 'default'
         },
         {
           operName: '详情',
           operIcon: 'file-done',
+          operType: 'default'
         },
-        {
+         {
           operName: '分发',
           operIcon: 'select',
+          operType: 'primary'
         },
         {
           operName: '转交',
           operIcon: 'export',
+          operType: 'default'
         },
         {
           operName: '解决',
           operIcon: 'question-circle',
+          operType: 'primary'
         },
         {
           operName: '复核',
           operIcon: 'reconciliation',
+          operType: 'primary'
         },
         {
           operName: '验证',
           operIcon: 'safety-certificate',
+          operType: 'primary'
         },
         {
           operName: '关闭',
           operIcon: 'close-circle',
+          operType: 'default'
         },
         {
           operName: '挂起',
           operIcon: 'minus-circle',
+           operType: 'default'
         },
         {
           operName: '重开启',
           operIcon: 'key',
+           operType: 'default'
         },
         {
           operName: '催办',
           operIcon: 'bell',
+           operType: 'default'
         },
         {
           operName: '删除',
           operIcon: 'delete',
+           operType: 'default'
         },
       ]
       const newOperationList = [
         {
           operName: '返回',
           operIcon: 'rollback',
+           operType: 'default'
         },
       ]
       this.IssueDetailData.btnList?.forEach((item) => {

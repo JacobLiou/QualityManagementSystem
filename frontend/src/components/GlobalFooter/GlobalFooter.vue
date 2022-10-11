@@ -3,7 +3,7 @@
     <div class="links">
     </div>
     <div class="copyright">
-      Copyright © 2022 <a target="_blank" href="#">首航质量管理平台</a> All rights reserved. v1.0.0
+      Copyright © 2022 <a target="_blank" href="#">首航问题管理平台</a> All rights reserved. v1.0.0
     </div>
   </div>
 </template>

@@ -60,7 +60,7 @@ namespace QMS.Application.System.EventSubscriber
             using var scope = Services.CreateScope();
             var EmailApply = scope.ServiceProvider.GetRequiredService<IEmailApplpy>();
             //构建邮箱跳转信息界面，格式类似为<a href=http://qms.sofarsolar.com:8002/problemAdd&UserID=1234567896325&state=FromEamil>消息标题</a>,供前端识别跳转
-            var pageUrl = "<a href=\"" + notice.PageUrl + "&UserID=" + notice.PublicUserId + "&state=FromEmail" + "\">" + notice.Title + "</a>";
+            var pageUrl = "<a href=\"" + notice.PageUrl + "&state=FromEmail" + "\">" + notice.Title + "</a>";
             await EmailApply.SendEmail(notice.NoticeUserIdList, notice.Title, notice.Content + pageUrl);
         }
 

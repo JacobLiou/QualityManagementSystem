@@ -154,7 +154,7 @@ export default {
           { min: 20, message: '解决措施不少于20', trigger: 'blur' },
         ],
         solveTime: [{ required: true, message: '请输入解决日期', trigger: 'change' }],
-        solveVersion: [{ required: true, message: '请选择解决版本', trigger: 'change' }],
+
       },
       dateType: '',
       isVersion: false,

@@ -16,4 +16,4 @@ export const setDocumentTitle = function (title) {
   }
 }
 
-export const domTitle = '首航质量管理平台'
+export const domTitle = '首航问题管理平台'

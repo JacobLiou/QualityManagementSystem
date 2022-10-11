@@ -5,7 +5,7 @@
         <div class="header">
           <a href="/">
             <img src="~@/assets/logo.png" class="logo" alt="logo">
-            <span class="title">首航质量管理平台</span>
+            <span class="title">首航问题管理平台</span>
           </a>
         </div>
         <div class="desc">
@@ -22,7 +22,7 @@
           <a href="_self">条款</a>
         </div> -->
         <div class="copyright">
-          Copyright © 2022 <a target="_blank" href="_self">首航质量管理平台</a> All rights reserved. v1.0.0
+          Copyright © 2022 <a target="_blank" href="_self">首航问题管理平台</a> All rights reserved. v1.0.0
         </div>
       </div>
     </div>

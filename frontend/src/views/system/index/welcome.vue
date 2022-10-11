@@ -7,7 +7,12 @@
  * @FilePath: \frontend\src\views\system\index\welcome.vue
 -->
 <template>
-  <a-card class="welcome" :bordered="false" @click="handlePushPath('/ssuissue')"> </a-card>
+  
+
+ 
+  <a-card class="issuelink" :bordered="false" @click="handlePushPath('/ssuissue')" ></a-card>
+
+
 </template>
 
 <script>
@@ -28,9 +33,10 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.welcome {
-  width: 100%;
-  height: 100%;
+
+.issuelink {
+  width: 80%;
+  height: 80%;
   background-image: url('../../../assets/technologicalProcess.png');
   background-repeat: no-repeat;
   background-size: 100% 100%;

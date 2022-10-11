@@ -26,7 +26,7 @@ export default {
   props: {
     title: {
       type: String,
-      default: '质量管理平台',
+      default: '问题管理平台',
       required: false
     },
     showTitle: {

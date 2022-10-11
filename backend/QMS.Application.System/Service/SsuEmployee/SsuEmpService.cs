@@ -351,9 +351,10 @@ namespace QMS.Application.System
 
             var projectUser = _ssuProjectUser.DetachedEntities.Where(u => u.ProjectId == projectId).Select(u => u.EmployeeId).ToList();
             //模块人员列表先暂时采用"在人员组上新增模块对应的人员列表，管理员后台维护数据库"，后续有变动再做修改
-            var modularUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == modularId).Select(u => u.EmployeeId).ToList();
+            //var modularUser = _ssuGroupUser.DetachedEntities.Where(u => u.GroupId == modularId).Select(u => u.EmployeeId).ToList();
             //获取项目人员列表和模块人员列表的交集
-            var userList = projectUser.Intersect(modularUser).ToList();
+            //var userList = projectUser.Intersect(modularUser).ToList();
+            var userList = projectUser.ToList();
             var result = await _sysUser.DetachedEntities.Where(u => userList.Contains(u.Id)).Select(u => u.Adapt<UserOutput>()).ToListAsync();
             await _cacheService.SetCache<List<UserOutput>>(CoreCommonConst.PROJECT_MODULAR + projectId + "_" + modularId, result);
             return result;

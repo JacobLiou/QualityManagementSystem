@@ -21,23 +21,7 @@
             placeholder="请输入问题简述"
           />
         </a-form-model-item>
-        <a-form-model-item ref="count" label="验证数量" prop="count">
-          <a-input-number placeholder="请输入验证数量" style="width: 100%" v-model="form.count" :min="0" />
-        </a-form-model-item>
-        <a-form-model-item ref="batch" label="验证批次" prop="batch">
-          <a-input
-            v-model="form.batch"
-            @blur="
-              () => {
-                $refs.batch.onFieldBlur()
-              }
-            "
-            placeholder="请输入验证批次"
-          />
-        </a-form-model-item>
-        <a-form-model-item ref="verifierPlace" label="验证地点" prop="verifierPlace">
-          <a-textarea v-model="form.verifierPlace" :rows="4" placeholder="请输入验证地点" />
-        </a-form-model-item>
+
         <a-form-model-item label="验证情况" prop="result">
           <a-textarea v-model="form.result" :rows="4" placeholder="请输入验证情况" />
         </a-form-model-item>

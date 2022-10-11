@@ -231,22 +231,22 @@ export default {
           width: '8em',
         },
 
+        // {
+        //   title: '发现人',
+        //   align: 'left',
+        //   sorter: false,
+        //   dataIndex: 'discoverName',
+        //   width: '6em',
+        // },
+        // {
+        //   title: '发现时间',
+        //   align: 'center',
+        //   sorter: true,
+        //   dataIndex: 'discoverTime',
+        //   width: '8em',
+        // },
         {
-          title: '发现人',
-          align: 'left',
-          sorter: false,
-          dataIndex: 'discoverName',
-          width: '6em',
-        },
-        {
-          title: '发现时间',
-          align: 'center',
-          sorter: true,
-          dataIndex: 'discoverTime',
-          width: '8em',
-        },
-        {
-          title: '分发人',
+          title: '责任人',
           align: 'left',
           sorter: false,
           dataIndex: 'dispatcherName',
